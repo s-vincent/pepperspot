@@ -1,0 +1,613 @@
+---------------------------------------------------------------------
+|        PepperSpot - The Next Generation Captive Portal            |
+---------------------------------------------------------------------
+
+PepperSpot is a Captive Portal which allow an authenticated user to access an other service network, in most case, Internet.
+PepperSpot is detinated to be used by Wireless Client.
+
+The particularity of PepperSpot is that he can be run in 3 modes:
+
+    * IPv6 only
+    * IPv4 only
+    * Dual stack 
+
+If you want to use it in single stack mode, you have to regard only on IPv4 or IPv6 section, and the both for dual stack mode.
+
+This Document describe the installation of PepperSpot and of all his dependences. This school case is based on a single box, a Debian GNU/Linux Lenny with a 2.6.25 kernel, but Installation and configuration are almost the same on multiple machines.
+
+++++++++++++++++++++++++++
+1) System Requirement    +
+++++++++++++++++++++++++++
+
+PepperSpot has to communicate with some others services which are:
+
+    * A web server to allow the client authentication, installed on the same box.
+    * An authentication server, under the radius protocol, to proceed authentication and accounting.
+    * A routing service to communicate with the external network 
+
+Most likely, the Radius and routing services are shared on different servers, but could be installed on a same box too.
+PepperSpot is destinated to be installed on a Wi-Fi Acces Point.
+It can be an emmbeed device, or a system from scratch configured as an Access Point.
+
+To do that, your Wi-Fi card must support the Master mode.
+A script based on madwifi drivers will execute the following commands (in PepperSpot/doc/madwifi-start-ap) :
+
+#!/bin/bash
+
+# Setting ath0 in Master mode
+# Replace !PepperSpot by your SSID
+
+wlanconfig ath0 destroy
+wlanconfig ath0 create wlandev wifi0 wlanmode ap
+iwconfig ath0 essid "PepperSpot"	
+ifconfig ath0 up
+
+
+Depending to the mode, the box inwhich will be installed PepperSpot need to be configured for ipv4 or ipv6.
+
+
+IPv6 
+----
+
+Firstly, be sure that IPv6 is activated on your kernel. If IPv6 is compiled as a module, type:
+
+# modprobe ipv6
+
+
+IPv6 Client need to autoconfigure his IPv6 interface, so he need to know the IPv6 Prefix of the link.
+Radvd is able to diffuse Router Advertisement with Prefix and DNS informations.
+On debian, install it with:
+
+# apt-get install radvd
+
+You can download the source tarball on http://www.litech.org/radvd/
+
+This is an exemple of the /etc/radvd.conf configuration file:
+
+##
+# \file radvd.conf
+# \brief RAs and DNS broadcasted over ath0
+# \author Sebastien Vincent and Thibault Van�on
+#
+
+interface ath0  
+{
+        AdvSendAdvert on;
+        AdvIntervalOpt on;
+        MinRtrAdvInterval 2;
+        MaxRtrAdvInterval 6;
+        prefix 2001:660:4701:f047::/64
+        {
+                AdvOnLink on;
+                AdvAutonomous on;
+                AdvRouterAddr on;
+        };
+
+	RDNSS 2001:660:2402::1 
+	{
+		AdvRDNSSPreference 8;
+                AdvRDNSSOpen off;
+                AdvRDNSSLifetime 30;
+	};
+};
+
+Replace interface, prefix and RDNSS lines with your own value, and launch Radvd with:
+
+# radvd -C /etc/radvd.conf
+
+
+You don't need to attribute a network configuration to the wireless interface (ath0). It's PepperSpot's job.
+
+A captive portal must route packet of an authenticated user towards Internet. So the system must have the IPv6 forwarding enabled.
+You can turn it on with this:
+
+# echo "1" > /proc/sys/net/ipv6/conf/all/forwarding
+
+To keep this configuration, you can uncomment the following line in /etc/sysctl.conf file:
+
+net.ipv6.ip_forward=1
+
+
+IPv6 forwarding will disable the IPv6 autoconfiguration, so network configuration must be set staticly.
+Assuming that eth0 is the interface connected to the IPv6 network, type the following command and replace with your own value:
+
+# ip -6 addr add 2001:660:4701:f010::43/64 dev eth0
+
+We also need to know the route configuration to guide packets into Internet (replace with you route address value):
+
+# route -A inet6 add default gw fe80::1:2:3:4 dev eth0
+
+You can turn this configuration permanantly inserting the network configuration in your /etc/network/intefaces file this way:
+
+auto eth0
+iface eth0 inet6 static
+        address 2001:660:4701:f010::43
+        netmask 64
+		gateway fe80::1:2:3:4
+        pre-up modprobe ipv6  # to be sure that ipv6 is enabled before we turn up the interface 
+
+Note that if the prefix is delegated only for the PepperSpot subnet, you surely need to install some routing protocol on the system. To do that, you can install Quagga, which is a software routing suite.
+See the "Install and configure the Quagga Routing Suite" section of this document.
+
+
+IPv4 
+----
+
+The IPv4 configuration is appreciably the same than IPv6, except that we don't need the advertise the client for the network configuration.
+PepperSpot integrate a DHCP module to attribute an IPv4 address to the client.
+You can disable this module in the PepperSpot configuration if the wireless link already have a DHCP server, or if the client configuration is set staticly.
+
+You need nevertheless to configure the interface linked to the IPv4 network.
+
+In the same way, enable the IPv4 forwarding by typping:
+
+# echo "1" > /proc/sys/net/ipv4/conf/all/forwarding
+
+or uncommenting into /etc/sysctl.conf:
+
+net.ipv4.ip_forward=1
+
+Configure the interface address and route (Replace with your parameters):
+
+# ip addr add 130.79.48.43/20 dev eth1
+# route add default gw 130.79.48.46 dev eth1
+
+You can put that in your /etc/network/interfaces file:
+
+auto eth1
+iface eth1 inet static
+	address	130.79.48.43
+	netmask	20
+	gateway	130.79.48.46
+
+
+
+Netfilter Support 
+-----------------
+
+PepperSpot will use some Netfilter's rules to proceed the communication between the client and Internet. So the system must support Netfilter. If it's not the case, modify the configuration of your kernel:
+
+    * For IPv4, you need to enable the Nat, Mangle and tracking support
+    * For IPv6, you only need the basic support. 
+
+Install iptables, netfilter configuration interfaces.
+On debian:
+
+# apt-get install iptables
+
+or downlaod the last version on http://www.netfilter.org/
+
+
+Compilation 
+-----------
+
+To proceed the PepperSpot compilation, you need the libc6 developpement package.
+On debian, install it with:
+
+# apt-get install libc6-dev
+
+or downlaod it on http://www.gnu.org/software/libc/
+
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2) Install and Configure The Quagga routing suite           +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+The Quagga routing suite implement some IPv4 and IPv6 routing protocol.
+This section describe the installation of the RIPng protocol to allow IPv6 routing.
+We assume that you have a delegated IPv6 prefix, and that you need to route the communication for this prefix. If it's not the case, you can skip this section.
+
+You firstly need to install Quagga package:
+On debian:
+
+# apt-get install quagga
+
+You can also download the tarball at http://www.quagga.net/
+
+The configuration of quagga is done by setting up some configuration files in the /etc/quagga directory, but the quagga suite integrate some cisco-like interfaces for each protocol to allow hot configuration and to view some routing informations like routing table.
+
+Note that you can put IPv6 and IPv4 network configurations described before, in the routing protocol configuration.
+For each protocol you want, enable it in /etc/quagga/daemon.
+
+We need to enable zebra, because it's the main routing module needed to use other protocol and configure interfaces.
+In our case, we only need to add RIPng too:
+
+# This file tells the quagga package which daemons to start.
+#
+# Entries are in the format: <daemon>=(yes|no|priority)
+#   0, "no"  = disabled
+#   1, "yes" = highest priority
+#   2 .. 10  = lower priorities
+# Read /usr/share/doc/quagga/README.Debian for details.
+#
+# Sample configurations for these daemons can be found in
+# /usr/share/doc/quagga/examples/.
+#
+# ATTENTION:
+#
+# When activation a daemon at the first time, a config file, even if it is
+# empty, has to be present *and* be owned by the user and group "quagga", else
+# the daemon will not be started by /etc/init.d/quagga. The permissions should
+# be u=rw,g=r,o=.
+# When using "vtysh" such a config file is also needed. It should be owned by
+# group "quaggavty" and set to ug=rw,o= though. Check /etc/pam.d/quagga, too.
+#
+zebra=yes
+bgpd=no
+ospfd=no
+ospf6d=no
+ripd=no
+ripngd=yes
+isisd=no
+
+Now we have to create one configuration file for each daemon launched.
+
+/etc/quagga/zebra.conf file:
+
+!
+! Zebra configuration saved from vty
+!   2008/04/10 12:18:58
+!
+hostname MobSpot
+password ***********
+enable password *************
+!
+interface ath0
+ ipv6 nd suppress-ra
+!
+interface eth0
+ ipv6 address 2001:660:4701:f040:ffff::43/64
+ ipv6 nd suppress-ra
+!
+interface eth1
+ ip address 130.79.48.43/20
+ ipv6 nd suppress-ra
+!
+interface eth2
+ ipv6 nd suppress-ra
+!
+interface eth3
+ ipv6 nd suppress-ra
+!
+interface lo
+!
+interface tun0
+ ipv6 nd suppress-ra
+!
+interface wifi0
+ ipv6 nd suppress-ra
+!
+ipv6 forwarding
+!
+!
+line vty
+!
+
+In this file, we set up the static configuration of each interface linked to the service network (eth0 and eth1).
+
+/etc/quagga/ripngd.conf file:
+
+! -*- rip -*-
+!
+! RIPngd sample configuration file
+!
+! $Id: ripngd.conf.sample,v 1.1.1.1 2002/12/13 20:15:30 paul Exp $
+!
+hostname MobSpot
+password ***********
+enable password ************
+!
+! debug ripng events
+! debug ripng packet
+!
+!
+router ripng
+network eth0
+redistribute connected
+redistribute static
+route 2001:660:4701:f047::/64
+!
+line vty
+!
+
+In this file, we configure the RIPng protocol, indicating that we are able to route packet for 2001:660:4701:f047::/64 prefix on the eth0 interface.
+
+For the both files, the first section will define the password for the configuration interfaces (vty).
+The enable password line indicate that a password is required to get the right to reconfigure the daemon.
+Don't forgot the line vty line to enable this configuration interface.
+
+Type
+
+# telnet 127.0.0.1 zebra
+
+for zebra configuration and
+
+# telnet 127.0.0.1 ripngd
+
+for RIPng configuration.
+
+Note: After authentication (with the password line renseigned into configuration file), you will obtain a command line to configure the daemon. Type ? to see available commands.
+
+To finish, restart quagga daemons :
+
+# /etc/init.d/quagga restart 
+
+Note: If you need to configure IPv4 routing, adapt this configuration to RIP daemon.
+
+
++++++++++++++++++++++++++++++++++++++++++++++
+3) Apache configuration                     +
++++++++++++++++++++++++++++++++++++++++++++++
+
+PepperSpot need to communicate with a Web Server installed on the same machine to allow the client to proceed authentication.
+In our case we will install and configure an Apache2 web server, with the SSL support for security reasons.
+
+On debian, install it with:
+
+# apt-get install apache2 libapache2-mod-php5 libssl-dev 
+
+We now need to generate a SSL certificate to guarantee the identity of the web server:
+
+# make-ssl-cert /usr/share/ssl-cert/ssleay.cnf /etc/apache2/key.pem
+
+The second step is to load the Apache2-SSL module :
+
+# a2enmod ssl
+
+The web server need a virtual host to be reachable.
+Create the file /etc/apache2/sites-available/pepperspot with the following contents (Adapt to your needed configuration):
+
+NameVirtualHost *:443
+
+<VirtualHost *:443>
+        ServerAdmin webmaster@pepperspot
+        SSLEngine on
+        SSLCertificateFile /etc/apache2/key.pem
+
+        DocumentRoot /var/www/
+        <Directory />
+                Options FollowSymLinks
+                AllowOverride None
+        </Directory>
+        <Directory /var/www/>
+                Options Indexes FollowSymLinks MultiViews
+                AllowOverride None
+                Order allow,deny
+                allow from all
+                # This directive allows us to have apache2's default start page
+                # in /apache2-default/, but still have / go to the right place
+                RedirectMatch ^/$ /apache2-default/
+        </Directory>
+
+        # CGI - We need cgi support to communicate with PepperSpot
+        ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+        <Directory "/usr/lib/cgi-bin">
+                AllowOverride None
+                Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+                Order allow,deny
+                Allow from all
+        </Directory>
+</VirtualHost>
+
+If you want to modify the name of the virtual host, don't forgot that Apache need to listen on both IPv6 and IPv4 address for dual stack mode, and on IPv4 or IPv6 interface regarding to the single mode you will choice.
+
+Add in /etc/apache2/ports.conf (if it isn't present) to allow HTTPS listening :
+
+<IfModule mod_ssl.c>
+    Listen 443
+</IfModule>
+
+Finally, Load the site :
+
+# a2ensite pepperspot
+# /etc/init.d/apache2 reload
+
+
+
+++++++++++++++++++++++++++++++++++++++++
+4) FreeRadius Configuration            +
+++++++++++++++++++++++++++++++++++++++++
+
+PepperSpot is able to communicate with a Radius Server over IPv4 or IPv6 protocol, regarding to the radius server address configuration in /etc/pepper.conf.
+We have chosen to install and configure a FreeRadius Server. To have IPv6 support, we need a version of FreeRadius >= 2.0. But if you only want to use IPv4 support, you can install an older version.
+
+To download FreeRadius: http://www.freeradius.org/
+
+The FreeRadius configuration is complex, and the following describe only an elementary configuration to enable IPv6 support on FreeRadius, and an easy way to add some user accounts.
+If you want a better configuration, see the FreeRadius documentation.
+
+IPv6 support ¶
+
+Modify the /etc/raddb/radiusd.conf file to add the followings section:
+
+# For authentication 
+listen {
+        type = auth
+#       ipaddr = *
+        ipv6addr = ::1
+        port = 0
+#       interface = eth0
+#       clients = per_socket_clients
+}
+                                             
+# For accounting						 
+listen {
+        type = acct
+#       ipaddr = *
+        ipv6addr = ::1
+        port = 0
+#       interface = eth0
+#       clients = per_socket_clients
+}
+
+With this configuration, we suppose that PepperSpot and FreeRadius are on the same box. Replace ::1 for the field ipv6addr by the address in which FreeRadius must listen.
+port = 0 means that default Radius ports are used.
+If you specify * for ipv6addr, FreeRadius will listen on each IPv6 address configured on the system.
+
+Now, we need to configure a FreeRadius client (called as NAS). PepperSpot is a NAS.
+Open the /etc/freeradius/clients.conf file and add the following lines:
+
+client ::1 {  # here ::1 is the name of the client. Replace with your own value
+	ipv6addr	= ::1
+	secret		= testing123
+	shortname 	= localhost
+	nastype 	= other
+}
+
+If PepperSpot and FreeRadius are on different box, ipv6addr must be replace by the address with which PepperSpot and FreeRadius communicate.
+Modify the shortname too.
+
+Finally, we need to create some system accounts, and to add them in /etc/freeradius/users.
+
+example :
+
+toto    Auth-Type :=Local, User-Password == "totoilsaitpas"
+ping6   Auth-Type := Local, User-Password == "pong6"
+
+Restart FreeRadius:
+
+# /etc/init.d/raddb restart
+
+For IPv4 configuration of FreeRadius, replace the ipv6addr field with ipaddr, and fill it with the IPv4 address wanted.
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++
+5) PepperSpot installation and configuration     +
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Compilation and installation 
+----------------------------
+
+Untar the PepperSpot source and compile it :
+
+# tar -xjvf PepperSpot-1.0.tar.bz2 
+# cd PepperSpot-1.0/
+# ./configure
+# make 
+# make install
+
+Copy some configuration files
+
+# cp doc/pepper.conf /etc/
+# cp doc/hotspotlogin.cgi /usr/lib/cgi-bin/
+
+For IPv4
+
+# cp doc/pepper.iptables /etc/
+
+For IPv6
+
+# cp doc/pepper.ip6tables /etc/
+
+Modify the /etc/pepper.iptables and/or /etc/pepper.ip6tables scripts and adapt $INTIF, $EXTIF and $EXTIF6 values regarding to your configuration.
+Configuration ¶
+
+Depending to the mode, you must configure some parameters on the /etc/pepper.conf file.
+
+Change ipversion value to chose the mode:
+You have 3 choices for the value:
+
+    * dual
+    * ipv4
+    * ipv6 
+
+If you choose dual for ipversion, look at the both following sections.
+
+
+For IPv6
+--------
+
+- Modify staticipv6 (the IPv6 address of the tun6 interface created by PepperSpot):
+
+staticipv6 2001:660:4701:f047::1234
+
+
+- Modify uamserver6 (don't forget the brackets):
+
+uamserver6 https://[2001:660:4701:f047::1234]/cgi-bin/hotspotlogin.cgi
+
+The IPv6 address of the url must be the same than staticipv6
+
+- Modify prefix:
+
+prefix 2001:660:4701:f047::/64
+
+It must be the prefix of staticipv6
+
+
+For IPv4
+--------
+
+- Modify net (IPv4 network):
+
+net 192.168.182.1/24
+
+- Modify uamserver:
+
+uamserver https://192.168.182.1/cgi-bin/hotspotlogin.cgi
+
+Must be the first address of net
+
+
+Radius
+------
+
+The configuration file will indicate to pepperspot if the communication with the radius server is done over IPv4 or IPv6.
+If you chose an IPv6 for radiuslisten field, radiusserver1 and radiusserver2 must be IPv6 address.
+It's the same things if you choose an IPv4 address, fill radiusserver1 and radiusserver2 fileds with IPv4 adress.
+Configure the radius server as required.
+
+Exemple, for IPv6 communication between PepperSpot and FreeRadius, installed on a same system:
+
+[...]
+radiuslisten ::1
+[...]
+radiusserver1 ::1
+[...]
+radiusserver2 ::1
+[...]
+radiussecret testing123
+
+radiussecret must have the same value than secret of the client section in the /etc/raddb/clients.conf file.
+
+By the same way, modify uamsecret with the value you want:
+
+uamsecret testing234
+
+and update $uamsecret in /usr/lib/cgi-bin/hotspotlogin.cgi with the same value.
+
+Others parameters of the /etc/pepper.conf file are describes on the man. Type:
+
+# man pepper
+
+
+
+
+++++++++++++++++++++++++++++++++
+6) Running PepperSpot          +
+++++++++++++++++++++++++++++++++
+
+
+Before running PepperSpot, you have to be sure that all others services needed by PepperSpot are available, and that the box is configured.
+
+Execute the iptables script regarding to the running mode of PepperSpot:
+
+# /etc/pepper.iptables
+
+for IPv4 and
+
+# /etc/pepper/ip6tables
+
+for IPv6
+
+You can now run PepperSpot:
+
+# pepper -fd
+
+This will enable the debug mode. If you are in release mode:
+
+# pepper
+
+Enjoy now with this powerful dual stack captive portal ;) 
