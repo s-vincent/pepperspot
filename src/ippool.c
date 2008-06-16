@@ -80,7 +80,7 @@
 
 
 int ippool_printaddr(struct ippool_t *this) {
-  int n;
+  int n = 0;
   printf("ippool_printaddr\n");
   printf("Firstdyn %d\n", this->firstdyn - this->member);
   printf("Lastdyn %d\n",  this->lastdyn - this->member);
@@ -103,8 +103,8 @@ int ippool_printaddr(struct ippool_t *this) {
 
 int ippool_hashadd6(struct ippool_t *this, struct ippoolm_t *member)
 {
-  uint32_t hash;
-  struct ippoolm_t *p;
+  uint32_t hash = 0;
+  struct ippoolm_t *p = NULL;
   struct ippoolm_t *p_prev = NULL;
 
   /* Insert into hash table */
@@ -126,8 +126,8 @@ int ippool_hashadd6(struct ippool_t *this, struct ippoolm_t *member)
 }
 
 int ippool_hashadd(struct ippool_t *this, struct ippoolm_t *member) {
-  uint32_t hash;
-  struct ippoolm_t *p;
+  uint32_t hash = 0;
+  struct ippoolm_t *p = NULL;
   struct ippoolm_t *p_prev = NULL; 
 
   /* Insert into hash table */
@@ -143,8 +143,8 @@ int ippool_hashadd(struct ippool_t *this, struct ippoolm_t *member) {
 
 int ippool_hashdel6(struct ippool_t *this, struct ippoolm_t *member) 
 {
-  uint32_t hash;
-  struct ippoolm_t *p;
+  uint32_t hash = 0;
+  struct ippoolm_t *p = NULL;
   struct ippoolm_t *p_prev = NULL;
 
   /* Find in hash table */
@@ -175,8 +175,8 @@ int ippool_hashdel6(struct ippool_t *this, struct ippoolm_t *member)
 
 
 int ippool_hashdel(struct ippool_t *this, struct ippoolm_t *member) {
-  uint32_t hash;
-  struct ippoolm_t *p;
+  uint32_t hash = 0;
+  struct ippoolm_t *p = NULL;
   struct ippoolm_t *p_prev = NULL; 
 
   /* Find in hash table */
@@ -212,12 +212,10 @@ unsigned long int ippool_hash6(struct in6_addr *addr)
   return lookup((unsigned char*) &addr->s6_addr, sizeof(addr->s6_addr), 0);
 }
 
-
 void ippool_getv6suffix(struct in6_addr *suffix, struct in6_addr *addr, int mask)
 {
         uint32_t val[4];
-        int i;
-
+        int i = 0;
 
         if(mask <= 32) {
                 val[0] = 0xffffffff >> (32 - mask);
@@ -241,16 +239,11 @@ void ippool_getv6suffix(struct in6_addr *suffix, struct in6_addr *addr, int mask
                 val[3] = 0xffffffff >> (128 - mask);
         }
 
-
         for(i=0;i<4;i++) 
-                suffix->s6_addr32[i] = addr->s6_addr32[i] & ~val[i];
-        
-
+				{
+        	suffix->s6_addr32[i] = addr->s6_addr32[i] & ~val[i];
+				}
 }
-
-
-
-
 
 /* Get IP address and mask */
 int ippool_aton(struct in_addr *addr, struct in_addr *mask,
@@ -261,9 +254,9 @@ int ippool_aton(struct in_addr *addr, struct in_addr *mask,
 
   unsigned int a1, a2, a3, a4;
   unsigned int m1, m2, m3, m4;
-  int c;
-  int m;
-  int masklog;
+  int c = 0;
+  int m = 0;
+  int masklog = 0;
   
   /* To avoid unused parameter warning */
   number = 0;
@@ -314,17 +307,13 @@ int ippool_aton(struct in_addr *addr, struct in_addr *mask,
 int ippool_atonv6(struct in6_addr *prefix, int *prefixlen,  int *mask,
 		char *pool) {
 
-
-
-  char *addr;
+  char *addr = NULL;
   char *ptr = NULL;
-  unsigned int m;
+  unsigned int m = 0;
 
   addr = strtok_r(pool, "/", &ptr);
   m = strtol(ptr, NULL, 10);
   
-	     
-	     
   if(addr == NULL || ptr == NULL) {
   	sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Invalid format for prefix");
     return -1; /* Invalid Format */
@@ -338,11 +327,8 @@ int ippool_atonv6(struct in6_addr *prefix, int *prefixlen,  int *mask,
   *prefixlen = m / 8;
   *mask = m;
   
-
-  
   return 0;
 }
-
 
 /* Create new address pool */
 int ippool_new(struct ippool_t **this, char *dyn,  char *stat, 
@@ -350,15 +336,15 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
 
   /* Parse only first instance of pool for now */
 
-  int i;
+  int i = 0;
   struct in_addr addr;
   struct in_addr mask;
   struct in_addr stataddr;
   struct in_addr statmask;
-  unsigned int m;
-  int listsize;
-  int dynsize;
-  int statsize;
+  unsigned int m = 0;
+  int listsize = 0;
+  int dynsize = 0;
+  int statsize = 0;
   /* [SV] */
   int ipv6size=32;
 
@@ -517,7 +503,6 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
 }
 
 
-
 /* Delete existing address pool */
 int ippool_free(struct ippool_t *this) {
   free(this->hash);
@@ -529,8 +514,8 @@ int ippool_free(struct ippool_t *this) {
 /* Find an IP address in the pool */
 int ippool_getip6(struct ippool_t *this, struct ippoolm_t **member, struct in6_addr *addr) 
 {
-  struct ippoolm_t *p;
-  uint32_t hash;
+  struct ippoolm_t *p = NULL;
+  uint32_t hash = 0;
 
   /* Find in hash table */
   hash = ippool_hash6(addr) & this->hashmask;
@@ -553,8 +538,8 @@ int ippool_getip6(struct ippool_t *this, struct ippoolm_t **member, struct in6_a
 /* Find an IP address in the pool */
 int ippool_getip(struct ippool_t *this, struct ippoolm_t **member,
 		 struct in_addr *addr) {
-  struct ippoolm_t *p;
-  uint32_t hash;
+  struct ippoolm_t *p = NULL;
+  uint32_t hash = 0;
 
   /* Find in hash table */
   hash = ippool_hash4(addr) & this->hashmask;
@@ -630,9 +615,9 @@ int ippool_newip6(struct ippool_t* this, struct ippoolm_t** member, struct in6_a
 **/
 int ippool_newip(struct ippool_t *this, struct ippoolm_t **member,
 		 struct in_addr *addr, int statip) {
-  struct ippoolm_t *p;
+  struct ippoolm_t *p = NULL;
   struct ippoolm_t *p2 = NULL;
-  uint32_t hash;
+  uint32_t hash = 0;
 
   /* If static:
    *   Look in dynaddr. 

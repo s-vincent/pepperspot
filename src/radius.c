@@ -81,7 +81,7 @@
 #include "md5.h"
 
 int radius_printqueue(struct radius_t *this) {
-  int n;
+  int n = 0;
   printf("next %d, first %d, last %d\n", 
 	 this->next, this->first, this ->last);
 
@@ -106,17 +106,17 @@ int radius_printqueue(struct radius_t *this) {
 int radius_hmac_md5(struct radius_t *this, struct radius_packet_t *pack,
 		uint8_t *dst) {
   unsigned char digest[RADIUS_MD5LEN];
-  int length;
+  int length = 0;
 
   MD5_CTX context;
 
-  uint8_t *key;
-  int key_len;
+  uint8_t *key = NULL;
+  int key_len = 0;
 
   unsigned char k_ipad[65];
   unsigned char k_opad[65];
   unsigned char tk[RADIUS_MD5LEN];
-  int i;
+  int i = 0;
 
   if (this->secretlen > 64) { /* TODO: If Microsoft truncate to 64 instead */
     MD5Init(&context);
@@ -219,7 +219,7 @@ int radius_authresp_authenticator(struct radius_t *this,
  */
 int radius_queue_in(struct radius_t *this, struct radius_packet_t *pack,
 		    void *cbp) {
-  struct timeval *tv;
+  struct timeval *tv = NULL;
   struct radius_attr_t *ma = NULL; /* Message authenticator */
 
   if (this->debug) printf("radius_queue_in\n");
@@ -330,8 +330,7 @@ int radius_queue_out(struct radius_t *this, struct radius_packet_t *pack,
  * Recalculate the timeout value of a packet in the queue.
  */
 int radius_queue_reschedule(struct radius_t *this, int id) {
-  struct timeval *tv;
-  
+  struct timeval *tv = NULL;
 
   if (this->queue[id].state != 1) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -498,7 +497,7 @@ int radius_timeout(struct radius_t *this) {
   struct sockaddr_in addr;
   struct sockaddr_in6 addr6;
   struct radius_packet_t pack_req;
-  void *cbp;
+  void *cbp = NULL;
   int ipv6 = this->ouraddr.ss_family == AF_INET6 ? 1 : 0;
 
   /*printf("Retrans: New beginning %d\n", (int) now);*/
@@ -635,11 +634,11 @@ int
 radius_addattr(struct radius_t *this, struct radius_packet_t *pack, 
 	       uint8_t type, uint32_t vendor_id, uint8_t vendor_type,
 	       uint32_t value, uint8_t *data, uint16_t dlen) {
-  struct radius_attr_t *a;
+  struct radius_attr_t *a = NULL;
   uint16_t length = ntohs(pack->length);
-  uint8_t vlen;
+  uint8_t vlen = 0;
   char passwd[RADIUS_PWSIZE];
-  int pwlen;
+  int pwlen = 0;
 
   a = (struct radius_attr_t*) ((char *) pack + length); /* cast with (char *) to avoid use of void* in arithmetic warning */
 
@@ -738,9 +737,9 @@ int
 radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack, 
 	       uint8_t type, uint32_t vendor_id, uint8_t vendor_type,
 	       struct in6_addr value, uint8_t *data, uint16_t dlen) {
-  struct radius_attrv6_t *a;
+  struct radius_attrv6_t *a = NULL;
   uint16_t length = ntohs(pack->length);
-  uint8_t vlen;
+  uint8_t vlen = 0;
   
   /* To avoid unused parameter warning */
   this = NULL;
@@ -854,8 +853,8 @@ int
 radius_getattr(struct radius_packet_t *pack, struct radius_attr_t **attr,
 	       uint8_t type, uint32_t vendor_id, uint8_t vendor_type,
 	       int instance) {
-  struct radius_attr_t *t;
-/*  struct radius_attr_t *v;  TODO: Loop through vendor specific */
+  struct radius_attr_t *t = NULL;
+/*  struct radius_attr_t *v = NULL;  TODO: Loop through vendor specific */
   int offset = 0;
   int count = 0;
 
@@ -871,35 +870,33 @@ radius_getattr(struct radius_packet_t *pack, struct radius_attr_t **attr,
     do {
       t = (struct radius_attr_t*) (((char *) &(pack->payload)) + offset);  /* cast with (char *) to avoid use of void* in arithmetic warning */
       if (0) {
-	printf("radius_getattr %d %d %d %.2x %.2x \n", t->t, t->l, 
-	       ntohl(t->v.vv.i), (int) t->v.vv.t, (int) t->v.vv.l);
+				printf("radius_getattr %d %d %d %.2x %.2x \n", t->t, t->l, 
+						ntohl(t->v.vv.i), (int) t->v.vv.t, (int) t->v.vv.l);
       }
-      if ((t->t == type) && (ntohl(t->v.vv.i) == vendor_id) && 
-	  (t->v.vv.t == vendor_type)) {
-	if (count == instance) {
-	  *attr = (struct radius_attr_t *) &t->v.vv.t;
-	  if (0) printf("Found\n");
-	  return 0;
-	}
-	else {
-	  count++;
-	}
+      if ((t->t == type) && (ntohl(t->v.vv.i) == vendor_id) && (t->v.vv.t == vendor_type)) {
+				if (count == instance) {
+			  *attr = (struct radius_attr_t *) &t->v.vv.t;
+			  if (0) printf("Found\n");
+			  return 0;
+				}
+				else {
+			  count++;
+				}
       }
       offset +=  t->l;
-    } while (offset < (ntohs(pack->length)-RADIUS_HDRSIZE)); /* TODO */
-  }
-
+  	} while (offset < (ntohs(pack->length)-RADIUS_HDRSIZE)); /* TODO */
+	}
   else {     /* Need to check pack -> length */
     do {
       t = (struct radius_attr_t*) (((char *) &(pack->payload)) + offset); /* cast with (char *) to avoid use of void* in arithmetic warning */
       if (t->t == type) {
-	if (count == instance) {
-	  *attr = t;
-	  return 0;
-	}
-	else {
-	  count++;
-	}
+				if (count == instance) {
+	  			*attr = t;
+			  	return 0;
+				}
+				else {
+		  		count++;
+				}
       }
       offset +=  t->l;
     } while (offset < (ntohs(pack->length)-RADIUS_HDRSIZE)); /* TODO */
@@ -918,8 +915,8 @@ int
 radius_getattrv6(struct radius_packet_t *pack, struct radius_attrv6_t **attr,
 	       uint8_t type, uint32_t vendor_id, uint8_t vendor_type,
 	       int instance) {
-  struct radius_attrv6_t *t;
-/*  struct radius_attrv6_t *v;  TODO: Loop through vendor specific */
+  struct radius_attrv6_t *t = NULL;
+/*  struct radius_attrv6_t *v = NULL;  TODO: Loop through vendor specific */
   int offset = 0;
   int count = 0;
 
@@ -935,35 +932,33 @@ radius_getattrv6(struct radius_packet_t *pack, struct radius_attrv6_t **attr,
     do {
       t = (struct radius_attrv6_t*) (((char *) &(pack->payload)) + offset); /* cast with (char *) to avoid use of void* in arithmetic warning */
       if (0) {
-	printf("radius_getattrv6 %d %d %d %.2x %.2x \n", t->t, t->l, 
+				printf("radius_getattrv6 %d %d %d %.2x %.2x \n", t->t, t->l, 
 	       ntohl(t->v.vv.i), (int) t->v.vv.t, (int) t->v.vv.l);
       }
-      if ((t->t == type) && (ntohl(t->v.vv.i) == vendor_id) && 
-	  (t->v.vv.t == vendor_type)) {
-	if (count == instance) {
-	  *attr = (struct radius_attrv6_t *) &t->v.vv.t;
-	  if (0) printf("Found\n");
-	  return 0;
-	}
-	else {
-	  count++;
-	}
+      if ((t->t == type) && (ntohl(t->v.vv.i) == vendor_id) && (t->v.vv.t == vendor_type)) {
+				if (count == instance) {
+	  			*attr = (struct radius_attrv6_t *) &t->v.vv.t;
+	  			if (0) printf("Found\n");
+	  			return 0;
+				}
+				else {
+	  			count++;
+				}
       }
       offset +=  t->l;
     } while (offset < (ntohs(pack->length)-RADIUS_HDRSIZE)); /* TODO */
   }
-
   else {     /* Need to check pack -> length */
     do {
       t = (struct radius_attrv6_t*) (((char *) &(pack->payload)) + offset); /* cast with (char *) to avoid use of void* in arithmetic warning */
       if (t->t == type) {
-	if (count == instance) {
-	  *attr = t;
-	  return 0;
-	}
-	else {
-	  count++;
-	}
+				if (count == instance) {
+	  			*attr = t;
+	  			return 0;
+				}
+				else {
+	  			count++;
+				}
       }
       offset +=  t->l;
     } while (offset < (ntohs(pack->length)-RADIUS_HDRSIZE)); /* TODO */
@@ -980,7 +975,7 @@ radius_getattrv6(struct radius_packet_t *pack, struct radius_attrv6_t **attr,
  */
 int 
 radius_countattr(struct radius_packet_t *pack, uint8_t type) {
-  struct radius_attr_t *t;
+  struct radius_attr_t *t = NULL;
   int offset = 0;
   int count = 0;
   
@@ -1026,10 +1021,11 @@ radius_cmpattrv6(struct radius_attrv6_t *t1, struct radius_attrv6_t *t2) {
 int radius_keydecode(struct radius_t *this, uint8_t *dst, int dstsize,
 		     int *dstlen, uint8_t *src, int srclen,
 		     uint8_t *authenticator, char *secret, int secretlen) {
-  int i, n;
+  int i = 0;
+	int n = 0;
   MD5_CTX context;
   unsigned char b[RADIUS_MD5LEN];
-  int blocks;
+  int blocks = 0;
 
   /* To avoid unused parameter warning */
   this = NULL;
@@ -1095,10 +1091,11 @@ int radius_keydecode(struct radius_t *this, uint8_t *dst, int dstsize,
 int radius_keyencode(struct radius_t *this, uint8_t *dst, int dstsize,
 		     int *dstlen, uint8_t *src, int srclen,
 		     uint8_t *authenticator, char *secret, int secretlen) {
-  int i, n;
+  int i = 0;
+	int n = 0;
   MD5_CTX context;
   unsigned char b[RADIUS_MD5LEN];
-  int blocks;
+  int blocks = 0;
 
   blocks = (srclen + 1) / RADIUS_MD5LEN;
   if ((blocks * RADIUS_MD5LEN) < (srclen +1)) blocks++;
@@ -1155,7 +1152,8 @@ int radius_keyencode(struct radius_t *this, uint8_t *dst, int dstsize,
 int radius_pwdecode(struct radius_t *this, uint8_t *dst, int dstsize,
 		    int *dstlen, uint8_t *src, int srclen, 
 		    uint8_t *authenticator, char *secret, int secretlen) {
-  int i, n;
+  int i = 0;
+	int n = 0;
   MD5_CTX context;
   unsigned char output[RADIUS_MD5LEN];
 
@@ -1241,7 +1239,8 @@ int radius_pwdecode(struct radius_t *this, uint8_t *dst, int dstsize,
 int radius_pwencode(struct radius_t *this, uint8_t *dst, int dstsize,
 		    int *dstlen, uint8_t *src, int srclen, 
 		    uint8_t *authenticator, char *secret, int secretlen) {
-  int i, n;
+  int i = 0;
+	int n = 0;
   MD5_CTX context;
   unsigned char output[RADIUS_MD5LEN];
 
@@ -1384,8 +1383,6 @@ int radius_new(struct radius_t **this,
 		return -1;
 	}
  
-
-  
   if(ipv6) {
     memset(&addr, 0, sizeof(addr));
     addr6.sin6_family = listen_addr->ss_family;
@@ -1410,7 +1407,6 @@ int radius_new(struct radius_t **this,
   
   /* Initialise proxy socket */
   if (proxysecret) {
-  	
   	
     if(ipv6) {
     	memset(&addr, 0, sizeof(addr));
@@ -1705,8 +1701,6 @@ int radius_coaresp(struct radius_t *this,
 }
 
 
-
-
 /* 
  * radius_default_pack()
  * Return an empty packet which can be used in subsequent to 
@@ -1780,10 +1774,10 @@ int radius_acctcheck(struct radius_t *this, struct radius_packet_t *pack)
  * Read and process a received radius packet.
  */
 int radius_decaps(struct radius_t *this) {
-  int status;
+  int status = 0;
   struct radius_packet_t pack;
   struct radius_packet_t pack_req;
-  void *cbp;
+  void *cbp = NULL;
   struct sockaddr_storage addr_ss;
   struct sockaddr_in addr;
   struct sockaddr_in6 addr6;
@@ -1974,7 +1968,7 @@ int radius_decaps(struct radius_t *this) {
  * Read and process a received radius packet.
  */
 int radius_proxy_ind(struct radius_t *this) {
-  int status;
+  int status = 0;
   struct radius_packet_t pack;
   struct sockaddr_storage addr;
   socklen_t fromlen = sizeof(addr);

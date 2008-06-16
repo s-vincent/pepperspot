@@ -1054,7 +1054,7 @@ int tun6_encaps(struct tun6_t* this, void* pack, unsigned int len)
 int tun6_setaddr(struct tun6_t *this, struct in6_addr *addr, uint8_t prefixlen)
 {
 	int code=tun6_addAddress(this->device, addr, prefixlen);
-        /* turn the interface on */
+  /* turn the interface on */
 	tun6_sifflags(this, IFF_UP | IFF_RUNNING);
 	return code;
 }
@@ -1087,7 +1087,7 @@ int tun6_runscript(struct tun6_t *tun, char* script)
 int tun6_sifflags(struct tun6_t *this, int flags)
 {
     struct ifreq ifr;
-    int fd;
+    int fd = -1;
 
     memset (&ifr, '\0', sizeof (ifr));
     ifr.ifr_flags = flags;

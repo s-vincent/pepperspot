@@ -98,8 +98,8 @@ void sys_errpack(int pri, char *fn, int ln, int en, struct sockaddr_in *peer,
   va_list args;
   char buf[SYSERR_MSGSIZE];
   char buf2[SYSERR_MSGSIZE];
-  unsigned int n;
-  int pos;
+  unsigned int n = 0;
+  int pos = 0;
   
   va_start(args, fmt);
   vsnprintf(buf, SYSERR_MSGSIZE, fmt, args);

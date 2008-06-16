@@ -172,7 +172,7 @@ void proxy_nd_stop(int ifindex, struct in6_addr *target, int bu_flags)
 static struct nd_opt_hdr *nd_opt_create(struct iovec *iov, uint8_t type,
 					uint16_t len, uint8_t *value)
 {
-	struct nd_opt_hdr *opt;
+	struct nd_opt_hdr *opt = NULL;
 	int hlen = sizeof(struct nd_opt_hdr);
 
 	/* len must be lenght(value) in bytes */
@@ -192,8 +192,8 @@ static struct nd_opt_hdr *nd_opt_create(struct iovec *iov, uint8_t type,
 static int nd_get_l2addr(int ifindex, uint8_t *addr)
 {
 	struct ifreq ifr;
-	int fd;
-	int res;
+	int fd = -1;
+	int res = 0;
  
 	fd = socket(PF_PACKET, SOCK_DGRAM, 0);
 	if (fd < 0) return -1;
@@ -217,9 +217,9 @@ static int nd_get_l2addr(int ifindex, uint8_t *addr)
 static uint16_t csum(const void *phdr, const void *data, socklen_t datalen)
 {
 	register unsigned long sum = 0;
-	socklen_t count;
-	uint16_t *addr;
-	int i;
+	socklen_t count = 0;
+	uint16_t *addr = NULL;
+	int i = 0;
 
 	/* caller must make sure datalen is even */
 
@@ -261,8 +261,8 @@ static int ndisc_send_unspec(int type, int oif, const struct in6_addr *dest)
 	} frame;
 
 	struct msghdr msgh;
-	struct cmsghdr *cmsg;
-	struct in6_pktinfo *pinfo;
+	struct cmsghdr *cmsg = NULL;
+	struct in6_pktinfo *pinfo = NULL;
 	struct sockaddr_in6 dst;
 	char cbuf[CMSG_SPACE(sizeof(*pinfo))];
 	struct iovec iov;
@@ -345,8 +345,8 @@ int ndisc_send_rs(int ifindex, const struct in6_addr *src,
 {
 	struct iovec iov[2];
 	uint8_t l2addr[32];
-	int len;
-	int res;
+	int len = 0;
+	int res = 0;
 
 	if (IN6_IS_ADDR_UNSPECIFIED(src))
 		return ndisc_send_unspec(ND_ROUTER_SOLICIT, ifindex, dst);
@@ -375,8 +375,8 @@ int ndisc_send_ns(int ifindex, const struct in6_addr *src,
 	struct nd_neighbor_solicit *ns;
 	struct iovec iov[2];
 	uint8_t l2addr[32];
-	int len;
-	int res;
+	int len = 0;
+	int res = 0;
 
 	if (IN6_IS_ADDR_UNSPECIFIED(src))
 		return ndisc_send_unspec(ND_NEIGHBOR_SOLICIT, ifindex, target);
@@ -404,10 +404,10 @@ int ndisc_send_na(int ifindex, const struct in6_addr *src,
 		  const struct in6_addr *dst,
 		  const struct in6_addr *target, uint32_t flags)
 {
-	struct nd_neighbor_advert *na;
+	struct nd_neighbor_advert *na = NULL;
 	struct iovec iov[2];
 	uint8_t l2addr[32];
-	int len;
+	int len = 0;
 
 	memset(iov, 0, sizeof(iov));
 
@@ -435,7 +435,7 @@ int ndisc_do_dad(int ifi, struct in6_addr *addr, int do_ll)
 {
 	struct in6_pktinfo pinfo;
 	struct sockaddr_in6 saddr;
-	struct nd_neighbor_advert *hdr;
+	struct nd_neighbor_advert *hdr = NULL;
 	struct icmp6_filter filter;
 	struct in6_addr solicit, ll;
 	unsigned char msg[MAX_PKT_LEN];

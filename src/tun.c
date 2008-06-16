@@ -102,17 +102,6 @@
 #include <linux/rtnetlink.h>
 
 
-/* [SV] : taken from linux/ipv6.h
- * if we include this file, in cause redefinition...
- */
-struct in6_ifreq
-{
-    struct in6_addr ifr6_addr;
-    uint32_t        ifr6_prefixlen;
-    int             ifr6_ifindex;
-};
-
-
 #elif defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
 #include <net/if.h>
 #include <net/if_tun.h>
@@ -155,7 +144,7 @@ int tun_nlattr(struct nlmsghdr *n, int nsize, int type, void *d, int dlen)
 int tun_gifindex(struct tun_t *this, unsigned int *ifindex)
 {
     struct ifreq ifr;
-    int fd;
+    int fd = -1;
 
     memset (&ifr, '\0', sizeof (ifr));
     ifr.ifr_addr.sa_family = AF_INET;
@@ -185,7 +174,7 @@ int tun_gifindex(struct tun_t *this, unsigned int *ifindex)
 int tun_sifflags(struct tun_t *this, int flags)
 {
     struct ifreq ifr;
-    int fd;
+    int fd = -1;
 
     memset (&ifr, '\0', sizeof (ifr));
     ifr.ifr_flags = flags;
@@ -221,8 +210,8 @@ int tun_addroute2(struct tun_t *this,
   } req;
 
   struct sockaddr_nl local;
-  int addr_len;
-  int fd;
+  int addr_len = 0;
+  int fd = -1;
   int status;
   struct sockaddr_nl nladdr;
   struct iovec iov;
@@ -319,9 +308,9 @@ int tun_addaddr(struct tun_t *this,
     } req;
 
     struct sockaddr_nl local;
-    int addr_len;
-    int fd;
-    int status;
+    int addr_len = 0;
+    int fd = -1;
+    int status = 0;
 
     struct sockaddr_nl nladdr;
     struct iovec iov;
@@ -488,7 +477,7 @@ int tun_setaddr(struct tun_t *this,
                 struct in_addr *netmask)
 {
     struct ifreq   ifr;
-    int fd;
+    int fd = -1;
 
     memset (&ifr, '\0', sizeof (ifr));
     ifr.ifr_addr.sa_family = AF_INET;
@@ -610,7 +599,7 @@ int tun_route(struct tun_t *this,
 #if defined(__linux__)
 
     struct rtentry r;
-    int fd;
+    int fd = -1;
 
     memset (&r, '\0', sizeof (r));
     r.rt_flags = RTF_UP | RTF_GATEWAY; /* RTF_HOST not set */
@@ -663,8 +652,8 @@ int tun_route(struct tun_t *this,
         struct sockaddr_in mask;
     } req;
 
-    int fd;
-    struct rt_msghdr *rtm;
+    int fd = -1;
+    struct rt_msghdr *rtm = NULL;
 
     if ((fd = socket(AF_ROUTE, SOCK_RAW, 0)) == -1)
     {
@@ -749,14 +738,14 @@ int tun_new(struct tun_t **tun)
 
 #elif defined(__FreeBSD__) defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
     char devname[IFNAMSIZ+5]; /* "/dev/" + ifname */
-    int devnum;
+    int devnum = 0;
     struct ifaliasreq areq;
-    int fd;
+    int fd = -1;
 
 #elif defined(__sun__)
     int if_fd, ppa = -1;
     static int ip_fd = 0;
-    int muxid;
+    int muxid = 0;
     struct ifreq ifr;
 
 #else
@@ -954,7 +943,7 @@ int tun_decaps(struct tun_t *this)
 #if defined(__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
 
     unsigned char buffer[PACKET_MAX];
-    int status;
+    int status = 0;
 
     if ((status = read(this->fd, buffer, sizeof(buffer))) <= 0)
     {
@@ -1029,7 +1018,7 @@ int tun_runscript(struct tun_t *tun, char* script)
     char saddr[TUN_ADDRSIZE];
     char snet[TUN_ADDRSIZE];
     char smask[TUN_ADDRSIZE];
-    int status;
+    int status = 0;
     struct in_addr net;
 
     net.s_addr = tun->addr.s_addr & tun->netmask.s_addr;
@@ -1094,100 +1083,4 @@ int tun_runscript(struct tun_t *tun, char* script)
 
     exit(0);
 }
-
-#if 0
-
-/**
- * \brief Set a IPv6 address.
- * \param this the tun_t structure
- * \param addr the address to set
- * \param dstaddr the destination address
- * \param prefixlen the length of the prefix
- * \return 0 if success, -1 otherwise
- */
-int tun_setaddrv6(struct tun_t* this, struct in6_addr* addr, uint8_t prefixlen)
-{
-    struct in6_ifreq ifr;
-    int fd;
-
-    memset (&ifr, 0x00, sizeof (ifr));
-
-    /* Create a channel to the NET kernel. */
-    if ((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
-    {
-        printf("error socket\n");
-        return -1;
-    }
-
-    /* copy the IPv6 address into this ifreq */
-    memcpy(&ifr.ifr6_addr, addr, sizeof(struct in6_addr));
-    ifr.ifr6_prefixlen=prefixlen;
-    ifr.ifr6_ifindex=if_nametoindex(this->devname);
-
-    if (ioctl(fd, SIOCSIFADDR, (void *) &ifr) < 0)
-    {
-        if (errno != EEXIST)
-        {
-            sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-                    "ioctl(SIOCSIFADDR) failed");
-        }
-        else
-        {
-            sys_err(LOG_WARNING, __FILE__, __LINE__, errno,
-                    "ioctl(SIOCSIFADDR): Address already exists");
-        }
-        close(fd);
-        return -1;
-    }
-    close(fd);
-
-    /* set UP the interface (in case we are IPv6 only) */
-    tun_sifflags(this, IFF_UP | IFF_RUNNING);
-    return 0;
-}
-
-
-/**
- * \brief Add an IPv6 route.
- * \param this the tun_t structure
- * \param dst the destination address
- * \param gateway the gateway to route the packet for the "dst"
- * \param prefixlen length of the prefix
- * \return 0 if success, -1 otherwise
- */
-int tun_addroutev6(struct tun_t* this, struct in6_addr* dst, struct in6_addr* gateway, uint8_t prefixlen)
-{
-    int sock=-1;
-    int code=-1;
-    char buf[1024];
-    struct in6_rtmsg* rtm=NULL;
-
-    rtm=(struct in6_rtmsg*)buf;
-    memset(buf, 0x00, sizeof(buf));
-    rtm->rtmsg_type=0;
-    rtm->rtmsg_metric=1;
-    rtm->rtmsg_dst_len=prefixlen;
-    rtm->rtmsg_src_len=0;
-    rtm->rtmsg_ifindex=if_nametoindex(this->devname);
-    rtm->rtmsg_flags=RTF_UP | RTF_GATEWAY;
-
-    memcpy(&rtm->rtmsg_dst, dst, sizeof(struct in6_addr));
-    memcpy(&rtm->rtmsg_gateway, gateway, sizeof(struct in6_addr));
-
-    sock=socket(AF_INET6, SOCK_DGRAM, 0);
-    if (sock==-1)
-    {
-        /*
-            (sockvs_error_get_struct())->type=SOCKVS_ERROR_ERRNO;
-            (sockvs_error_get_struct())->u.errnum=errno;
-        */
-        return -1;
-    }
-
-    code=ioctl(sock, SIOCADDRT, rtm);
-    close(sock);
-
-    return code!=-1 ? 0 : -1;
-}
-#endif
 

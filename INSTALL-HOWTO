@@ -64,39 +64,34 @@ You can download the source tarball on http://www.litech.org/radvd/
 
 This is an exemple of the /etc/radvd.conf configuration file:
 
-##
-# \file radvd.conf
-# \brief RAs and DNS broadcasted over ath0
-# \author Sebastien Vincent and Thibault Van�on
-#
-
 interface ath0  
 {
-        AdvSendAdvert on;
-        AdvIntervalOpt on;
-        MinRtrAdvInterval 2;
-        MaxRtrAdvInterval 6;
-        prefix 2001:660:4701:f047::/64
-        {
-                AdvOnLink on;
-                AdvAutonomous on;
-                AdvRouterAddr on;
-        };
+  AdvSendAdvert on;
+  AdvIntervalOpt on;
+  MinRtrAdvInterval 2;
+  MaxRtrAdvInterval 6;
+  prefix 2001:db80:0000:1::/64
+  {
+  	AdvOnLink on;
+    AdvAutonomous on;
+    AdvRouterAddr on;
+	};
 
-	RDNSS 2001:660:2402::1 
+	RDNSS 2001:db80:0000:3::1 
 	{
 		AdvRDNSSPreference 8;
-                AdvRDNSSOpen off;
-                AdvRDNSSLifetime 30;
+    AdvRDNSSOpen off;
+    AdvRDNSSLifetime 30;
 	};
 };
 
-Replace interface, prefix and RDNSS lines with your own value, and launch Radvd with:
+Note in this example the DNS server is 2001:db80:0000:3::1.
+Replace interface, prefix and RDNSS lines with your own values, and launch radvd with:
 
 # radvd -C /etc/radvd.conf
 
 
-You don't need to attribute a network configuration to the wireless interface (ath0). It's PepperSpot's job.
+You don't need to attribute a network configuration to the wireless interface (ath0), it is PepperSpot's job.
 
 A captive portal must route packet of an authenticated user towards Internet. So the system must have the IPv6 forwarding enabled.
 You can turn it on with this:
@@ -111,7 +106,7 @@ net.ipv6.ip_forward=1
 IPv6 forwarding will disable the IPv6 autoconfiguration, so network configuration must be set staticly.
 Assuming that eth0 is the interface connected to the IPv6 network, type the following command and replace with your own value:
 
-# ip -6 addr add 2001:660:4701:f010::43/64 dev eth0
+# ip -6 addr add 2001:db80:0000:2::43/64 dev eth0
 
 We also need to know the route configuration to guide packets into Internet (replace with you route address value):
 
@@ -121,9 +116,9 @@ You can turn this configuration permanantly inserting the network configuration 
 
 auto eth0
 iface eth0 inet6 static
-        address 2001:660:4701:f010::43
+        address 2001:db80:0000:2::43
         netmask 64
-		gateway fe80::1:2:3:4
+				gateway fe80::1:2:3:4
         pre-up modprobe ipv6  # to be sure that ipv6 is enabled before we turn up the interface 
 
 Note that if the prefix is delegated only for the PepperSpot subnet, you surely need to install some routing protocol on the system. To do that, you can install Quagga, which is a software routing suite.
@@ -149,16 +144,16 @@ net.ipv4.ip_forward=1
 
 Configure the interface address and route (Replace with your parameters):
 
-# ip addr add 130.79.48.43/20 dev eth1
-# route add default gw 130.79.48.46 dev eth1
+# ip addr add 192.168.0.43/24 dev eth1
+# route add default gw 192.168.0.254 dev eth1
 
 You can put that in your /etc/network/interfaces file:
 
 auto eth1
 iface eth1 inet static
-	address	130.79.48.43
-	netmask	20
-	gateway	130.79.48.46
+	address	192.168.0.43
+	netmask 24
+	gateway	192.168.0.254
 
 
 
@@ -175,7 +170,7 @@ On debian:
 
 # apt-get install iptables
 
-or downlaod the last version on http://www.netfilter.org/
+or download the last version on http://www.netfilter.org/
 
 
 Compilation 
@@ -186,8 +181,7 @@ On debian, install it with:
 
 # apt-get install libc6-dev
 
-or downlaod it on http://www.gnu.org/software/libc/
-
+or download it on http://www.gnu.org/software/libc/
 
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -258,11 +252,11 @@ interface ath0
  ipv6 nd suppress-ra
 !
 interface eth0
- ipv6 address 2001:660:4701:f040:ffff::43/64
+ ipv6 address 2001:db80:0000:2::43/64
  ipv6 nd suppress-ra
 !
 interface eth1
- ip address 130.79.48.43/20
+ ip address 192.168.0.43/24
  ipv6 nd suppress-ra
 !
 interface eth2
@@ -307,12 +301,12 @@ router ripng
 network eth0
 redistribute connected
 redistribute static
-route 2001:660:4701:f047::/64
+route 2001:db80:0000:1::/64
 !
 line vty
 !
 
-In this file, we configure the RIPng protocol, indicating that we are able to route packet for 2001:660:4701:f047::/64 prefix on the eth0 interface.
+In this file, we configure the RIPng protocol, indicating that we are able to route packet for 2001:db80:0000:1::/64 prefix on the eth0 interface.
 
 For the both files, the first section will define the password for the configuration interfaces (vty).
 The enable password line indicate that a password is required to get the right to reconfigure the daemon.
@@ -488,21 +482,35 @@ Untar the PepperSpot source and compile it :
 # make 
 # make install
 
+OR check the SVN source : 
+
+# svn co https://pepperspot.svn.sourceforge.net/svnroot/pepperspot pepperspot 
+# cd pepperspot
+# autoconf && autoheader && autoconf -i && autoreconf -i && automake --add-missing
+# ./configure
+# make
+# make install
+
 Copy some configuration files
 
 # cp doc/pepper.conf /etc/
 # cp doc/hotspotlogin.cgi /usr/lib/cgi-bin/
+# chmod +x /usr/lib/cgi-bin/hotspotlogin.cgi
 
 For IPv4
 
 # cp doc/pepper.iptables /etc/
+# chmod +x /etc/pepper.iptables
 
 For IPv6
 
 # cp doc/pepper.ip6tables /etc/
+# chmod +x /etc/pepper.ip6tables
 
-Modify the /etc/pepper.iptables and/or /etc/pepper.ip6tables scripts and adapt $INTIF, $EXTIF and $EXTIF6 values regarding to your configuration.
-Configuration ¶
+
+Modify the /etc/pepper.iptables and/or /etc/pepper.ip6tables scripts and adapt $INTIF (interface connecte to the access point or the wireless interface), $EXTIF4 (interface connected to the IPv4 LAN) and $EXTIF6 (interface connected to the IPv6 LAN) values regarding to your configuration. Note that for dual stack confgiuration $EXTIF4 and $EXTIF6 could have the same value.
+
+Configuration
 
 Depending to the mode, you must configure some parameters on the /etc/pepper.conf file.
 
@@ -521,18 +529,18 @@ For IPv6
 
 - Modify staticipv6 (the IPv6 address of the tun6 interface created by PepperSpot):
 
-staticipv6 2001:660:4701:f047::1234
+staticipv6 2001:db08:0000:1::1234
 
 
 - Modify uamserver6 (don't forget the brackets):
 
-uamserver6 https://[2001:660:4701:f047::1234]/cgi-bin/hotspotlogin.cgi
+uamserver6 https://[2001:db80:0000:1::1234]/cgi-bin/hotspotlogin.cgi
 
 The IPv6 address of the url must be the same than staticipv6
 
 - Modify prefix:
 
-prefix 2001:660:4701:f047::/64
+prefix 2001:db80:0000:1::/64
 
 It must be the prefix of staticipv6
 
@@ -578,11 +586,9 @@ uamsecret testing234
 
 and update $uamsecret in /usr/lib/cgi-bin/hotspotlogin.cgi with the same value.
 
-Others parameters of the /etc/pepper.conf file are describes on the man. Type:
+Others parameters of the /etc/pepper.conf file are describes on the man. 
 
 # man pepper
-
-
 
 
 ++++++++++++++++++++++++++++++++

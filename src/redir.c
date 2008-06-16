@@ -104,14 +104,13 @@ static int keep_going = 1;   /* OK as global variable for child process */
 static int termstate = REDIR_TERM_INIT;    /* When we were terminated */
 
 char credits[] =
-"<H1>PepperSpot " VERSION "</H1><p>Copyright 2002-2005 Mondru AB</p><p> "
+"<H1>PepperSpot " VERSION "</H1><p>Copyright 2008 ULP</p><p> "
 "PepperSpot is an Open Source captive portal or wireless LAN access point "
 "controller developed by the community at "
 "<a href=\"http://www.pepperspot.org\">www.pepperspot.org</a> and licensed "
 "under the GPL.</p><p>PepperSpot acknowledges all community members, "
 "especially those mentioned at "
 "<a href=\"http://www.pepperspot.org/credits.html\">http://www.pepperspot.org/credits.html</a>.";
-
 
 
 /* redir signal handler */
@@ -133,12 +132,9 @@ static void redir_sig_handler(int signum) {
 	}
 }
 
-
-
-
 /* Generate a 16 octet random challenge */
 static int redir_challenge(unsigned char *dst) {
-  FILE *file;
+  FILE *file = NULL;
 
 
   if ((file = fopen("/dev/urandom", "r")) == NULL) {
@@ -162,8 +158,8 @@ static int redir_challenge(unsigned char *dst) {
 static int redir_hextochar(char *src, unsigned char * dst) {
 
   char x[3];
-  int n;
-  int y;
+  int n = 0;
+  int y = 0;
   
   for (n=0; n< REDIR_MD5LEN; n++) {
     x[0] = src[n*2+0];
@@ -183,7 +179,7 @@ static int redir_hextochar(char *src, unsigned char * dst) {
 static int redir_chartohex(unsigned char *src, char *dst) {
 
   char x[3];
-  int n;
+  int n = 0;
   
   for (n=0; n<REDIR_MD5LEN; n++) {
     snprintf(x, 3, "%.2x", src[n]);
@@ -199,7 +195,7 @@ static int redir_chartohex(unsigned char *src, char *dst) {
 static int redir_urlencode( char *src, int srclen, char *dst, int dstsize) {
 
   char x[3];
-  int n;
+  int n = 0;
   int i = 0;
   
   for (n=0; n<srclen; n++) {
@@ -238,7 +234,7 @@ static int redir_urldecode(  char *src, int srclen, char *dst, unsigned int dsts
   char x[3];
   int n = 0;
   unsigned int i = 0;
-  unsigned int c;
+  unsigned int c = 0;
 
   while (n<srclen) {
     if (src[n] == '%') {
@@ -662,97 +658,94 @@ int redir_new(struct redir_t **redir,
 	(*redir)->addr = *addr; 
 
     if (((*redir)->fd  = socket(AF_INET ,SOCK_STREAM ,0)) < 0) {
-		sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket() failed");
-		return -1;
-	}
+			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket() failed");
+			return -1;
+		}
 
 #if defined(__FreeBSD__)  || defined (__APPLE__)
 	  /* TODO: FreeBSD */
-	if (setsockopt((*redir)->fd, SOL_SOCKET, SO_REUSEPORT,
-			&optval, sizeof(optval))) {
-			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt() failed");
-		close((*redir)->fd);
-		return -1;
-	}
+		if (setsockopt((*redir)->fd, SOL_SOCKET, SO_REUSEPORT,
+				&optval, sizeof(optval))) {
+				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt() failed");
+			close((*redir)->fd);
+			return -1;
+		}
 #endif 
 
-	if (setsockopt((*redir)->fd, SOL_SOCKET, SO_REUSEADDR,
-			&optval, sizeof(optval))) {
-		sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt() failed");
-		close((*redir)->fd);
-		return -1;
-	}
+		if (setsockopt((*redir)->fd, SOL_SOCKET, SO_REUSEADDR,
+				&optval, sizeof(optval))) {
+			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt() failed");
+			close((*redir)->fd);
+			return -1;
+		}
 
-	while (bind((*redir)->fd, (struct sockaddr *)&address, sizeof(address))) {
-		if ((EADDRINUSE == errno) && (10 > n++)) {
-		sys_err(LOG_WARNING, __FILE__, __LINE__, 0, 
-			"UAM port already in use. Waiting for retry.");
-		if (sleep(30)) { /* In case we got killed */
-		close((*redir)->fd);
-		return -1;
+		while (bind((*redir)->fd, (struct sockaddr *)&address, sizeof(address))) {
+			if ((EADDRINUSE == errno) && (10 > n++)) {
+				sys_err(LOG_WARNING, __FILE__, __LINE__, 0, 
+					"UAM port already in use. Waiting for retry.");
+				if (sleep(30)) { /* In case we got killed */
+					close((*redir)->fd);
+					return -1;
+				}
+			}
+			else {
+				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "bind() failed");
+				close((*redir)->fd);
+				return -1;
+			}
 		}
-		}
-		else {
-		sys_err(LOG_ERR, __FILE__, __LINE__, errno, "bind() failed");
-		close((*redir)->fd);
-		return -1;
-		}
-	}
 
-	if (listen((*redir)->fd, REDIR_MAXLISTEN)) {
-		sys_err(LOG_ERR, __FILE__, __LINE__, errno, "listen() failed");
-		close((*redir)->fd);
-		return -1;
-	}
-	
+		if (listen((*redir)->fd, REDIR_MAXLISTEN)) {
+			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "listen() failed");
+			close((*redir)->fd);
+			return -1;
+		}
 	
   }
 
   if(addrv6) {
-	/* [SV] */
-	addressv6.sin6_family=AF_INET6;
-	inet_pton(AF_INET6, (char *)addrv6->s6_addr,&addressv6.sin6_addr);
-	addressv6.sin6_port=htons(port);
-	addressv6.sin6_flowinfo = htons(1);
-	/*addressv6.sin6_scope_id = htons(0);*/
+		/* [SV] */
+		addressv6.sin6_family=AF_INET6;
+		inet_pton(AF_INET6, (char *)addrv6->s6_addr,&addressv6.sin6_addr);
+		addressv6.sin6_port=htons(port);
+		addressv6.sin6_flowinfo = htons(1);
+		/*addressv6.sin6_scope_id = htons(0);*/
 #if defined(__FreeBSD__)  || defined (__APPLE__)
-	address.sin6_len = sizeof (struct sockaddr_in6);
+		address.sin6_len = sizeof (struct sockaddr_in6);
 #endif
 
-	memcpy(&(*redir)->addrv6, addressv6.sin6_addr.s6_addr, sizeof(struct in6_addr));
-   
-	if(((*redir)->fdv6=socket(AF_INET6, SOCK_STREAM, 0))<0)
-	{
-		sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket6() failed");
-		return -1;
-	}
+		memcpy(&(*redir)->addrv6, addressv6.sin6_addr.s6_addr, sizeof(struct in6_addr));
+	   
+		if(((*redir)->fdv6=socket(AF_INET6, SOCK_STREAM, 0))<0)
+		{
+			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket6() failed");
+			return -1;
+		}
+		
 	
-
-	if (setsockopt((*redir)->fdv6, SOL_SOCKET, SO_REUSEADDR,
-                 &optval, sizeof(optval))) {
-		sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt6() failed");
-		close((*redir)->fdv6);
-		close((*redir)->fd);
-		return -1;
-	}
-
-	if(bind((*redir)->fdv6, (struct sockaddr*)&addressv6, sizeof(addressv6))==-1)
-	{
-		sys_err(LOG_WARNING, __FILE__, __LINE__, errno, "Error bind6().");
-		close((*redir)->fd);
-		close((*redir)->fdv6);
-		return -1;
-	}
-
-	if(listen((*redir)->fdv6, REDIR_MAXLISTEN))
-	{
-		sys_err(LOG_ERR, __FILE__, __LINE__, errno, "listen6() failed");
-		close((*redir)->fd);
-		close((*redir)->fdv6);
-		return -1;
-	}
+		if (setsockopt((*redir)->fdv6, SOL_SOCKET, SO_REUSEADDR,
+	                 &optval, sizeof(optval))) {
+			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt6() failed");
+			close((*redir)->fdv6);
+			close((*redir)->fd);
+			return -1;
+		}
 	
-   
+		if(bind((*redir)->fdv6, (struct sockaddr*)&addressv6, sizeof(addressv6))==-1)
+		{
+			sys_err(LOG_WARNING, __FILE__, __LINE__, errno, "Error bind6().");
+			close((*redir)->fd);
+			close((*redir)->fdv6);
+			return -1;
+		}
+	
+		if(listen((*redir)->fdv6, REDIR_MAXLISTEN))
+		{
+			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "listen6() failed");
+			close((*redir)->fd);
+			close((*redir)->fdv6);
+			return -1;
+		}
 
   }
   
@@ -830,10 +823,10 @@ void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int pr
 /* Get the path of an HTTP request */
 static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsize) {
 
-  char *p1;
-  char *p2;
-  char *p3;
-  char *peol;
+  char *p1 = NULL;
+  char *p2 = NULL;
+  char *p3 = NULL;
+  char *peol = NULL;
   int dstlen = 0;
   
   /* To avoid unused parameter warning */
@@ -895,13 +888,13 @@ static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsiz
 /* Get the url of an HTTP request */
 static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize) {
 
-  char *p1;
-  char *p3;
-  char *peol;
-  char *path;
-  int pathlen;
-  char *host;
-  int hostlen;
+  char *p1 = NULL;
+  char *p3 = NULL;
+  char *peol = NULL;
+  char *path = NULL;
+  int pathlen = 0;
+  char *host = NULL;
+  int hostlen = 0;
 
   /* To avoid unused parameter warning */
   redir = NULL;
@@ -970,10 +963,10 @@ static int redir_getparam(struct redir_t *redir, char *src,
 		   char *param,
 		   char *dst, int dstsize) {
 
-  char *p1;
-  char *p2;
-  char *p3;
-  char *peol;
+  char *p1 = NULL;
+  char *p2 = NULL;
+  char *p3 = NULL;
+  char *peol = NULL;
   char sstr[255];
   int len = 0;
   
@@ -1037,13 +1030,13 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
   int maxfd = 0;	        /* For select() */
   fd_set fds;			/* For select() */
   struct timeval idleTime;	/* How long to select() */
-  int status;
+  int status = 0;
   char buffer[REDIR_MAXBUFFER];
   int buflen = 0;
   int recvlen = 0;
   char path[REDIR_MAXBUFFER];
   char resp[REDIR_MAXBUFFER];
-  int i;
+  int i = 0;
 
   maxfd = fd;
 
@@ -1172,9 +1165,10 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   struct radius_attr_t *attr = NULL;
   char attrs[RADIUS_ATTR_VLEN+1];
   struct tm stt;
-  int tzhour, tzmin;
-  char *tz;
-  int result;
+  int tzhour = 0; 
+	int tzmin = 0;
+  char *tz = NULL;
+  int result = 0;
   struct redir_conn_t *conn = (struct redir_conn_t*) cbp;
   
   /* To avoid unused parameter warning */
@@ -1453,23 +1447,23 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 /* Send radius Access-Request and wait for answer */
 static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 		 struct redir_conn_t *conn) {
-  struct radius_t *radius;      /* Radius client instance */
+  struct radius_t *radius = NULL;      /* Radius client instance */
   struct radius_packet_t radius_pack;
   int maxfd = 0;	        /* For select() */
   fd_set fds;			/* For select() */
   struct timeval idleTime;	/* How long to select() */
-  int status;
+  int status = 0;
   unsigned char chap_password[REDIR_MD5LEN + 1];
   unsigned char chap_challenge[REDIR_MD5LEN];
   unsigned char user_password[REDIR_MD5LEN+1];
-  uint64_t suf;
+  uint64_t suf = 0;
   struct in6_addr idv6;
 
   MD5_CTX context;
 
   char mac[REDIR_MACSTRLEN+1];
   char url[REDIR_URL_LEN];
-  int n;
+  int n = 0;
 
   /* To avoid unused parameter warning */
   addr = NULL;
@@ -1554,7 +1548,6 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 	
    }
    
-
 
   /* Include his MAC address */
   snprintf(mac, REDIR_MACSTRLEN+1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
@@ -1658,24 +1651,24 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 
 }
 
-  /* Close of socket */
-  void redir_close(int new_socket){
-    if (!keep_going) shutdown(new_socket, SHUT_RDWR);
-    close(new_socket);
-    return;
-  }
+/* Close of socket */
+void redir_close(int new_socket){
+  if (!keep_going) shutdown(new_socket, SHUT_RDWR);
+  close(new_socket);
+  return;
+}
 
-  void redir_memcopy(int msg_type, unsigned char *challenge, char *hexchal, struct redir_msg_t *msg, struct sockaddr_in address, struct sockaddr_in6 addressv6, struct sockaddr_storage addrstorage){
-    redir_challenge(challenge);
-    (void)redir_chartohex(challenge, hexchal);
-    msg->type = msg_type;
-    msg->addr = address.sin_addr;
-    memcpy(&msg->addrv6, &addressv6.sin6_addr, sizeof(struct in6_addr));
-    msg->ipv6= (addrstorage.ss_family==AF_INET6);
-    /* [SV] TODO */
-    memcpy(&msg->uamchal, challenge, REDIR_MD5LEN);
-    return;
-  }
+void redir_memcopy(int msg_type, unsigned char *challenge, char *hexchal, struct redir_msg_t *msg, struct sockaddr_in address, struct sockaddr_in6 addressv6, struct sockaddr_storage addrstorage){
+  redir_challenge(challenge);
+  (void)redir_chartohex(challenge, hexchal);
+  msg->type = msg_type;
+  msg->addr = address.sin_addr;
+  memcpy(&msg->addrv6, &addressv6.sin6_addr, sizeof(struct in6_addr));
+  msg->ipv6= (addrstorage.ss_family==AF_INET6);
+  /* [SV] TODO */
+  memcpy(&msg->uamchal, challenge, REDIR_MD5LEN);
+  return;
+}
   
 /* redir_accept() does the following:
  1) forks a child process
@@ -1701,7 +1694,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 
 int redir_accept(struct redir_t *redir, int ipv6) {
 
-  int new_socket;
+  int new_socket = -1;
   struct sockaddr_in address;
   /* [SV] */
   struct sockaddr_in6 addressv6;
@@ -1710,8 +1703,8 @@ int redir_accept(struct redir_t *redir, int ipv6) {
 
   int bufsize = REDIR_MAXBUFFER;
   char buffer[bufsize];
-  int buflen;
-  int status;
+  int buflen = 0;
+  int status = 0;
   char hexchal[1+(2*REDIR_MD5LEN)];
   unsigned char challenge[REDIR_MD5LEN];
   struct redir_msg_t msg;
@@ -1722,9 +1715,6 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   struct sigaction act, oldact;
   struct itimerval itval;
 
-  printf("redir_accept\n");
-
-  
   memset(&conn, 0, sizeof(conn));
   memset(&msg, 0, sizeof(msg));
 
@@ -1744,7 +1734,6 @@ int redir_accept(struct redir_t *redir, int ipv6) {
      unused file descriptors and free memory allocated. This however
      is performed when the process exits, so currently we don't
      care */
-  
 
   if ((status = fork()) < 0) {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
@@ -1814,12 +1803,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
     memcpy(&msg.addrv6, &addressv6.sin6_addr, sizeof(struct in6_addr));
     state = redir->cb_getstatev6(redir, &addressv6.sin6_addr, &conn);
 
-
-
-    printf("redir_accept IPv6!!!!!!!!!!!!!!!!!!!!!!!!!! return now\n");
-    // return 0; 
-
-
+    printf("redir_accept IPv6!\n");
   }
 
   termstate = REDIR_TERM_PROCESS;
@@ -1842,10 +1826,9 @@ int redir_accept(struct redir_t *redir, int ipv6) {
       if (optionsdebug) printf("redir_accept: Challenge expired: %d : %d\n",
 			       conn.uamtime, time(NULL));
       redir_memcopy(REDIR_CHALLENGE, challenge, hexchal, &msg, address, addressv6, addrstorage);      
-      if (msgsnd(redir->msgid, (struct msgbuf*) &msg, 
-		 sizeof(struct redir_msg_t), 0) < 0) {
-	sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
-	exit(0);
+      if (msgsnd(redir->msgid, (struct msgbuf*) &msg, sizeof(struct redir_msg_t), 0) < 0) {
+				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
+				exit(0);
       }
 
       redir_reply(redir, new_socket, &conn, REDIR_FAILED_OTHER, 0,
@@ -1889,10 +1872,9 @@ int redir_accept(struct redir_t *redir, int ipv6) {
       msg.filteridlen = conn.filteridlen;
       strncpy(msg.filteridbuf, conn.filteridbuf, sizeof(msg.filteridbuf));
       
-      if (msgsnd(redir->msgid, (struct msgbuf*) &msg,
-		 sizeof(struct redir_msg_t), 0) < 0) {
-	sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
-	exit(0);
+      if (msgsnd(redir->msgid, (struct msgbuf*) &msg, sizeof(struct redir_msg_t), 0) < 0) {
+				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
+				exit(0);
       }
     }
     else {
@@ -1929,8 +1911,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   }
   else if (conn.type == REDIR_PRELOGIN) {
     redir_memcopy(REDIR_CHALLENGE, challenge, hexchal, &msg, address, addressv6, addrstorage);
-    if (msgsnd(redir->msgid, (struct msgbuf*) &msg, 
-	       sizeof(struct redir_msg_t), 0) < 0) {
+    if (msgsnd(redir->msgid, (struct msgbuf*) &msg, sizeof(struct redir_msg_t), 0) < 0) {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
       exit(0);
     }
@@ -1956,10 +1937,9 @@ int redir_accept(struct redir_t *redir, int ipv6) {
     }
     else {
       redir_memcopy(REDIR_ABORT, challenge, hexchal, &msg, address, addressv6, addrstorage);
-      if (msgsnd(redir->msgid, (struct msgbuf*) &msg, 
-		 sizeof(struct redir_msg_t), 0) < 0) {
-	sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
-	exit(0);
+      if (msgsnd(redir->msgid, (struct msgbuf*) &msg, sizeof(struct redir_msg_t), 0) < 0) {
+				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
+				exit(0);
       }
       redir_reply(redir, new_socket, &conn, REDIR_ABORT_ACK, 0, 
 		  hexchal, NULL, conn.userurl, NULL,
@@ -1996,7 +1976,6 @@ int redir_accept(struct redir_t *redir, int ipv6) {
     buflen = snprintf(buffer, bufsize,
 		      "HTTP/1.0 403 Forbidden\r\n\r\n");
     
-
     send(new_socket, buffer, buflen, 0);
     
     redir_close(new_socket);

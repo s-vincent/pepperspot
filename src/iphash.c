@@ -75,7 +75,7 @@
 /* Create new address pool hash */
 int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
 
-  int i;
+  int i = 0;
 
   if (!(*this = calloc(sizeof(struct ippool_t), 1))) {
     /* Failed to allocate memory for iphash */
@@ -112,7 +112,7 @@ int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
 /* Create new address pool hash */
 int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
 
-  int i;
+  int i = 0;
 
   if (!(*this = calloc(sizeof(struct ippool_t), 1))) {
     /* Failed to allocate memory for iphash */

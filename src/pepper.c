@@ -138,18 +138,18 @@ struct options_t options;
 
 extern struct sock icmp6_sock;
 
-struct tun_t *tun;                /* TUN instance            */
-struct tun6_t* tunv6; 	/**< TUN6 instance */
-struct ippool_t *ippool;          /* Pool of IP addresses */
-struct radius_t *radius;          /* Radius client instance */
-struct dhcp_t *dhcp = NULL;       /* DHCP instance */
-struct redir_t *redir = NULL;     /* Redir instance */
+struct tun_t *tun = NULL; 			/* TUN instance            */
+struct tun6_t* tunv6 = NULL; 		/**< TUN6 instance */
+struct ippool_t *ippool = NULL; /* Pool of IP addresses */
+struct radius_t *radius = NULL;	/* Radius client instance */
+struct dhcp_t *dhcp = NULL;			/* DHCP instance */
+struct redir_t *redir = NULL;		/* Redir instance */
 
 struct app_conn_t connection[APP_NUM_CONN*2];
-struct app_conn_t *firstfreeconn; /* First free in linked list */
-struct app_conn_t *lastfreeconn;  /* Last free in linked list */
-struct app_conn_t *firstusedconn; /* First used in linked list */
-struct app_conn_t *lastusedconn;  /* Last used in linked list */
+struct app_conn_t *firstfreeconn = NULL; /* First free in linked list */
+struct app_conn_t *lastfreeconn = NULL;  /* Last free in linked list */
+struct app_conn_t *firstusedconn = NULL; /* First used in linked list */
+struct app_conn_t *lastusedconn = NULL;  /* Last used in linked list */
 
 struct timeval checktime;
 struct timeval rereadtime;
@@ -200,7 +200,7 @@ static void set_sessionid(struct app_conn_t *appconn) {
 
 /* Used to write process ID to file. Assume someone else will delete */
 static void log_pid(char *pidfile) {
-	FILE *file;
+	FILE *file = NULL;
 	mode_t oldmask;
 
 	oldmask = umask(022);
@@ -217,7 +217,7 @@ static void log_pid(char *pidfile) {
 static int leaky_bucket(struct app_conn_t *conn, int octetsup, int octetsdown) {
 
 	struct timeval timenow;
-	uint64_t timediff; /* In microseconds */
+	uint64_t timediff = 0; /* In microseconds */
 	int result = 0;
 
 
@@ -286,7 +286,7 @@ int set_env(char *name, char *value, unsigned int len, struct in_addr *addr,
 				mac[0], mac[1],
 				mac[2], mac[3],
 				mac[4], mac[5]);
-		value = s;
+				value = s;
 	}
 	else if (integer != NULL) {
 		(void) snprintf(s, sizeof(s)-1, "%ld", *integer);
@@ -348,8 +348,8 @@ int set_envv6(char *name, char *value, unsigned int len, struct in6_addr *addr,
 
 
 int runscript(struct app_conn_t *appconn, char* script) {  
-	long int l;
-	int status;
+	long int l = 0;
+	int status = 0;
 
 	if ((status = fork()) < 0) {
 		sys_err(LOG_ERR, __FILE__, __LINE__, errno,
@@ -432,7 +432,7 @@ static int get_namepart(char *src, char *host, int hostsize, int *port) {
 	char *slashslash = NULL;
 	char *slash = NULL;
 	char *colon = NULL;
-	int hostlen;
+	int hostlen = 0;
 
 	*port = 0;
 
@@ -497,7 +497,6 @@ static int get_namepart6(char *src, char *host, int *port) {
 	char *colon = NULL;
 	unsigned int pos=0;
 
-	printf("1\n");
 	if (!strncmp(src, "http://", 7)) {
 		*port = DHCP_HTTP;
 	}
@@ -532,8 +531,14 @@ static int get_namepart6(char *src, char *host, int *port) {
 static int set_uamallowed(char *uamallowed, int len) {
 	char *p1 = NULL;
 	char *p2 = NULL;
-	char *p3 = malloc(len+1);
-	struct hostent *host;
+	char *p3 = NULL;
+	struct hostent *host = NULL;
+
+	p3 = malloc(len+1);
+	if(!p3)
+	{
+		return -1;
+	}
 
 	memcpy(p3, uamallowed, len);
 
@@ -610,24 +615,28 @@ static int set_uamallowed(char *uamallowed, int len) {
 static int set_uamallowed(char *uamallowed, int len) {
 	char *p1 = NULL;
 	char *p2 = NULL;
-	char *p3 = malloc(len+1);
-	int sfd, err;
+	char *p3 = NULL;
+	int sfd = 0;
+	int err = 0;
 	char buf[INET6_ADDRSTRLEN];
-	int mask6;
+	int mask6=0;
 	struct addrinfo hints;
-	struct addrinfo *res;
-	struct addrinfo *rp;
-	struct sockaddr_in *addr;
-	struct sockaddr_in6 *addrv6;
-	
-	
+	struct addrinfo *res = NULL;
+	struct addrinfo *rp = NULL;
+	struct sockaddr_in *addr = NULL;
+	struct sockaddr_in6 *addrv6 = NULL;
+
+	p3 = malloc(len+1);
+	if(!p3)
+	{
+		return -1;
+	}
+
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = 0;
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0;
-
-	
 
 	memcpy(p3, uamallowed, len);
 
@@ -741,8 +750,7 @@ static int set_uamallowed(char *uamallowed, int len) {
 				}
 
 			
-			}
-			
+			}			
 		
 		}
 		if (p2) {
@@ -763,9 +771,15 @@ static int set_uamallowed(char *uamallowed, int len) {
 static int set_macallowed(char *macallowed, int len) {
 	char *p1 = NULL;
 	char *p2 = NULL;
-	char *p3 = malloc(len+1);
-	unsigned int i;
+	char *p3 = NULL;
+	unsigned int i = 0;
 	
+	p3 = malloc(len+1);
+	if(!p3)
+	{
+		return -1;
+	}
+
 	p3[len] = 0;
 	strcpy(p3, macallowed);
 	p1 = p3;
@@ -825,16 +839,17 @@ static int set_macallowed(char *macallowed, int len) {
 
 static int process_options(int argc, char **argv, int firsttime) {
 	struct gengetopt_args_info args_info;
-	struct hostent *host;
+	struct hostent *host = NULL;
 	char hostname[USERURLSIZE];
-	unsigned int numargs;
+	unsigned int numargs = 0;
 	char uamserveraddr6[INET6_ADDRSTRLEN];
 	char uamserveraddr[INET_ADDRSTRLEN];
 	struct in6_addr any_addr = IN6ADDR_ANY_INIT;
 	struct addrinfo hints;
-	struct addrinfo *res, *rp;
-	int err,sfd;
-
+	struct addrinfo *res = NULL;
+	struct addrinfo *rp = NULL;
+	int err = 0;
+	int sfd =0;
 
 	if (cmdline_parser (argc, argv, &args_info) != 0) {
 		sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -894,9 +909,9 @@ static int process_options(int argc, char **argv, int firsttime) {
 	}
 	else {
 		unsigned int temp[DHCP_ETH_ALEN];
-		int	i;
+		int	i = 0;
 		char macstr[RADIUS_ATTR_VLEN];
-		int macstrlen;
+		int macstrlen = 0;
 
 		if ((macstrlen = strlen(args_info.dhcpmac_arg)) >= (RADIUS_ATTR_VLEN-1)) {
 			sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1066,7 +1081,6 @@ static int process_options(int argc, char **argv, int firsttime) {
 		}
 	}
 	options.uamurl6 = args_info.uamserver6_arg;
-
 
 	/* uamhomepage                                                  */
 	if (!args_info.uamhomepage_arg) {
@@ -1516,7 +1530,8 @@ static int process_options(int argc, char **argv, int firsttime) {
 				return -1;
 			}
 		} else { /* IPv6 client */
-			int preflen, maskk;
+			int preflen = 0;
+			int maskk = 0;
 			if(ippool_atonv6(&((struct sockaddr_in6 *)&options.proxyaddr)->sin6_addr, &preflen, &maskk, args_info.proxyclient_arg)== -1) {
 				sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 						"Invalid proxy client address: %s!", args_info.proxyclient_arg);
@@ -1691,7 +1706,7 @@ static void free_options(void)
 
 static int initconn(void)
 {
-	int n;
+	int n = 0;
 	firstusedconn = NULL; /* Redundant */
 	lastusedconn  = NULL; /* Redundant */
 
@@ -1800,7 +1815,7 @@ static int freeconn(struct app_conn_t *conn)
 
 static int getconn(struct app_conn_t **conn, struct sockaddr_storage nasip, uint32_t nasport) 
 {
-	struct app_conn_t *appconn;
+	struct app_conn_t *appconn = NULL;
 
 	/* Count the number of used connections */
 	appconn = firstusedconn;
@@ -1821,7 +1836,7 @@ static int getconn(struct app_conn_t **conn, struct sockaddr_storage nasip, uint
 static int getconn_username(struct app_conn_t **conn, char *username, 
 		int usernamelen)
 {
-	struct app_conn_t *appconn;
+	struct app_conn_t *appconn = NULL;
 	username[usernamelen] = 0; printf("username: %s\n", username);
 
 	appconn = firstusedconn;
@@ -1870,8 +1885,6 @@ static int dnprot_terminate(struct app_conn_t *appconn) {
 	}
 }
 
-
-
 /* Check for:
  * - Session-Timeout
  * - Idle-Timeout
@@ -1881,15 +1894,15 @@ static int dnprot_terminate(struct app_conn_t *appconn) {
 
 static int checkconn(void)
 {
-	int n;
-	struct app_conn_t *conn;
-	struct dhcp_conn_t* dhcpconn;
+	int n = 0;
+	struct app_conn_t *conn = NULL;
+	struct dhcp_conn_t* dhcpconn = NULL;
 	struct timeval timenow;
-	long int sessiontime;
-	long int idletime;
-	long int interimtime;
-	long int checkdiff;
-	long int rereaddiff;
+	long int sessiontime = 0;
+	long int idletime = 0;
+	long int interimtime = 0;
+	long int checkdiff = 0;
+	long int rereaddiff = 0;
 
 	gettimeofday(&timenow, NULL);
 
@@ -1981,9 +1994,9 @@ static int checkconn(void)
 /* Kill all connections and send Radius Acct Stop */
 static int killconn(void)
 {
-	int n;
-	struct app_conn_t *conn;
-	struct dhcp_conn_t* dhcpconn;
+	int n = 0;
+	struct app_conn_t *conn = NULL;
+	struct dhcp_conn_t* dhcpconn = NULL;
 
 	for (n=0; n<(2*APP_NUM_CONN); n++) {
 		conn = &connection[n];
@@ -2003,7 +2016,7 @@ static int killconn(void)
 
 /* Compare a MAC address to the addresses given in the macallowed option */
 static int maccmp(unsigned char *mac) {
-	int i;
+	int i = 0;
 	for (i=0; i<options.macoklen; i++) {
 		if (!memcmp(mac, options.macok[i], DHCP_ETH_ALEN)) {
 			return 0;
@@ -2224,7 +2237,7 @@ static int radius_access_accept(struct app_conn_t *conn) {
 	int offset = 0;
 	int eaplen = 0;
 	uint8_t mppekey[RADIUS_ATTR_VLEN];
-	int mppelen;
+	int mppelen = 0;
 
 	conn->radiuswait = 0;
 	if (radius_default_pack(radius, &radius_pack, RADIUS_CODE_ACCESS_ACCEPT)) {
@@ -2233,7 +2246,6 @@ static int radius_access_accept(struct app_conn_t *conn) {
 		return -1;
 	}
 	radius_pack.id = conn->radiusid;
-
 
 	/* Include EAP (if present) */
 	offset = 0;
@@ -2293,8 +2305,8 @@ static int acct_req(struct app_conn_t *conn, int status_type)
 	struct in6_addr idv6;
 	char portid[16+1];
 	struct timeval timenow;
-	uint32_t timediff;
-	uint64_t suf;
+	uint32_t timediff = 0;
+	uint64_t suf = 0;
 
 	if (RADIUS_STATUS_TYPE_START == status_type) {
 		gettimeofday(&conn->start_time, NULL);
@@ -2466,7 +2478,7 @@ static int acct_req(struct app_conn_t *conn, int status_type)
 
 static int dnprot_reject(struct app_conn_t *appconn) {
 	struct dhcp_conn_t* dhcpconn = NULL;
-	struct ippoolm_t *ipm;
+	struct ippoolm_t *ipm = NULL;
 
 	switch (appconn->dnprot) {
 		case DNPROT_EAPOL:
@@ -2790,10 +2802,10 @@ int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
 
 /* Callback for receiving messages from tun */
 int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len) {
-	struct ippoolm_t *ipm;
+	struct ippoolm_t *ipm = NULL;
 	struct in_addr dst;
 	struct tun_packet_t *iph = (struct tun_packet_t*) pack;
-	struct app_conn_t *appconn;
+	struct app_conn_t *appconn = NULL;
 
   /* To avoid unused parameter warning */
 	tun_obj = NULL;
@@ -2857,9 +2869,9 @@ int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len) {
 
 int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
 		struct redir_conn_t *conn) {
-	struct ippoolm_t *ipm;
-	struct app_conn_t *appconn;
-	struct dhcp_conn_t *dhcpconn;
+	struct ippoolm_t *ipm = NULL;
+	struct app_conn_t *appconn = NULL;
+	struct dhcp_conn_t *dhcpconn = NULL;
 	
 	/* To avoid unused parameter warning */
 	redir_obj = NULL;
@@ -2920,9 +2932,9 @@ int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
  */
 int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr, struct redir_conn_t* conn)
 {
-	struct ippoolm_t *ipm;
-	struct app_conn_t *appconn;
-	struct dhcp_conn_t *dhcpconn;
+	struct ippoolm_t *ipm = NULL;
+	struct app_conn_t *appconn = NULL;
+	struct dhcp_conn_t *dhcpconn = NULL;
 	
 	/* To avoid unused parameter warning */
 	redir_obj = NULL;
@@ -2986,7 +2998,7 @@ int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr, struct
 /* Handle an accounting request */
 int accounting_request(struct radius_packet_t *pack,
 		struct sockaddr_storage *peer) {
-	int n;
+	int n = 0;
 	struct radius_attr_t *hismacattr = NULL;
 	struct radius_attr_t *typeattr = NULL;
 	struct radius_attr_t *nasipattr = NULL;
@@ -2997,9 +3009,9 @@ int accounting_request(struct radius_packet_t *pack,
 	struct dhcp_conn_t *dhcpconn = NULL;
 	uint8_t hismac[DHCP_ETH_ALEN];
 	char macstr[RADIUS_ATTR_VLEN];
-	int macstrlen;
+	int macstrlen = 0;
 	unsigned int temp[DHCP_ETH_ALEN];
-	int	i;
+	int	i = 0;
 	struct sockaddr_storage nasip;
 	uint32_t nasport = 0;
 
@@ -3150,7 +3162,7 @@ printf("Accounting request\n");
 
 int access_request(struct radius_packet_t *pack,
 		struct sockaddr_storage *peer) {
-	int n;
+	int n = 0;
 	struct radius_packet_t radius_pack;
 
 	struct ippoolm_t *ipm = NULL;
@@ -3168,19 +3180,19 @@ int access_request(struct radius_packet_t *pack,
 	struct in_addr hisip;
 	uint64_t ifaceid = 0;
 	char pwd[RADIUS_ATTR_VLEN];
-	int pwdlen;
+	int pwdlen = 0;
 	uint8_t hismac[DHCP_ETH_ALEN];
 	char macstr[RADIUS_ATTR_VLEN];
-	int macstrlen;
+	int macstrlen = 0;
 	unsigned int temp[DHCP_ETH_ALEN];
-	int	i;
+	int	i = 0;
 	char mac[MACSTRLEN+1];
 
 	struct app_conn_t *appconn = NULL;
 	struct dhcp_conn_t *dhcpconn = NULL;
 
 	uint8_t resp[EAP_LEN];         /* EAP response */
-	int resplen;                   /* Length of EAP response */
+	int resplen = 0;                   /* Length of EAP response */
 
 	int offset = 0;
 	int instance = 0;
@@ -3542,7 +3554,7 @@ int upprot_getip(struct app_conn_t *appconn,
 		struct in_addr *hisip, int statip) {
 	struct ippoolm_t *ipm = NULL;
 
-    appconn->ipv6 = 0;
+  appconn->ipv6 = 0;
     
 	/* If IP address is allready allocated: Fill it in */
 	/* This should only happen for UAM */
@@ -3594,7 +3606,6 @@ int upprot_getipv6(struct app_conn_t *appconn,
 	/* TODO */
 	if (appconn->uplink) {
 		ipm = (struct ippoolm_t*) appconn->uplink;
-		
 	}
 	else {
 		/* Allocate static or dynamic IP address */
@@ -3643,7 +3654,6 @@ int radius_conf(struct radius_t *radius_obj,
 	/* To avoid unused parameter warning */
 	radius_obj = NULL;
 	pack_req = NULL;
-
 
 	if (options.debug)
 		printf("Received configuration management message from radius server\n");
@@ -3763,16 +3773,16 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
 
 	char attrs[RADIUS_ATTR_VLEN+1];
 	struct tm stt;
-	int tzhour, tzmin;
-	char *tz;
+	int tzhour = 0;
+	int tzmin = 0;
+	char *tz = NULL;
 
 	int instance = 0;
-	int n;
-	int result;
+	int n = 0;
+	int result = 0;
 	struct in6_addr *hisipv6 = NULL;
 	struct in_addr *hisip = NULL;
 	int statip = 0;
-
 	struct app_conn_t *appconn = (struct app_conn_t*) cbp;
 
 	if (options.debug)
@@ -3791,7 +3801,6 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
 	appconn->sendlen  = 0;
 	appconn->recvlen  = 0;
 	appconn->lmntlen  = 0;
-
 
 	if (!pack) { /* Timeout */
 		sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -4107,8 +4116,6 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
 		appconn->sessionterminatetime = 0;
 	}
 
-
-
 	/* EAP Message */
 	appconn->challen = 0;
 	do {
@@ -4320,7 +4327,6 @@ int cb_dhcp_requestv6(struct dhcp_conn_t *conn, struct in6_addr *addr)
 	struct ippoolm_t *ipm = NULL;
 	struct app_conn_t *appconn = conn->peer;
 
-
 	if (options.debug) printf("IPv6 requested address\n");
 
 	if (!appconn) 
@@ -4421,7 +4427,7 @@ int cb_dhcp_connectv6(struct dhcp_conn_t *conn)
  */
 int cb_dhcp_disconnectv6(struct dhcp_conn_t *conn)
 {
-	struct app_conn_t *appconn;
+	struct app_conn_t *appconn = NULL;
 	char buf[INET6_ADDRSTRLEN];
 
 	sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
@@ -4470,7 +4476,7 @@ int cb_dhcp_disconnectv6(struct dhcp_conn_t *conn)
 /* In the case of WPA it is allready allocated,
  * for UAM address is allocated before authentication */
 int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr) {
-	struct ippoolm_t *ipm;
+	struct ippoolm_t *ipm = NULL;
 	struct app_conn_t *appconn = conn->peer;
 
 	if (options.debug) printf("DHCP requested IP address\n");
@@ -4482,7 +4488,6 @@ int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr) {
 	}
 
 	appconn->reqip.s_addr = addr->s_addr; /* Save for MAC auth later */
-
 
 	/* If IP address is allready allocated: Fill it in */
 	if (appconn->uplink) {
@@ -4544,7 +4549,7 @@ int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr) {
 
 /* DHCP callback for establishing new connection */
 int cb_dhcp_connect(struct dhcp_conn_t *conn) {
-	struct app_conn_t *appconn;
+	struct app_conn_t *appconn = NULL;
 
 	sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
 			"New DHCP request from MAC=%.2X-%.2X-%.2X-%.2X-%.2X-%.2X" , 
@@ -4645,7 +4650,7 @@ int cb_dhcp_ipv6_ind(struct dhcp_conn_t* conn, void* pack, unsigned int len)
 {
 	struct app_conn_t* appconn=conn->peer;
 
-	printf("cb_dhcp_ipv6_ind!!!!!!!!!!!!!!!!!!!!!!!!\n");
+	printf("cb_dhcp_ipv6_ind!\n");
 
 	if(!appconn)
 	{
@@ -4704,7 +4709,7 @@ int cb_dhcp_eap_ind(struct dhcp_conn_t *conn, void *pack, unsigned int len) {
 	struct dhcp_eap_t *eap = (struct dhcp_eap_t*) pack;
 	struct app_conn_t *appconn = conn->peer;
 	struct radius_packet_t radius_pack;
-	unsigned int offset;
+	unsigned int offset = 0;
 
 	if (options.debug) printf("EAP Packet received \n");
 
@@ -4740,7 +4745,6 @@ int cb_dhcp_eap_ind(struct dhcp_conn_t *conn, void *pack, unsigned int len) {
 		return -1;
 	}
 
-
 	/* Build up radius request */
 	radius_pack.code = RADIUS_CODE_ACCESS_REQUEST;
 	(void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_USER_NAME, 0, 0, 0,
@@ -4755,7 +4759,7 @@ int cb_dhcp_eap_ind(struct dhcp_conn_t *conn, void *pack, unsigned int len) {
 	/* Include EAP (if present) */
 	offset = 0;
 	while (offset < len) {
-		int eaplen;
+		int eaplen = 0;
 		if ((len - offset) > RADIUS_ATTR_VLEN)
 			eaplen = RADIUS_ATTR_VLEN;
 		else
@@ -4802,9 +4806,9 @@ int cb_dhcp_eap_ind(struct dhcp_conn_t *conn, void *pack, unsigned int len) {
 
 static int uam_msg(struct redir_msg_t *msg) {
 
-	struct ippoolm_t *ipm;
+	struct ippoolm_t *ipm = NULL;
 	struct app_conn_t *appconn = NULL;
-	struct dhcp_conn_t* dhcpconn;
+	struct dhcp_conn_t* dhcpconn = NULL;
 	char buf[INET6_ADDRSTRLEN];
 
 	if (!msg->ipv6 && ippool_getip(ippool, &ipm, &msg->addr)) {
@@ -4996,9 +5000,12 @@ int main(int argc, char **argv)
 	int maxfd = 0;	                /* For select() */
 	fd_set fds;			/* For select() */
 	struct timeval idleTime;	/* How long to select() */
-	int status;
-	int msgresult;
-	int ipv4=0, ipv6=0, dual=0; /* Stack mode of client connections */
+	int status = 0;
+	int msgresult = 0;
+	/* Stack mode of client connections */
+	int ipv4=0;
+	int ipv6=0;
+	int dual=0;
 
 	struct redir_msg_t msg;
 	struct sigaction act;
@@ -5012,7 +5019,6 @@ int main(int argc, char **argv)
 	if (process_options(argc, argv, 1))
 		exit(1);
 
-
 	if (options.debug) 
 		printf("PepperSpot version %s started.\n", VERSION);
 
@@ -5023,7 +5029,6 @@ int main(int argc, char **argv)
 	ipv6 = !strncmp(options.ipversion, "ipv6", 4);
 	ipv4 = !strncmp(options.ipversion, "ipv4", 4);
 	dual = !strncmp(options.ipversion, "dual", 4);
-
 
 	/* Initialise connections */
 	(void) initconn();
@@ -5048,19 +5053,14 @@ int main(int argc, char **argv)
 			exit(1);
 		}
 
-
-
 		(void) tun_setaddr(tun, &options.dhcplisten,  &options.dhcplisten, 
 				&options.mask);
-
 
 		(void) tun_set_cb_ind(tun, cb_tun_ind);
 		if (tun->fd > maxfd) maxfd = tun->fd;
 
 		if (options.ipup) (void) tun_runscript(tun, options.ipup);
 	}
-
-
 
 	if(ipv6 || dual) {
 		/* [SV] : create the ICMPv6 socket */
@@ -5082,7 +5082,6 @@ int main(int argc, char **argv)
 			if (ippool) (void) ippool_free(ippool);
 			exit(1);
 		}
-
 
 		/* [SV] : IPv6 address */
 		tun6_setaddr(tunv6, &options.ip6listen, 64); /* we assume that a 64 prefix length to simplify a little bit... :) */
@@ -5163,9 +5162,7 @@ int main(int argc, char **argv)
 
 		}
 
-
 	}
-
 
 	/* Create an instance of radius */
 	if (radius_new(&radius,
@@ -5199,7 +5196,6 @@ int main(int argc, char **argv)
 
 	/* Get remote config from radius server */
 	(void) config_radius();
-
 
 	/* Create an instance of redir */
 	if(ipv4) {
@@ -5241,7 +5237,6 @@ int main(int argc, char **argv)
 	if(ipv4 || dual)
 		if (redir->fd > maxfd)
 			maxfd = redir->fd;
-
 
 	if(ipv6 || dual)
 		/* [SV] */
@@ -5449,8 +5444,6 @@ int main(int argc, char **argv)
 	}
 
 	if (options.debug) printf("Terminating PepperSpot!\n");
-
-
 
 	(void) killconn();
 

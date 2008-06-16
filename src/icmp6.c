@@ -134,7 +134,7 @@ void icmp6_handler_reg(uint8_t type, struct icmp6_handler *handler)
 
 void icmp6_handler_dereg(uint8_t type, struct icmp6_handler *handler)
 {
-	struct icmp6_handler **h; 
+	struct icmp6_handler **h = NULL; 
 	int i = icmp6_type_map(type);
 	pthread_rwlock_wrlock(&handler_lock);
 	h = &handlers[i];
@@ -185,12 +185,13 @@ void *icmp6_listen(void *arg)
 {
 	uint8_t msg[MAX_PKT_LEN];
 	struct sockaddr_in6 addr;
-	struct in6_addr *saddr, *daddr;
+	struct in6_addr *saddr, *daddr = NULL;
 	struct in6_pktinfo pkt_info;
-	struct icmp6_hdr *ih;
-	int iif, hoplimit;
-	unsigned int len;
-	struct icmp6_handler *h;
+	struct icmp6_hdr *ih = NULL;
+	int iif = 0;
+	int hoplimit = 0;
+	unsigned int len = 0;
+	struct icmp6_handler *h = NULL;
 	
 	/* To avoid unused parameter warning */
 	arg = NULL; 
@@ -230,7 +231,7 @@ void *icmp6_listen(void *arg)
 int icmp6_init(void)
 {
 	struct icmp6_filter filter;
-	int val;
+	int val = 0;
 
 	icmp6_sock.fd = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6);
 	if (icmp6_sock.fd < 0) {
@@ -291,8 +292,8 @@ int icmp6_init(void)
 
 void *icmp6_create(struct iovec *iov, uint8_t type, uint8_t code)
 {
-	struct icmp6_hdr *hdr;
-	int msglen;
+	struct icmp6_hdr *hdr = NULL;
+	int msglen = 0;
 
 	switch (type) {
 	case ICMP6_DST_UNREACH:
@@ -338,7 +339,7 @@ int icmp6_send(int oif, uint8_t hoplimit,
 {
 	struct sockaddr_in6 daddr;
 	struct msghdr msg;
-	struct cmsghdr *cmsg;
+	struct cmsghdr *cmsg = NULL;
 	struct in6_pktinfo pinfo;
 	int cmsglen, ret = 0, on = 1, hops;
 
@@ -398,10 +399,10 @@ ssize_t icmp6_recv(int sockfd, unsigned char *msg, size_t msglen,
 		   int *hoplimit)
 {
 	struct msghdr mhdr;
-	struct cmsghdr *cmsg;
+	struct cmsghdr *cmsg = NULL;
 	struct iovec iov;
 	static unsigned char chdr[CMSG_BUF_LEN];
-	ssize_t len;
+	ssize_t len = 0;
 
 	iov.iov_len = msglen;
 	iov.iov_base = (unsigned char *) msg;
