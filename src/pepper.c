@@ -71,21 +71,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <sys/socket.h>
 #include <net/if.h>
 #include <errno.h>
-#include <sys/types.h>
+#include <signal.h>
 
 #if defined(__linux__)
 #include <asm/types.h>
 #include <linux/netlink.h> 
 #include <linux/if_ether.h>
-
-#elif defined (__FreeBSD__)  || defined (__APPLE__)
-#include <netinet/in.h>
 #endif
 
 #if defined (__OpenBSD__)
@@ -107,7 +105,6 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <stdio.h>
 #include <ctype.h>
 
 #include <sys/ipc.h>
@@ -129,6 +126,7 @@
 #include "dhcp.h"
 #include "cmdline.h"
 #include "pepper.h"
+#include "util.h"
 
 #ifndef DEBUG_REDIR
 #define DEBUG_REDIR 1
@@ -167,7 +165,7 @@ static void sig_handler(int signum)
 {
 	switch(signum) {
 		case SIGCHLD:  /* Fireman catches falling childs and eliminates zombies */
-			while (wait3(NULL, WNOHANG, NULL) > 0);
+			while (waitpid(-1, NULL, WNOHANG) > 0);
 			break;
 		case SIGTERM:  /* Termination handler for clean shutdown */
 			if (options.debug) printf("SIGTERM received!\n");
@@ -1125,7 +1123,8 @@ static int process_options(int argc, char **argv, int firsttime) {
 	if (!args_info.uamlisten_arg) {
 		memcpy(options.uamlisten6.s6_addr,options.ip6listen.s6_addr,sizeof(struct in6_addr));
 	}
-	else if (!inet_aton(args_info.uamlisten_arg, &options.uamlisten)) {
+/*	else if (!inet_aton(args_info.uamlisten_arg, &options.uamlisten)) { */
+	else if(!inet_pton(AF_INET, args_info.uamlisten_arg, &options.uamlisten)) {
 		sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 				"Invalid UAM IP address: %s!", args_info.uamlisten_arg);
 		return -1;
@@ -1193,7 +1192,8 @@ static int process_options(int argc, char **argv, int firsttime) {
 	/* Store dns1 as in_addr                                        */
 	/* If DNS not given use system default                          */
 	if (args_info.dns1_arg) {
-		if (!inet_aton(args_info.dns1_arg, &options.dns1)) {
+/*		if (!inet_aton(args_info.dns1_arg, &options.dns1)) { */
+		if(!inet_pton(AF_INET, args_info.dns1_arg, &options.dns1)) {
 			sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 					"Invalid primary DNS address: %s!", 
 					args_info.dns1_arg);
@@ -1211,7 +1211,8 @@ static int process_options(int argc, char **argv, int firsttime) {
 	/* Store dns2 as in_addr                                        */
 	/* If DNS not given use system default else use DNS1            */
 	if (args_info.dns2_arg) {
-		if (!inet_aton(args_info.dns2_arg, &options.dns2)) {
+/*		if (!inet_aton(args_info.dns2_arg, &options.dns2)) { */
+		if(!inet_pton(AF_INET, args_info.dns2_arg, &options.dns2)) {
 			sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 					"Invalid secondary DNS address: %s!", 
 					args_info.dns1_arg);
@@ -1448,7 +1449,7 @@ static int process_options(int argc, char **argv, int firsttime) {
 	}
 	else if (options.dhcpif) {
 		unsigned char macaddr[DHCP_ETH_ALEN];
-		(void) dhcp_getmac(options.dhcpif, (char*) macaddr);
+		(void) dhcp_getmac(options.dhcpif, macaddr);
 		options.radiuscalled = malloc(MACSTRLEN+1);
 		(void) snprintf(options.radiuscalled, MACSTRLEN+1,
 				"%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
@@ -4660,7 +4661,18 @@ int cb_dhcp_ipv6_ind(struct dhcp_conn_t* conn, void* pack, unsigned int len)
 
 	if(appconn->authenticated==1)
 	{
-		/* TODO leaky bucket */
+#ifndef NO_LEAKY_BUCKET
+#ifndef COUNT_UPLINK_DROP
+                if (leaky_bucket(appconn, len, 0)) return 0;
+#endif /* ifndef COUNT_UPLINK_DROP */
+#endif /* ifndef NO_LEAKY_BUCKET */
+                appconn->input_packets++;
+                appconn->input_octets +=len;
+#ifndef NO_LEAKY_BUCKET
+#ifdef COUNT_UPLINK_DROP
+                if (leaky_bucket(appconn, len, 0)) return 0;
+#endif /* ifdef COUNT_UPLINK_DROP */
+#endif /* ifndef NO_LEAKY_BUCKET */
 	}
 	return tun6_encaps(tunv6, pack, len);  
 }

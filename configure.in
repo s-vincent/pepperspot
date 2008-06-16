@@ -13,10 +13,11 @@ AM_CONFIG_HEADER([config.h])
 AC_PROG_CC
 
 #JJAKO Check for libtool
-AC_PROG_LIBTOOL
-AM_PROG_LIBTOOL
+# AC_PROG_LIBTOOL
+# AM_PROG_LIBTOOL
 
 # Checks for libraries.
+AC_CHECK_LIB(resolv, __res_close,,[echo -e "\tPlease install libresolv";exit])
 
 # Checks for header files.
 AC_HEADER_STDC

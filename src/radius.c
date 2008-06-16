@@ -1828,8 +1828,8 @@ int radius_decaps(struct radius_t *this) {
   if (!coarequest) {
     if(ipv6) {
       /* Check that reply is from correct address */
-      if ((IN6_ARE_ADDR_EQUAL(&addr6.sin6_addr.s6_addr, ((struct sockaddr_in6 *)&this->hisaddr0)->sin6_addr.s6_addr)) &&
-	  (IN6_ARE_ADDR_EQUAL(addr6.sin6_addr.s6_addr, ((struct sockaddr_in6 *)&this->hisaddr1)->sin6_addr.s6_addr))) {
+      if ((IN6_ARE_ADDR_EQUAL(&addr6.sin6_addr, &((struct sockaddr_in6 *)&this->hisaddr0)->sin6_addr)) &&
+	  (IN6_ARE_ADDR_EQUAL(&addr6.sin6_addr, &((struct sockaddr_in6 *)&this->hisaddr1)->sin6_addr))) {
         sys_err(LOG_WARNING, __FILE__, __LINE__, 0,
 	        "Received radius reply from wrong address %.8x!",
 	        addr6.sin6_addr.s6_addr);

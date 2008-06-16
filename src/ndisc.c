@@ -57,18 +57,25 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <errno.h>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <netinet/ip6.h>
-/* #include <netinet/ip6mh.h> */
-/* #include <libnetlink.h> */
+#include <netinet/icmp6.h>
+#include <ifaddrs.h>
 
-/* #include "debug.h" */
 #include "icmp6.h"
-/* #include "tqueue.h" */
 #include "util.h"
 #include "ndisc.h"
 /* #include "rtnl.h" */
+
+#if defined (__FreeBSD__)   || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
+#include <net/if_dl.h>
+#include <net/if_types.h>
+#endif
 
 static const struct in6_addr in6addr_all_nodes_mc = IN6ADDR_ALL_NODES_MC_INIT;
 static const struct in6_addr in6addr_all_routers_mc = IN6ADDR_ALL_ROUTERS_MC_INIT;
@@ -191,9 +198,10 @@ static struct nd_opt_hdr *nd_opt_create(struct iovec *iov, uint8_t type,
 
 static int nd_get_l2addr(int ifindex, uint8_t *addr)
 {
+	int res = 0;
+#ifdef __linux__
 	struct ifreq ifr;
 	int fd = -1;
-	int res = 0;
  
 	fd = socket(PF_PACKET, SOCK_DGRAM, 0);
 	if (fd < 0) return -1;
@@ -210,6 +218,41 @@ static int nd_get_l2addr(int ifindex, uint8_t *addr)
 		memcpy(addr, ifr.ifr_hwaddr.sa_data, res);
 
 	close(fd);
+
+#elif defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
+  struct ifaddrs *ifap = NULL;
+  struct ifaddrs *ifa = NULL;
+  struct sockaddr_dl *sdl = NULL;
+  char ifname[IFNAMSIZ];
+  
+  if_indextoname(ifindex, ifname);
+
+  if (getifaddrs(&ifap)) {
+    return -1;
+  }
+
+  ifa = ifap;
+  while (ifa) {
+    if ((strcmp(ifa->ifa_name, ifname) == 0) && (ifa->ifa_addr->sa_family == AF_LINK)) {
+      sdl = (struct sockaddr_dl *)ifa->ifa_addr;
+      if ((res = nd_get_l2addr_len(sdl->sdl_type)) < 0)
+      {
+      	printf("Unsupported sa_family %d.\n", sdl->sdl_type);
+      }
+      else if (res > 0)
+      {
+      	memcpy(addr, LLADDR(sdl), res);
+      }
+
+      freeifaddrs(ifap);
+      return res;
+    }
+    ifa = ifa->ifa_next;
+  }
+  freeifaddrs(ifap);
+  return -1;
+
+#endif
 	return res;
 }
 

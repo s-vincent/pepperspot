@@ -41,19 +41,18 @@ struct icmp6_handler {
 
 struct sock 
 {
-   pthread_mutex_t send_mutex; 
+/*   pthread_mutex_t send_mutex;  */
   int fd;
 };
 
-
-
 #define ICMP6_MAIN_SOCK -1
 
-int if_mc_group(int sock, int ifindex, const struct in6_addr *mc_addr,
-		int cmd);
+int if_mc_group(int sock, int ifindex, const struct in6_addr *mc_addr, int cmd);
 
+/*
 void icmp6_handler_reg(uint8_t type, struct icmp6_handler *handler);
 void icmp6_handler_dereg(uint8_t type, struct icmp6_handler *handler);
+*/
 
 int icmp6_init(void);
 void icmp6_cleanup(void);
@@ -72,6 +71,7 @@ struct ip6_hdr;
 int icmp6_parse_data(struct ip6_hdr *ip6h, unsigned int len, 
 		     struct in6_addr **lhoa, struct in6_addr **rhoa);
 
-void* icmp6_listen(void* arg);
+/* void* icmp6_listen(void* arg); */
 
 #endif
+

@@ -98,9 +98,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#if defined(__linux__)
-#include "ndisc.h"
 #include "util.h"
+#include "ndisc.h"
+
+#if defined(__linux__)
 #include <linux/if.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
@@ -480,7 +481,7 @@ int dhcp_setaddr(char const *devname,
   /* TODO: How does it work on Solaris? */
 
 #if defined(__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
-  (void)dhcp_sifflags(devname, IFF_UP | IFF_RUNNING);  /* TODO */
+  return dhcp_sifflags(devname, IFF_UP | IFF_RUNNING);  /* TODO */
   /*return tun_addroute(this, addr, addr, netmask);*/
 #else
   return dhcp_sifflags(devname, IFF_UP | IFF_RUNNING); 
@@ -490,7 +491,7 @@ int dhcp_setaddr(char const *devname,
 
 #if defined(__linux__)
 
-int dhcp_getmac(const char *ifname, char *macaddr) {
+int dhcp_getmac(const char *ifname, unsigned char *macaddr) {
   int fd = -1;
   struct ifreq ifr;
 
@@ -636,11 +637,11 @@ int dhcp_open_eth(char const *ifname, uint16_t protocol, int promisc,
 #elif defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
 
 
-int dhcp_getmac(const char *ifname, char *macaddr) {
+int dhcp_getmac(const char *ifname, unsigned char *macaddr) {
 
   struct ifaddrs *ifap = NULL;
 	struct ifaddrs *ifa = NULL;
-  struct sockaddr_dl *sdl = nULL;
+  struct sockaddr_dl *sdl = NULL;
 
   if (getifaddrs(&ifap)) {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "getifaddrs() failed!");
@@ -705,14 +706,13 @@ int dhcp_open_eth(char const *ifname, uint16_t protocol, int promisc,
   char devname[IFNAMSIZ+5]; /* "/dev/" + ifname */
   int devnum = 0;
   struct ifreq ifr;
-  struct ifaliasreq areq;
   int fd = -1;
-  int local_fd = -1;
   struct bpf_version bv;
-
-  u_int32_t ipaddr = 0;
-  struct sockaddr_dl hwaddr;
   unsigned int value = 0;
+
+	/* to avoid warning at compilation */
+	protocol=protocol;
+	ifindex=ifindex;
 
   /* Find suitable device */
   for (devnum = 0; devnum < 255; devnum++) { /* TODO 255 */ 
@@ -801,27 +801,8 @@ int dhcp_send(struct dhcp_t *this,
 	      int fd, uint16_t protocol, unsigned char *hismac, int ifindex,
 	      void *packet, int length)
 {
-
-  struct sockaddr_ll dest;
-
-	if (this->debug)
-	{
-	  switch(protocol)
-	  {
-	  case 0x800:
-	    printf("Sending IP packet\n");
-	    break;
-	  case 0x86dd:
-	    printf("Sending IPv6 packet\n");
-	    break;
-	  default:
-	    printf("Sending other packet: 0x%x\n", protocol);
-	    break;
-	  }
-	}
-
 #if defined(__linux__)
-
+  struct sockaddr_ll dest;
 
   memset(&dest, '\0', sizeof(dest));
   dest.sll_family = AF_PACKET;
@@ -838,11 +819,33 @@ int dhcp_send(struct dhcp_t *this,
     return -1;
   }
 #elif defined(__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
+	/* to avoid warning at compilation */
+	protocol=protocol;
+	ifindex=ifindex;
+	hismac=hismac;
+
   if (write(fd, packet, length) < 0) {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "write() failed");
     return -1;
   }
 #endif
+
+  if (this->debug)
+  {
+    switch(protocol)
+    {
+    case 0x800:
+      printf("Sending IP packet\n");
+      break;
+    case 0x86dd:
+      printf("Sending IPv6 packet\n");
+      break;
+    default:
+      printf("Sending other packet: 0x%x\n", protocol);
+      break;
+    }
+  }
+
   return 0;
 }
 
@@ -1614,16 +1617,19 @@ dhcp_new(struct dhcp_t **dhcp, int numconn, char *interface,
       }
 
 #if defined(__FreeBSD__) || defined (__OpenBSD__) || defined (__APPLE__)
-    if (ioctl((*dhcp)->fd, BIOCGBLEN, &blen) < 0) {
-      sys_err(LOG_ERR, __FILE__, __LINE__, errno,"ioctl() failed!");
-    }
-    (*dhcp)->rbuf_max = blen;
-    if (!((*dhcp)->rbuf = malloc((*dhcp)->rbuf_max))) {
-      /* TODO: Free malloc */
-      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "malloc() failed");
-    }
-    (*dhcp)->rbuf_offset = 0;
-    (*dhcp)->rbuf_len = 0;
+		{
+			int blen=0;
+	    if (ioctl((*dhcp)->fd, BIOCGBLEN, &blen) < 0) {
+	      sys_err(LOG_ERR, __FILE__, __LINE__, errno,"ioctl() failed!");
+	    }
+	    (*dhcp)->rbuf_max = (unsigned int)blen;
+	    if (!((*dhcp)->rbuf = malloc((*dhcp)->rbuf_max))) {
+	      /* TODO: Free malloc */
+	      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "malloc() failed");
+	    }
+	    (*dhcp)->rbuf_offset = 0;
+	    (*dhcp)->rbuf_len = 0;	
+		}
 #endif
 
     if (usemac) memcpy(((*dhcp)->arp_hwaddr), mac, DHCP_ETH_ALEN);
@@ -1961,7 +1967,7 @@ int dhcp_doDNATv6(struct dhcp_conn_t* conn, struct dhcp_ipv6packet_t* pack, int 
     struct in6_addr solict_addr;
 
     ipv6_addr_solict_mult(&this->ouripv6, &solict_addr);
-    if(IN6_ARE_ADDR_EQUAL(&pack->ip6h.dst_addr, &solict_addr) || IN6_ARE_ADDR_EQUAL(&pack->ip6h.dst_addr, &this->ouripv6))
+    if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.dst_addr, &solict_addr) || IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.dst_addr, &this->ouripv6))
     {
       struct in6_addr src;
       struct dhcp_icmpv6packet_t*icmpv6=(struct dhcp_icmpv6packet_t*)pack->payload;
@@ -1982,7 +1988,7 @@ int dhcp_doDNATv6(struct dhcp_conn_t* conn, struct dhcp_ipv6packet_t* pack, int 
   }
 
   /* was it a request for local redirection server */
-  if(IN6_ARE_ADDR_EQUAL(&pack->ip6h.dst_addr, &this->ouripv6) && pack->ip6h.next_header==DHCP_IPV6_TCP && tcph->dst==htons(this->uamport))
+  if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.dst_addr, &this->ouripv6) && pack->ip6h.next_header==DHCP_IPV6_TCP && tcph->dst==htons(this->uamport))
   {
     printf("IPv6 request for local redirection server!\n");
     return 0;
@@ -1990,7 +1996,7 @@ int dhcp_doDNATv6(struct dhcp_conn_t* conn, struct dhcp_ipv6packet_t* pack, int 
 
   /* was it a http / https request for authentification server */
   /* default us! */
-  if(IN6_ARE_ADDR_EQUAL(&pack->ip6h.dst_addr, &this->ouripv6))
+  if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.dst_addr, &this->ouripv6))
   {
     printf("HTTP / HTTPS for us\n");
     return 0;
@@ -2012,7 +2018,7 @@ int dhcp_doDNATv6(struct dhcp_conn_t* conn, struct dhcp_ipv6packet_t* pack, int 
 
     for(n=0;n<DHCP_DNATV6_MAX;n++)
     {
-      if(IN6_ARE_ADDR_EQUAL(&conn->dnatipv6[n], &pack->ip6h.dst_addr) && conn->dnatportv6[n] == tcph->src)
+      if(IN6_ARE_ADDR_EQUAL(&conn->dnatipv6[n], (struct in6_addr*) &pack->ip6h.dst_addr) && conn->dnatportv6[n] == tcph->src)
       {
         pos=n;
         break;
@@ -2136,13 +2142,13 @@ int dhcp_undoDNATv6(struct dhcp_conn_t *conn, struct dhcp_ipv6packet_t *pack, in
     return 0;
 
   /* icmpv6 */
-  if(IN6_ARE_ADDR_EQUAL(&pack->ip6h.src_addr, &conn->ouripv6) && pack->ip6h.next_header==htons(DHCP_IPV6_ICMPV6))
+  if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.src_addr, &conn->ouripv6) && pack->ip6h.next_header==htons(DHCP_IPV6_ICMPV6))
   {
     return 0;
   }
 
   /* reply from redir server */
-  if(IN6_ARE_ADDR_EQUAL(&pack->ip6h.src_addr, &this->ouripv6) && pack->ip6h.next_header==DHCP_IPV6_TCP && tcph->src==htons(this->uamport))
+  if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.src_addr, &this->ouripv6) && pack->ip6h.next_header==DHCP_IPV6_TCP && tcph->src==htons(this->uamport))
   {
     int n=0;
 
@@ -2171,7 +2177,7 @@ int dhcp_undoDNATv6(struct dhcp_conn_t *conn, struct dhcp_ipv6packet_t *pack, in
 
   /* Was it a normal http or https reply from authentication server? */
   /* Was it a normal reply from authentication server? */
-  if (IN6_ARE_ADDR_EQUAL(&pack->ip6h.src_addr, &this->ouripv6))
+  if (IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.src_addr, &this->ouripv6))
   {
     return 0; /* Destination was authentication server */
   }
@@ -2933,7 +2939,7 @@ int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack, int l
     /*if (this->debug)*/ printf("IPv6 Address found\n");
     memcpy(&ouripv6, &conn->ouripv6, sizeof(struct in6_addr));
     /* protect from spoofing */
-    if(!IN6_IS_ADDR_UNSPECIFIED(&conn->hisipv6) && !IN6_IS_ADDR_LINKLOCAL(&pack->ip6h.src_addr) && !IN6_IS_ADDR_UNSPECIFIED(&pack->ip6h.src_addr))
+    if(!IN6_IS_ADDR_UNSPECIFIED(&conn->hisipv6) && !IN6_IS_ADDR_LINKLOCAL((struct in6_addr*)&pack->ip6h.src_addr) && !IN6_IS_ADDR_UNSPECIFIED((struct in6_addr*)&pack->ip6h.src_addr))
     {
       memcpy(&conn->hisipv6, pack->ip6h.src_addr, sizeof(struct in6_addr));
     }
@@ -2943,7 +2949,7 @@ int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack, int l
     /*if (this->debug)*/ printf("Address not found\n");
     memcpy(&ouripv6, &this->ouripv6, sizeof(struct in6_addr));
     
-    if(IN6_IS_ADDR_LINKLOCAL(&pack->ip6h.src_addr) || IN6_IS_ADDR_UNSPECIFIED(&pack->ip6h.src_addr))
+    if(IN6_IS_ADDR_LINKLOCAL((struct in6_addr*)&pack->ip6h.src_addr) || IN6_IS_ADDR_UNSPECIFIED((struct in6_addr*)&pack->ip6h.src_addr))
     {
       /* we don't care about link-local address */
       printf("dont'care about link-local\n");
@@ -3628,7 +3634,7 @@ int dhcp_receive(struct dhcp_t *this) {
 	       struct interface_info *interface, unsigned char *buf,
 	       size_t len, struct sockaddr_in *from, struct hardware *hfrom)
 {*/
-  int length = 0, offset = 0;
+  int length = 0;
   struct bpf_hdr *hdrp = NULL;
   struct dhcp_ethhdr_t *ethhdr = NULL;
   
@@ -3672,7 +3678,7 @@ int dhcp_receive(struct dhcp_t *this) {
       break;
     /* [SV] */
     case DHCP_ETH_IPV6:
-      dhcp_receive_ipv6(this, (strcut dhcp_ipv6packet_t*)ethhdr, hdrp->bh_caplen);
+      dhcp_receive_ipv6(this, (struct dhcp_ipv6packet_t*)ethhdr, hdrp->bh_caplen);
       break;
     case DHCP_ETH_EAPOL:
     default:

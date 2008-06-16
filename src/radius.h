@@ -351,118 +351,109 @@ struct radius_attrv6_t {
 
 
 /* Create new radius instance */
-extern int radius_new(struct radius_t **this, 
+int radius_new(struct radius_t **this, 
 		      struct sockaddr_storage *listen, uint16_t port, int coanocheck,
 		      struct sockaddr_storage *proxylisten, uint16_t proxyport,
 		      struct sockaddr_storage *proxyaddr, struct sockaddr_storage *proxymask,
 		      char* proxysecret);
 
 /* Delete existing radius instance */
-extern int radius_free(struct radius_t *this);
+int radius_free(struct radius_t *this);
 
 /* Set radius parameters which can later be changed */
-extern void radius_set(struct radius_t *this, int debug,
+void radius_set(struct radius_t *this, int debug,
 		       struct sockaddr_storage *server0, struct sockaddr_storage *server1,
 		       uint16_t authport, uint16_t acctport, char* secret);
 
 
 /* Callback function for received request */
-extern int radius_set_cb_ind(struct radius_t *this,
+int radius_set_cb_ind(struct radius_t *this,
   int (*cb_ind) (struct radius_t *radius, struct radius_packet_t *pack,
 		 struct sockaddr_storage *peer));
 
-extern int
-radius_set_cb_coa_ind(struct radius_t *this,
+int radius_set_cb_coa_ind(struct radius_t *this,
 int (*cb_coa_ind) (struct radius_t *radius, struct radius_packet_t *pack,
 		   struct sockaddr_storage *peer)) ;
 
 /* Callback function for response to access request */
-extern int radius_set_cb_auth_conf(struct radius_t *this,
+int radius_set_cb_auth_conf(struct radius_t *this,
 int (*cb_auth_conf) (struct radius_t *radius, struct radius_packet_t *pack,
 		     struct radius_packet_t *pack_req, void *cbp));
 
 /* Callback function for response to accounting request */
-extern int radius_set_cb_acct_conf(struct radius_t *this,
+int radius_set_cb_acct_conf(struct radius_t *this,
 int (*cb_acct_conf) (struct radius_t *radius, struct radius_packet_t *pack,
 		     struct radius_packet_t *pack_req, void *cbp));
 
 /* Send of a request */
-extern int radius_req(struct radius_t *this, 
+int radius_req(struct radius_t *this, 
 		      struct radius_packet_t *pack,
 		      void *cbp);
 
 /* Send of a response */
-extern int radius_resp(struct radius_t *this,
+int radius_resp(struct radius_t *this,
 		       struct radius_packet_t *pack,
 		       struct sockaddr_storage *peer, uint8_t *req_auth);
 
 /* Send of a coa response */
-extern int radius_coaresp(struct radius_t *this,
+int radius_coaresp(struct radius_t *this,
 			  struct radius_packet_t *pack,
 			  struct sockaddr_storage *peer, uint8_t *req_auth);
 
 /* Process an incoming packet */
-extern int radius_decaps(struct radius_t *this);
+int radius_decaps(struct radius_t *this);
 
 /* Process an incoming packet */
-extern int radius_proxy_ind(struct radius_t *this);
+int radius_proxy_ind(struct radius_t *this);
 
 /* Add an attribute to a packet */
-extern int radius_addattr(struct radius_t *this, struct radius_packet_t *pack, 
+int radius_addattr(struct radius_t *this, struct radius_packet_t *pack, 
 	       uint8_t type, uint32_t vendor_id, uint8_t vendor_type,
 	       uint32_t value, uint8_t *data, uint16_t dlen);
 /* Add an IPv6 specific attribute to a packet */
-extern int radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack, 
+int radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack, 
 	       uint8_t type, uint32_t vendor_id, uint8_t vendor_type,
 	       struct in6_addr value, uint8_t *data, uint16_t dlen);
 
 /* Generate a packet for use with radius_addattr() */
-extern int radius_default_pack(struct radius_t *this,
+int radius_default_pack(struct radius_t *this,
 			       struct radius_packet_t *pack,
 			       int code);
 
 /* Extract an attribute from a packet */
-extern int 
-radius_getattr(struct radius_packet_t *pack, struct radius_attr_t **attr,
+int radius_getattr(struct radius_packet_t *pack, struct radius_attr_t **attr,
 	       uint8_t type, uint32_t vendor_id, uint8_t vendor_type,
 	       int instance);
-extern int
-radius_getattrv6(struct radius_packet_t *pack, struct radius_attrv6_t **attr,
+int radius_getattrv6(struct radius_packet_t *pack, struct radius_attrv6_t **attr,
 	       uint8_t type, uint32_t vendor_id, uint8_t vendor_type,
 	       int instance);
 
 /* Encode a password */
-extern int 
-radius_pwencode(struct radius_t *this, uint8_t *dst, int dstsize,
+int radius_pwencode(struct radius_t *this, uint8_t *dst, int dstsize,
 		int *dstlen, uint8_t *src, int srclen, 
 		uint8_t *authenticator, char *secret, int secretlen);
   
 
 /* Decode a password (also used for MSCHAPv1 MPPE keys) */
-extern int 
-radius_pwdecode(struct radius_t *this, uint8_t *dst, int dstsize,
+int radius_pwdecode(struct radius_t *this, uint8_t *dst, int dstsize,
 		    int *dstlen, uint8_t *src, int srclen, 
 		uint8_t *authenticator, char *secret, int secretlen);
 
 
 /* Decode MPPE key */
-extern int 
-radius_keydecode(struct radius_t *this, uint8_t *dst, int dstsize,
+int radius_keydecode(struct radius_t *this, uint8_t *dst, int dstsize,
 		 int *dstlen, uint8_t *src, int srclen, 
 		 uint8_t *authenticator, char *secret, int secretlen);
 
 /* Encode MPPE key */
-extern int 
-radius_keyencode(struct radius_t *this, uint8_t *dst, int dstsize,
+int radius_keyencode(struct radius_t *this, uint8_t *dst, int dstsize,
 		     int *dstlen, uint8_t *src, int srclen,
 		 uint8_t *authenticator, char *secret, int secretlen);
 
-
-
 /* Call this function to process packets needing retransmission */
-extern int radius_timeout(struct radius_t *this);
+int radius_timeout(struct radius_t *this);
 
 /* Figure out when to call radius_calltimeout() */
-extern int radius_timeleft(struct radius_t *this, struct timeval *timeout);
+int radius_timeleft(struct radius_t *this, struct timeval *timeout);
 
 #endif	/* !_RADIUS_H */

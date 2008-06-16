@@ -97,6 +97,10 @@
 #include "ippool.h"
 #include "../config.h"
 
+#if defined (__FreeBSD__)  || defined (__APPLE__)
+#define s6_addr32   __u6_addr.__u6_addr32
+#endif
+
 static int optionsdebug = 1; /* TODO: Should be changed to instance */
 
 static int keep_going = 1;   /* OK as global variable for child process */
@@ -711,7 +715,7 @@ int redir_new(struct redir_t **redir,
 		addressv6.sin6_flowinfo = htons(1);
 		/*addressv6.sin6_scope_id = htons(0);*/
 #if defined(__FreeBSD__)  || defined (__APPLE__)
-		address.sin6_len = sizeof (struct sockaddr_in6);
+		addressv6.sin6_len = sizeof (struct sockaddr_in6);
 #endif
 
 		memcpy(&(*redir)->addrv6, addressv6.sin6_addr.s6_addr, sizeof(struct in6_addr));

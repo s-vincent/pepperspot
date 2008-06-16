@@ -275,7 +275,7 @@ tun6 *tun6_create (const char *req_name)
 	int id = if_nametoindex (t->orig_name);
 	if (id == 0)
 	{
-		syslog (LOG_ERR, _("Tunneling driver error (%s): %s"),
+		syslog (LOG_ERR, "Tunneling driver error (%s): %s",
 		        t->orig_name, strerror (errno));
 		goto error;
 	}
@@ -289,7 +289,7 @@ tun6 *tun6_create (const char *req_name)
 	/* Enables TUNSIFHEAD */
 	if (ioctl (fd, TUNSIFHEAD, &(int){ 1 }))
 	{
-		syslog (LOG_ERR, _("Tunneling driver error (%s): %s"),
+		syslog (LOG_ERR, "Tunneling driver error (%s): %s",
 		        "TUNSIFHEAD", strerror (errno));
 #  if defined (__APPLE__)
 		if (errno == EINVAL)
@@ -303,7 +303,7 @@ tun6 *tun6_create (const char *req_name)
 	/* Disables TUNSLMODE (deprecated opposite of TUNSIFHEAD) */
 	if (ioctl (fd, TUNSLMODE, &(int){ 0 }))
 	{
-		syslog (LOG_ERR, _("Tunneling driver error (%s): %s"),
+		syslog (LOG_ERR, "Tunneling driver error (%s): %s",
 		        "TUNSLMODE", strerror (errno));
 		goto error;
 	}
@@ -317,7 +317,7 @@ tun6 *tun6_create (const char *req_name)
 
 		if (if_indextoname (id, req.ifr_name) == NULL)
 		{
-			syslog (LOG_ERR, _("Tunneling driver error (%s): %s"),
+			syslog (LOG_ERR, "Tunneling driver error (%s): %s",
 			        "if_indextoname", strerror (errno));
 			goto error;
 		}
@@ -339,7 +339,7 @@ tun6 *tun6_create (const char *req_name)
 			errno = ENOSYS;
 #endif
 			{
-				syslog (LOG_ERR, _("Tunneling driver error (%s): %s"),
+				syslog (LOG_ERR, "Tunneling driver error (%s): %s",
 				        "SIOCSIFNAME", strerror (errno));
 				goto error;
 			}
@@ -645,7 +645,7 @@ _iface_route (int reqfd, int id, bool add, const struct in6_addr *addr,
 	int s = socket (AF_ROUTE, SOCK_RAW, AF_INET6);
 	if (s == -1)
 	{
-		syslog (LOG_ERR, _("Error (%s): %s\n"), "socket (AF_ROUTE)",
+		syslog (LOG_ERR, "Error (%s): %s\n", "socket (AF_ROUTE)",
 		        strerror (errno));
 		return -1;
 	}
@@ -957,6 +957,7 @@ tun6_send (tun6 *t, const void *packet, size_t len)
 	return val;
 }
 
+#if 0
 /**
  * \brief Add an IPv6 route.
  * \param this the tun_t structure
@@ -989,6 +990,7 @@ static int tun6_addroutegw(struct tun6* this, struct in6_addr* dst, struct in6_a
 
     return code!=-1 ? 0 : -1;
 }
+#endif
 
 
 int tun6_new(struct tun6_t** tun)
@@ -1061,7 +1063,12 @@ int tun6_setaddr(struct tun6_t *this, struct in6_addr *addr, uint8_t prefixlen)
 
 int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *gateway, uint8_t prefixlen)
 {
-	return tun6_addroutegw(this->device, dst, gateway, prefixlen);
+	/* TODO : use _iface_route */
+	this=NULL;
+	dst=NULL;
+	gateway=NULL;
+	prefixlen=0;
+	return -1; 
 }
 
 int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void *pack, unsigned len))

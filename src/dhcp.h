@@ -462,9 +462,9 @@ struct dhcp_t {
   int ifindex;  /* Hardware address of interface */
 #if defined(__FreeBSD__) || defined (__OpenBSD__) || defined (__APPLE__) 
   char *rbuf;
-  int rbuf_max;
-  int rbuf_offset;
-  int rbuf_len;
+  unsigned int rbuf_max;
+  unsigned int rbuf_offset;
+  unsigned int rbuf_len;
 #endif
   int arp_fd;           /* File descriptor to network interface */
   unsigned char arp_hwaddr[DHCP_ETH_ALEN]; /* Hardware address of interface */
@@ -561,42 +561,32 @@ struct dhcp_t {
 
 /* External API functions */
 
-extern const char* dhcp_version(void);
+const char* dhcp_version(void);
 
-extern int
-dhcp_new(struct dhcp_t **dhcp, int numconn, char *interface,
+int dhcp_new(struct dhcp_t **dhcp, int numconn, char *interface,
 	 int usemac, uint8_t *mac, int promisc, 
 	 struct in_addr *listen, struct in6_addr* listenv6, int lease, int allowdyn,
 	 struct in_addr *uamlisten, struct in6_addr *uamlisten6, uint16_t uamport, int useeapol, char *ipversion);
 
-extern int
-dhcp_set(struct dhcp_t *dhcp, int debug,
+int dhcp_set(struct dhcp_t *dhcp, int debug,
 	 struct in_addr *authip, int authiplen, int anydns,
 	 struct in_addr *uamokip, int uamokiplen, struct in_addr *uamokaddr,
 	 struct in_addr *uamokmask, int uamoknetlen);
 
-extern int
-dhcp_setv6(struct dhcp_t *dhcp, int debug,
+int dhcp_setv6(struct dhcp_t *dhcp, int debug,
 	 struct in6_addr *authip, int authiplen, int anydns,
 	 struct in6_addr *uamokip, int uamokiplen, struct in6_addr *uamokaddr,
 	 struct in6_addr *uamokmask, int uamoknetlen);
 
-extern int
-dhcp_free(struct dhcp_t *dhcp);
+int dhcp_free(struct dhcp_t *dhcp);
 
+int dhcp_timeout(struct dhcp_t *this);
 
-extern int 
-dhcp_timeout(struct dhcp_t *this);
+struct timeval* dhcp_timeleft(struct dhcp_t *this, struct timeval *tvp);
 
-extern struct timeval*
-dhcp_timeleft(struct dhcp_t *this, struct timeval *tvp);
+int dhcp_validate(struct dhcp_t *this);
 
-
-extern int 
-dhcp_validate(struct dhcp_t *this);
-
-extern int 
-dhcp_set_addrsv6(struct dhcp_conn_t *conn, 
+int dhcp_set_addrsv6(struct dhcp_conn_t *conn, 
 	       struct in6_addr *hisip,
 	       struct in6_addr *ourip, char *domain);
 	       
@@ -609,12 +599,10 @@ int dhcp_set_addrs(struct dhcp_conn_t *conn,
 		   char *domain);
 
 /* Called whenever a packet arrives */
-extern int 
-dhcp_decaps(struct dhcp_t *this);
+int dhcp_decaps(struct dhcp_t *this);
 
 
-extern int 
-dhcp_data_req(struct dhcp_conn_t *conn, void *pack, unsigned len);
+int dhcp_data_req(struct dhcp_conn_t *conn, void *pack, unsigned len);
 
 /* [SV] */
 /**
@@ -624,57 +612,47 @@ dhcp_data_req(struct dhcp_conn_t *conn, void *pack, unsigned len);
  * \return 0
  * \author Sebastien Vincent
  */
-extern int dhcp_set_cb_ipv6_ind(struct dhcp_t *this, int (*cb_ipv6_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
+int dhcp_set_cb_ipv6_ind(struct dhcp_t *this, int (*cb_ipv6_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
 
-extern int dhcp_set_cb_requestv6(struct dhcp_t *this,  int (*cb_request) (struct dhcp_conn_t *conn, struct in6_addr *addr));
+int dhcp_set_cb_requestv6(struct dhcp_t *this,  int (*cb_request) (struct dhcp_conn_t *conn, struct in6_addr *addr));
 
-extern int dhcp_set_cb_connectv6(struct dhcp_t *this,  int (*cb_connect) (struct dhcp_conn_t *conn));
+int dhcp_set_cb_connectv6(struct dhcp_t *this,  int (*cb_connect) (struct dhcp_conn_t *conn));
 
-extern int dhcp_set_cb_disconnectv6(struct dhcp_t *this,  int (*cb_disconnect) (struct dhcp_conn_t *conn));
+int dhcp_set_cb_disconnectv6(struct dhcp_t *this,  int (*cb_disconnect) (struct dhcp_conn_t *conn));
 
-extern int 
-dhcp_set_cb_data_ind(struct dhcp_t *this, 
+int dhcp_set_cb_data_ind(struct dhcp_t *this, 
   int (*cb_data_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
 
-extern int 
-dhcp_set_cb_request(struct dhcp_t *this, 
+int dhcp_set_cb_request(struct dhcp_t *this, 
   int (*cb_request) (struct dhcp_conn_t *conn, struct in_addr *addr));
 
-extern int 
-dhcp_set_cb_disconnect(struct dhcp_t *this, 
+int dhcp_set_cb_disconnect(struct dhcp_t *this, 
   int (*cb_disconnect) (struct dhcp_conn_t *conn));
 
-extern int 
-dhcp_set_cb_connect(struct dhcp_t *this, 
+int dhcp_set_cb_connect(struct dhcp_t *this, 
   int (*cb_connect) (struct dhcp_conn_t *conn));
 
-extern int 
-dhcp_set_cb_eap_ind(struct dhcp_t *this, 
+int dhcp_set_cb_eap_ind(struct dhcp_t *this, 
   int (*cb_eap_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
 
-extern int 
-dhcp_hashget(struct dhcp_t *this, struct dhcp_conn_t **conn,
+int dhcp_hashget(struct dhcp_t *this, struct dhcp_conn_t **conn,
 	     uint8_t *hwaddr);
 
-extern int 
-dhcp_getmac(const char *ifname, char *macaddr);
+int dhcp_getmac(const char *ifname, unsigned char *macaddr);
 
-extern int 
-dhcp_newconn(struct dhcp_t *this, struct dhcp_conn_t **conn, 
+int dhcp_newconn(struct dhcp_t *this, struct dhcp_conn_t **conn, 
 	     uint8_t *hwaddr);
 
-extern 
 int dhcp_freeconn(struct dhcp_conn_t *conn);
 
 
-extern int 
-dhcp_arp_ind(struct dhcp_t *this);  /* ARP Indication */
+int dhcp_arp_ind(struct dhcp_t *this);  /* ARP Indication */
 
-extern int dhcp_sendEAP(struct dhcp_conn_t *conn, void *pack, int len);
+int dhcp_sendEAP(struct dhcp_conn_t *conn, void *pack, int len);
 
-extern int dhcp_sendEAPreject(struct dhcp_conn_t *conn, void *pack, int len);
+int dhcp_sendEAPreject(struct dhcp_conn_t *conn, void *pack, int len);
 
-extern int dhcp_eapol_ind(struct dhcp_t *this);
+int dhcp_eapol_ind(struct dhcp_t *this);
 
 /* [SV] */
 /**
@@ -683,8 +661,10 @@ extern int dhcp_eapol_ind(struct dhcp_t *this);
  * \param this the dhcp_t instance
  * \author Sebastien Vincent
  */
-extern int dhcp_ipv6_ind(struct dhcp_t* this);
+int dhcp_ipv6_ind(struct dhcp_t* this);
 
-extern int dhcp_ipv6_req(struct dhcp_conn_t* conn, void* pack, unsigned len);
+int dhcp_ipv6_req(struct dhcp_conn_t* conn, void* pack, unsigned len);
+
+int dhcp_receive(struct dhcp_t* this);
 
 #endif	/* !_DHCP_H */

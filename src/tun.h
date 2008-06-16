@@ -68,6 +68,14 @@
 #ifndef _TUN_H
 #define _TUN_H
 
+
+#if defined(__APPLE__) /* we compile in POSIX */
+#include <net/if.h>
+#ifndef IFNAMSIZ
+#define IFNAMSIZ IF_NAMESIZE
+#endif
+#endif 
+
 #define PACKET_MAX      8196 /* Maximum packet size we receive */
 #define TUN_SCRIPTSIZE   256
 #define TUN_ADDRSIZE     128
@@ -106,26 +114,35 @@ struct tun_t {
 };
 
 
-extern int tun_new(struct tun_t **tun);
-extern int tun_free(struct tun_t *tun);
-extern int tun_decaps(struct tun_t *this);
-extern int tun_encaps(struct tun_t *tun, void *pack, unsigned len);
+int tun_new(struct tun_t **tun);
+int tun_free(struct tun_t *tun);
+int tun_decaps(struct tun_t *this);
+int tun_encaps(struct tun_t *tun, void *pack, unsigned len);
 
-extern int tun_addaddr(struct tun_t *this, struct in_addr *addr,
+int tun_addaddr(struct tun_t *this, struct in_addr *addr,
 		       struct in_addr *dstaddr, struct in_addr *netmask);
 
 
-extern int tun_setaddr(struct tun_t *this, struct in_addr *our_adr, 
+int tun_setaddr(struct tun_t *this, struct in_addr *our_adr, 
 		       struct in_addr *his_adr, struct in_addr *net_mask);
 
 int tun_addroute(struct tun_t *this, struct in_addr *dst, 
 		 struct in_addr *gateway, struct in_addr *mask);
 
-extern int tun_set_cb_ind(struct tun_t *this, 
+int tun_set_cb_ind(struct tun_t *this, 
      int (*cb_ind) (struct tun_t *tun, void *pack, unsigned len));
 
 
-extern int tun_runscript(struct tun_t *tun, char* script);
+int tun_runscript(struct tun_t *tun, char* script);
+
+#ifdef __APPLE__
+/**
+ * \brief clearenv replacement (non POSIX function).
+ * Clear the environnement variables.
+ * \return 0
+ */
+int clearenv (void);
+#endif
 
 #endif	/* !_TUN_H */
 

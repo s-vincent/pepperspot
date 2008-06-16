@@ -52,7 +52,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include <pthread.h>
+/* #include <pthread.h> */
 #include <sys/socket.h>
 #include <errno.h>
 #include <stdio.h>
@@ -61,6 +61,7 @@
 #include <unistd.h>
 #include <syslog.h>
 #include <netinet/in.h>
+
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
 #include "icmp6.h"
@@ -83,11 +84,12 @@ enum {
 };
 
 
-static pthread_rwlock_t handler_lock;
+/* static pthread_rwlock_t handler_lock; */
 static struct icmp6_handler *handlers[__ICMP6_SENTINEL + 1];
 
+
 struct sock icmp6_sock;
-static pthread_t icmp6_listener;
+/* static pthread_t icmp6_listener;  */
 
 static inline int icmp6_type_map(uint8_t type)
 {
@@ -125,18 +127,17 @@ void icmp6_handler_reg(uint8_t type, struct icmp6_handler *handler)
 
 	assert(handler->next == NULL);
 
-	pthread_rwlock_wrlock(&handler_lock);
+	/* pthread_rwlock_wrlock(&handler_lock); */
 	handler->next = handlers[i];
 	handlers[i] = handler;
-	pthread_rwlock_unlock(&handler_lock);
-        printf("recv_na reg!\n");
+/*	pthread_rwlock_unlock(&handler_lock); */
 }
 
 void icmp6_handler_dereg(uint8_t type, struct icmp6_handler *handler)
 {
 	struct icmp6_handler **h = NULL; 
 	int i = icmp6_type_map(type);
-	pthread_rwlock_wrlock(&handler_lock);
+	/* pthread_rwlock_wrlock(&handler_lock); */
 	h = &handlers[i];
 	while (*h) {
 		if (*h == handler) {
@@ -146,7 +147,7 @@ void icmp6_handler_dereg(uint8_t type, struct icmp6_handler *handler)
 		}
 		h = &(*h)->next;
 	}
-	pthread_rwlock_unlock(&handler_lock);
+/*	pthread_rwlock_unlock(&handler_lock); */
 }
 
 /**
@@ -181,6 +182,7 @@ int if_mc_group(int sock, int ifindex, const struct in6_addr *mc_addr, int cmd)
 	return setsockopt(sock, IPPROTO_IPV6, cmd, &mreq, sizeof(mreq));
 }
 
+#if 0
 void *icmp6_listen(void *arg)
 {
 	uint8_t msg[MAX_PKT_LEN];
@@ -200,7 +202,7 @@ void *icmp6_listen(void *arg)
 
         printf("Thread started\n");
 	while (1) { 
-		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+		/* pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL); */
 		len = icmp6_recv(icmp6_sock.fd, msg, sizeof(msg),
 				 &addr, &pkt_info, &hoplimit);
 		/* check if socket has closed */
@@ -215,18 +217,19 @@ void *icmp6_listen(void *arg)
 
 		ih = (struct icmp6_hdr *)msg;
 		/* multiplex to right handler */
-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-		pthread_rwlock_rdlock(&handler_lock);
+/*		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL); */
+/*		pthread_rwlock_rdlock(&handler_lock); */
 
 
 		if ((h = icmp6_handler_get(ih->icmp6_type)) != NULL)
 			h->recv(ih, len, saddr, daddr, iif, hoplimit);
 
 
-		pthread_rwlock_unlock(&handler_lock);
-        } 
-        pthread_exit(NULL); 
+/*		pthread_rwlock_unlock(&handler_lock); */
+  } 
+  pthread_exit(NULL); 
 }
+#endif
 
 int icmp6_init(void)
 {
@@ -250,26 +253,6 @@ int icmp6_init(void)
 	ICMP6_FILTER_SETBLOCKALL(&filter);
 	ICMP6_FILTER_SETPASS(ICMP6_DST_UNREACH, &filter); 
 
-        /* [SV] : we allow just the NA to determine if wireless client
-         * is IPv6 ready (if he responds to our NS) 
-         */
-        ICMP6_FILTER_SETPASS(ND_NEIGHBOR_ADVERT, &filter);
-/*
-	if (is_ha()) {
-		ICMP6_FILTER_SETPASS(MIP_PREFIX_SOLICIT, &filter);
-		ICMP6_FILTER_SETPASS(MIP_HA_DISCOVERY_REQUEST, &filter);
-		ICMP6_FILTER_SETPASS(ND_ROUTER_ADVERT, &filter);
-	}
-
-	if (is_mn()) {
-		ICMP6_FILTER_SETPASS(ND_ROUTER_ADVERT, &filter);
-		ICMP6_FILTER_SETPASS(ND_NEIGHBOR_ADVERT, &filter);
-		ICMP6_FILTER_SETPASS(MIP_PREFIX_ADVERT, &filter);
-		ICMP6_FILTER_SETPASS(MIP_HA_DISCOVERY_REPLY, &filter);
-		ICMP6_FILTER_SETPASS(ICMP6_PARAM_PROB, &filter);
-	}
-*/
-
 	if (setsockopt(icmp6_sock.fd, IPPROTO_ICMPV6, ICMP6_FILTER, 
 		       &filter, sizeof(struct icmp6_filter)) < 0)
 		return -1;
@@ -278,15 +261,17 @@ int icmp6_init(void)
 		       &val, sizeof(val)) < 0)
 		return -1;
 	/* create ICMP listener thread */
-  /*      pthread_mutexattr_init(&mattrs); 
+
+/*      pthread_mutexattr_init(&mattrs); 
         pthread_mutexattr_settype(&mattrs, PTHREAD_MUTEX_FAST_NP); 
          
 	if (pthread_mutex_init(&icmp6_sock.send_mutex, &mattrs) ||
 	    pthread_rwlock_init(&handler_lock, NULL) ||
 	    pthread_create(&icmp6_listener, NULL, icmp6_listen, NULL))
 		return -1;
-	*/
-        pthread_create(&icmp6_listener, NULL, icmp6_listen, NULL);
+	
+	pthread_create(&icmp6_listener, NULL, icmp6_listen, NULL);
+*/
 	return 0;
 }
 
@@ -373,7 +358,7 @@ int icmp6_send(int oif, uint8_t hoplimit,
 	msg.msg_name = (void *)&daddr;
 	msg.msg_namelen = CMSG_SPACE(sizeof(struct in6_pktinfo));
 
-	// pthread_mutex_lock(&icmp6_sock.send_mutex); 
+	/* pthread_mutex_lock(&icmp6_sock.send_mutex);  */
 	setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_PKTINFO,
 		   &on, sizeof(int));
 	setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_UNICAST_HOPS, 
@@ -385,7 +370,7 @@ int icmp6_send(int oif, uint8_t hoplimit,
 	if (ret < 0)
 		printf("sendmsg: %s\n", strerror(errno));
 
-	//pthread_mutex_unlock(&icmp6_sock.send_mutex); 
+	/* pthread_mutex_unlock(&icmp6_sock.send_mutex); */
 
 	free(cmsg);
 
@@ -509,7 +494,9 @@ int icmp6_parse_data(struct ip6_hdr *ip6h, unsigned int len,
 void icmp6_cleanup(void)
 {
 	close(icmp6_sock.fd);
-	pthread_cancel(icmp6_listener);
+	/* pthread_cancel(icmp6_listener);
 	pthread_join(icmp6_listener, NULL);
+  */
         
 }
+
