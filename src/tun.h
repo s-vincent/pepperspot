@@ -135,14 +135,5 @@ int tun_set_cb_ind(struct tun_t *this,
 
 int tun_runscript(struct tun_t *tun, char* script);
 
-#ifdef __APPLE__
-/**
- * \brief clearenv replacement (non POSIX function).
- * Clear the environnement variables.
- * \return 0
- */
-int clearenv (void);
-#endif
-
 #endif	/* !_TUN_H */
 

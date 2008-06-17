@@ -27,9 +27,7 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__ 1
 
-#if defined (__FreeBSD__)  || defined (__APPLE__)
-#define s6_addr32   __u6_addr.__u6_addr32
-#endif
+#include "compat.h"
 
 #define MAX_PKT_LEN 1540
 

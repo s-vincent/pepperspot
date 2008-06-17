@@ -101,7 +101,6 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
-
 #elif defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
 #include <net/if.h>
 #include <net/if_tun.h>
@@ -122,18 +121,7 @@
 
 #include "tun.h"
 #include "syserr.h"
-
-#ifdef __APPLE__
-# include <crt_externs.h>
-# define environ (*_NSGetEnviron())
-
-int clearenv (void)
-{
-	environ = NULL; 
-  return 0; 
-}
-
-#endif
+#include "compat.h"
 
 #if defined(__linux__)
 
