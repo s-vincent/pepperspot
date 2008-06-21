@@ -1378,7 +1378,7 @@ int radius_new(struct radius_t **this,
 	if (((*this)->fd = socket(listen_addr->ss_family, SOCK_DGRAM, 0)) < 0 ) {
 		sys_err(LOG_ERR, __FILE__, __LINE__, errno,
 			"socket() failed!");
-			close(((int)(*this)->urandom_fp));
+			fclose((*this)->urandom_fp);
 			free((*this));
 		return -1;
 	}
@@ -1400,7 +1400,7 @@ int radius_new(struct radius_t **this,
 		sys_err(LOG_ERR, __FILE__, __LINE__, errno,
 			"bind() failed!");
 		close(((int)(*this)->fd));
-		close(((int)(*this)->urandom_fp));
+		fclose((*this)->urandom_fp);
 		free((*this));
 		return -1;
 	}
@@ -1425,7 +1425,7 @@ int radius_new(struct radius_t **this,
       sys_err(LOG_ERR, __FILE__, __LINE__, errno,
 	      "socket() failed!");
 	  close(((int)(*this)->fd));
-	  close(((int)(*this)->urandom_fp));
+	  fclose((*this)->urandom_fp);
 	  free((*this));
       return -1;
     }
@@ -1436,7 +1436,7 @@ int radius_new(struct radius_t **this,
 	      "bind() failed!");
 	  close(((int)(*this)->proxyfd));
 	  close(((int)(*this)->fd));
-	  close(((int)(*this)->urandom_fp));
+	  fclose((*this)->urandom_fp);
 	  free((*this));
       return -1;
     }

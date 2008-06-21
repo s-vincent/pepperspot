@@ -366,28 +366,49 @@ int runscript(struct app_conn_t *appconn, char* script) {
 	}
 
 	if(!appconn->ipv6)
+	{
 		set_env("DEV", tun->devname, 0, NULL, NULL, NULL);
+	}
 	else
+	{
 		set_envv6("DEV", tunv6->devnamev6, 0, NULL, NULL, NULL);
-	if(!appconn->ipv6) {
+	}
+
+	if(!appconn->ipv6) 
+	{
 		set_env("NET", NULL, 0, &appconn->net, NULL, NULL);
 		set_env("MASK", NULL, 0, &appconn->mask, NULL, NULL);
 	}
+
 	if(appconn->ipv6)
+	{
 		set_envv6("ADDR", NULL, 0, &appconn->ouripv6,NULL, NULL);
+	}
 	else
+	{
 		set_env("ADDR", NULL, 0, &appconn->ourip,NULL, NULL);
+	}
+
 	set_env("USER_NAME", appconn->proxyuser, 0, NULL, NULL, NULL);
+
 	if(options.radiusnasip.ss_family == AF_INET)
-		set_env("NAS_IP_ADDRESS", NULL, 0, (struct in_addr *)(((struct sockaddr_in *)&options.radiusnasip)->sin_addr).s_addr, NULL, NULL);
-	else 
-		set_envv6("NAS_IPV6_ADDRESS", NULL, 0, (struct in6_addr *)(((struct sockaddr_in6 *)&options.radiusnasip)->sin6_addr).s6_addr, NULL, NULL);
+	{
+		set_env("NAS_IP_ADDRESS", NULL, 0, &(((struct sockaddr_in *)&options.radiusnasip)->sin_addr), NULL, NULL);
+	}
+	else
+	{
+		set_envv6("NAS_IPV6_ADDRESS", NULL, 0, &(((struct sockaddr_in6 *)&options.radiusnasip)->sin6_addr), NULL, NULL);
+	}
+
 	set_env("SERVICE_TYPE", "1", 0, NULL, NULL, NULL);
+
 	if(appconn->ipv6) {
 		set_envv6("FRAMED_IPV6_PREFIX", NULL, 0, &options.prefix, NULL, NULL);
 	}
 	else
+	{
 		set_env("FRAMED_IP_ADDRESS", NULL, 0, &appconn->hisip, NULL, NULL);
+	}
 	set_env("FILTER_ID", appconn->filteridbuf, 0, NULL, NULL, NULL);
 	set_env("STATE", (char*) appconn->statebuf, appconn->statelen, NULL, NULL, NULL);
 	set_env("CLASS", (char*) appconn->classbuf, appconn->classlen, NULL, NULL, NULL);
