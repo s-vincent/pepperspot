@@ -136,6 +136,14 @@
 #include "dhcp.h"
 #include "lookup.h"
 
+#ifndef timercmp
+/* timercmp is BSD specific */
+#define timercmp(a, b, CMP) \
+  (((a)->tv_sec == (b)->tv_sec) ?  \
+  ((a)->tv_usec CMP (b)->tv_usec) :\
+  ((a)->tv_sec CMP (b)->tv_sec))
+#endif
+
 #ifdef NAIVE
 const static int paranoid = 0; /* Trust that the program has no bugs */
 #else
@@ -441,7 +449,7 @@ int dhcp_setaddr(char const *devname,
   if (dstaddr) { /* Set the destination address */
     ((struct sockaddr_in *) &ifr.ifr_dstaddr)->sin_addr.s_addr = 
       dstaddr->s_addr;
-    if (ioctl(fd, SIOCSIFDSTADDR, (caddr_t) &ifr) < 0) {
+    if (ioctl(fd, SIOCSIFDSTADDR, &ifr) < 0) {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno,
 	      "ioctl(SIOCSIFDSTADDR) failed");
       close(fd);

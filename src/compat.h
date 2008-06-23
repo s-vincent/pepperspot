@@ -37,7 +37,7 @@ extern "C" {
 #define s6_addr32   __u6_addr.__u6_addr32
 #endif
 
-#ifndef HAVE_CLEARENV
+#if !defined(HAVE_CLEARENV) || defined(_POSIX_C_SOURCE)
 
 /**
  * \brief clearenv replacement function (non POSIX).

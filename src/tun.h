@@ -68,13 +68,10 @@
 #ifndef _TUN_H
 #define _TUN_H
 
-
-#if defined(__APPLE__) /* we compile in POSIX */
 #include <net/if.h>
 #ifndef IFNAMSIZ
 #define IFNAMSIZ IF_NAMESIZE
 #endif
-#endif 
 
 #define PACKET_MAX      8196 /* Maximum packet size we receive */
 #define TUN_SCRIPTSIZE   256

@@ -110,7 +110,10 @@
 #include <sys/msg.h>
 #include <sys/wait.h>
 
+#if 0 
+/* for the moment disable it, try to find a POSIX replacement */
 #include <resolv.h> /* _res */
+#endif
 
 #include "../config.h"
 #include "tun.h"
@@ -546,7 +549,8 @@ static int get_namepart6(char *src, char *host, int *port) {
 		sscanf(colon+1, "%d", port);
 	return 0;
 }
-/*
+
+#if 0
 static int set_uamallowed(char *uamallowed, int len) {
 	char *p1 = NULL;
 	char *p2 = NULL;
@@ -629,7 +633,7 @@ static int set_uamallowed(char *uamallowed, int len) {
 	free(p3);
 	return 0;
 }
-*/
+#endif
 
 static int set_uamallowed(char *uamallowed, int len) {
 	char *p1 = NULL;
@@ -767,10 +771,7 @@ static int set_uamallowed(char *uamallowed, int len) {
 					}
 					close(sfd);
 				}
-
-			
 			}			
-		
 		}
 		if (p2) {
 			p1 = p2+1;
@@ -883,12 +884,14 @@ static int process_options(int argc, char **argv, int firsttime) {
 		return -1;
 	}
 
+#if 0
 	/* Get the system default DNS entries */
 	if (res_init()) {
 		sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 				"Failed to update system DNS settings (res_init()!");
 		return -1;
 	}
+#endif
 
 	/* Handle each option */
 
@@ -1144,17 +1147,14 @@ static int process_options(int argc, char **argv, int firsttime) {
 	if (!args_info.uamlisten_arg) {
 		memcpy(options.uamlisten6.s6_addr,options.ip6listen.s6_addr,sizeof(struct in6_addr));
 	}
-/*	else if (!inet_aton(args_info.uamlisten_arg, &options.uamlisten)) { */
 	else if(!inet_pton(AF_INET, args_info.uamlisten_arg, &options.uamlisten)) {
 		sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 				"Invalid UAM IP address: %s!", args_info.uamlisten_arg);
 		return -1;
 	}
 
-
 	/* uamport                                                      */
 	options.uamport = args_info.uamport_arg;
-
 
 	/* uamallowed                                                   */
 	memset(options.uamokip, 0, sizeof(options.uamokip));
@@ -1213,7 +1213,6 @@ static int process_options(int argc, char **argv, int firsttime) {
 	/* Store dns1 as in_addr                                        */
 	/* If DNS not given use system default                          */
 	if (args_info.dns1_arg) {
-/*		if (!inet_aton(args_info.dns1_arg, &options.dns1)) { */
 		if(!inet_pton(AF_INET, args_info.dns1_arg, &options.dns1)) {
 			sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 					"Invalid primary DNS address: %s!", 
@@ -1221,9 +1220,11 @@ static int process_options(int argc, char **argv, int firsttime) {
 			return -1;
 		}
 	}
+#if 0
 	else if (_res.nscount >= 1) {
 		options.dns1 = _res.nsaddr_list[0].sin_addr;
 	}
+#endif
 	else {
 		options.dns1.s_addr = 0;
 	}
@@ -1232,7 +1233,6 @@ static int process_options(int argc, char **argv, int firsttime) {
 	/* Store dns2 as in_addr                                        */
 	/* If DNS not given use system default else use DNS1            */
 	if (args_info.dns2_arg) {
-/*		if (!inet_aton(args_info.dns2_arg, &options.dns2)) { */
 		if(!inet_pton(AF_INET, args_info.dns2_arg, &options.dns2)) {
 			sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 					"Invalid secondary DNS address: %s!", 
@@ -1240,9 +1240,11 @@ static int process_options(int argc, char **argv, int firsttime) {
 			return -1;
 		}
 	}
+#if 0
 	else if (_res.nscount >= 2) {
 		options.dns2 = _res.nsaddr_list[1].sin_addr;
 	}
+#endif
 	else {
 		options.dns2.s_addr = options.dns1.s_addr;
 	}
@@ -1263,7 +1265,6 @@ static int process_options(int argc, char **argv, int firsttime) {
 	/* condown */
 	options.condown = args_info.condown_arg;
 
-
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_DGRAM;
@@ -1276,7 +1277,7 @@ static int process_options(int argc, char **argv, int firsttime) {
 	/* Do hostname lookup to translate hostname to IP address       */
 	if (args_info.radiuslisten_arg) {
 
-		if((err = getaddrinfo( args_info.radiuslisten_arg, NULL,&hints, &res)) != 0) {
+		if((err = getaddrinfo( args_info.radiuslisten_arg, NULL, &hints, &res)) != 0) {
 			sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
 					"Invalid listening address: %s!", 
 					gai_strerror(err));
@@ -2548,11 +2549,14 @@ static int dnprot_reject(struct app_conn_t *appconn) {
 			ipm->peer = appconn;
 
 			if(!appconn->ipv6)
+      {
 				(void) dhcp_set_addrs(dhcpconn, &ipm->addr, &options.mask, &appconn->ourip,
 						&options.dns1, &options.dns2, options.domain);
+      }
 			else 
+      {
 				(void) dhcp_set_addrsv6(dhcpconn, &ipm->addrv6, &appconn->ouripv6, options.domain);
-
+      }
 
 			dhcpconn->authstate = DHCP_AUTH_DNAT;
 			appconn->dnprot = DNPROT_UAM;
@@ -5383,7 +5387,7 @@ int main(int argc, char **argv)
 				break;
 		}
 
-		if ((msgresult = msgrcv(redir->msgid, (struct msgbuf*) &msg, sizeof(msg), 
+		if ((msgresult = msgrcv(redir->msgid, &msg, sizeof(msg), 
 						0, IPC_NOWAIT)) < 0) {
 			if ((errno != EAGAIN) && (errno != ENOMSG))
 				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgrcv() failed!");

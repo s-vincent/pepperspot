@@ -60,6 +60,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 
 #include <net/if.h>
 #include <net/if_arp.h>
@@ -75,6 +76,10 @@
 #if defined (__FreeBSD__)   || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
 #include <net/if_dl.h>
 #include <net/if_types.h>
+#endif
+
+#if defined(__linux__)
+#include <linux/if.h>
 #endif
 
 static const struct in6_addr in6addr_all_nodes_mc = IN6ADDR_ALL_NODES_MC_INIT;

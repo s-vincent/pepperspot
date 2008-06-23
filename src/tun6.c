@@ -49,10 +49,9 @@
 /* #include <gettext.h> */
 
 #include <assert.h>
-
-#include <stdio.h> // snprintf() for BSD drivers
+#include <stdio.h> /* snprintf() for BSD drivers */
 #include <string.h>
-#include <stdlib.h> // free()
+#include <stdlib.h> /* free() */
 #include <inttypes.h>
 
 #include <sys/types.h>
@@ -60,15 +59,15 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <sys/uio.h> // readv() & writev()
+#include <sys/uio.h> /* readv() & writev() */
 #include <poll.h>
 #include <syslog.h>
 #include <errno.h>
-#include <netinet/in.h> // htons(), struct in6_addr
+#include <netinet/in.h> /* htons(), struct in6_addr */
 
-#include <sys/socket.h> // socket(AF_INET6, SOCK_DGRAM, 0)
+#include <sys/socket.h> /* socket(AF_INET6, SOCK_DGRAM, 0) */
 
-#include <net/if.h> // struct ifreq, if_nametoindex(), if_indextoname()
+#include <net/if.h> /* struct ifreq, if_nametoindex(), if_indextoname() */
 
 #if defined (__linux__)
 /*
@@ -76,8 +75,8 @@
  */
 const char os_driver[] = "Linux";
 # define USE_LINUX 1
-
-# include <linux/if_tun.h> // TUNSETIFF - Linux tunnel driver
+#include <linux/if.h>
+# include <linux/if_tun.h> /* TUNSETIFF - Linux tunnel driver */
 /*
  * <linux/ipv6.h> conflicts with <netinet/in.h> and <arpa/inet.h>,
  * so we've got to declare this structure by hand.
@@ -88,8 +87,8 @@ struct in6_ifreq {
 	int ifr6_ifindex;
 };
 
-# include <net/route.h> // struct in6_rtmsg
-# include <netinet/if_ether.h> // ETH_P_IPV6
+# include <net/route.h> /* struct in6_rtmsg */
+# include <netinet/if_ether.h> /* ETH_P_IPV6 */
 
 typedef struct
 {
@@ -112,7 +111,7 @@ typedef struct
 const char os_driver[] = "BSD";
 # define USE_BSD 1
 
-// TUNSIFHEAD or TUNSLMODE
+/* TUNSIFHEAD or TUNSLMODE */
 # if defined (HAVE_NET_IF_TUN_H)
 #  include <net/if_tun.h>
 # elif defined (HAVE_NET_TUN_IF_TUN_H)
@@ -125,13 +124,12 @@ const char os_driver[] = "BSD";
 #  include <net/if_var.h>
 # endif
 
-# include <net/if_dl.h> // struct sockaddr_dl
-# include <net/route.h> // AF_ROUTE things
-# include <netinet6/in6_var.h> // struct in6_aliasreq
-# include <netinet6/nd6.h> // ND6_INFINITE_LIFETIME
+# include <net/if_dl.h> /* struct sockaddr_dl */
+# include <net/route.h> /* AF_ROUTE things */
+# include <netinet6/in6_var.h> /* struct in6_aliasreq */
+# include <netinet6/nd6.h> /* ND6_INFINITE_LIFETIME */
 
 # include <pthread.h>
-
 
 typedef uint32_t tun_head_t;
 
@@ -215,7 +213,7 @@ tun6 *tun6_create (const char *req_name)
 		return NULL;
 	}
 
-	// Allocates the tunneling virtual network interface
+	/* Allocates the tunneling virtual network interface */
 	if (ioctl (fd, TUNSETIFF, (void *)&req))
 	{
 		syslog (LOG_ERR, "Tunneling driver error (%s): %s", "TUNSETIFF", strerror (errno));
@@ -245,8 +243,9 @@ tun6 *tun6_create (const char *req_name)
 
 			fd = open (tundev, O_RDWR);
 			if ((fd == -1) && (errno == ENOENT))
-				// If /dev/tun<i> does not exist,
-				// /dev/tun<i+1> won't exist either
+        /* If /dev/tun<i> does not exist,
+         * /dev/tun<i+1> won't exist either
+         */
 				break;
 
 			saved_errno = errno;
@@ -381,7 +380,7 @@ void tun6_destroy (tun6* t)
 	assert (t->reqfd != -1);
 	assert (t->id != 0);
 
-	(void)tun6_setState (t, false);
+	(void)tun6_setState (t, 0);
 
 #ifdef USE_BSD
 # ifdef SIOCSIFNAME
@@ -456,7 +455,7 @@ proc_write_zero (const char *path)
  * @return 0 on success, -1 on error (see errno).
  */
 int
-tun6_setState (tun6 *t, bool up)
+tun6_setState (tun6 *t, int up)
 {
 	assert (t != NULL);
 	assert (t-> id != 0);
@@ -523,7 +522,7 @@ plen_to_sin6 (unsigned plen, struct sockaddr_in6 *sin6)
 
 
 static int
-_iface_addr (int reqfd, int id, bool add,
+_iface_addr (int reqfd, int id, int add,
              const struct in6_addr *addr, unsigned prefix_len)
 {
 	void *req = NULL;
@@ -602,7 +601,7 @@ _iface_addr (int reqfd, int id, bool add,
 
 
 static int
-_iface_route (int reqfd, int id, bool add, const struct in6_addr *addr,
+_iface_route (int reqfd, int id, int add, const struct in6_addr *addr,
               unsigned prefix_len, int rel_metric)
 {
 	assert (reqfd != -1);
@@ -722,7 +721,7 @@ tun6_addAddress (tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
 {
 	assert (t != NULL);
 
-	int res = _iface_addr (t->reqfd, t->id, true, addr, prefixlen);
+	int res = _iface_addr (t->reqfd, t->id, 1, addr, prefixlen);
 
 #if defined (USE_LINUX)
 	char ifname[IFNAMSIZ];
@@ -763,7 +762,7 @@ tun6_delAddress (tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
 {
 	assert (t != NULL);
 
-	return _iface_addr (t->reqfd, t->id, false, addr, prefixlen);
+	return _iface_addr (t->reqfd, t->id, 0, addr, prefixlen);
 }
 
 
@@ -783,7 +782,7 @@ tun6_addRoute (tun6 *t, const struct in6_addr *addr, unsigned prefix_len,
 {
 	assert (t != NULL);
 
-	return _iface_route (t->reqfd, t->id, true, addr, prefix_len, rel_metric);
+	return _iface_route (t->reqfd, t->id, 1, addr, prefix_len, rel_metric);
 }
 
 
@@ -799,7 +798,7 @@ tun6_delRoute (tun6 *t, const struct in6_addr *addr, unsigned prefix_len,
 {
 	assert (t != NULL);
 
-	return _iface_route (t->reqfd, t->id, false, addr, prefix_len,
+	return _iface_route (t->reqfd, t->id, 0, addr, prefix_len,
 	                     rel_metric);
 }
 

@@ -528,7 +528,7 @@ int tun_setaddr(struct tun_t *this,
         this->dstaddr.s_addr = dstaddr->s_addr;
         ((struct sockaddr_in *) &ifr.ifr_dstaddr)->sin_addr.s_addr =
             dstaddr->s_addr;
-        if (ioctl(fd, SIOCSIFDSTADDR, (caddr_t) &ifr) < 0)
+        if (ioctl(fd, SIOCSIFDSTADDR, &ifr) < 0)
         {
             sys_err(LOG_ERR, __FILE__, __LINE__, errno,
                     "ioctl(SIOCSIFDSTADDR) failed");

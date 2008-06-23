@@ -47,9 +47,13 @@
 # define LIBTUN6_TUN6_H
 
 # include <stddef.h> /* NULL */
-# include <stdbool.h>
 # include <sys/types.h>
 # include <sys/select.h>
+
+#include <net/if.h>
+#ifndef IFNAMSIZ
+#define IFNAMSIZ IF_NAMESIZE
+#endif
 
 # define LIBTUN6_ERRBUF_SIZE 4096
 
@@ -219,7 +223,7 @@ void tun6_destroy (tun6 *t) LIBTUN6_NONNULL;
 
 int tun6_getId (const tun6 *t) LIBTUN6_NONNULL;
 
-int tun6_setState (tun6 *t, bool up) LIBTUN6_NONNULL;
+int tun6_setState (tun6 *t, int up) LIBTUN6_NONNULL;
 
 int tun6_addAddress (tun6 *restrict t, const struct in6_addr *restrict addr,
                      unsigned prefix_len) LIBTUN6_NONNULL;
