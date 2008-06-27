@@ -98,6 +98,7 @@ void sys_errpack(int pri, char *fn, int ln, int en, struct sockaddr_in *peer,
   va_list args;
   char buf[SYSERR_MSGSIZE];
   char buf2[SYSERR_MSGSIZE];
+  char buf3[INET6_ADDRSTRLEN];
   unsigned int n = 0;
   int pos = 0;
   
@@ -107,7 +108,7 @@ void sys_errpack(int pri, char *fn, int ln, int en, struct sockaddr_in *peer,
   buf[SYSERR_MSGSIZE-1] = 0;
 
   snprintf(buf2, SYSERR_MSGSIZE, "Packet from %s:%u, length: %d, content:",
-	   inet_ntoa(peer->sin_addr),
+	   inet_ntop(AF_INET, &peer->sin_addr, buf3, sizeof(buf3)),
 	   ntohs(peer->sin_port),
 	   len);
   buf2[SYSERR_MSGSIZE-1] = 0;

@@ -149,7 +149,7 @@ int tun_gifindex(struct tun_t *this, unsigned int *ifindex)
     ifr.ifr_dstaddr.sa_family = AF_INET;
     ifr.ifr_netmask.sa_family = AF_INET;
     strncpy(ifr.ifr_name, this->devname, IFNAMSIZ-1);
-    ifr.ifr_name[IFNAMSIZ] = 0; /* Make sure to terminate */
+    ifr.ifr_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
     if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
     {
         sys_err(LOG_ERR, __FILE__, __LINE__, errno,
@@ -1016,16 +1016,17 @@ int tun_runscript(struct tun_t *tun, char* script)
     char saddr[TUN_ADDRSIZE];
     char snet[TUN_ADDRSIZE];
     char smask[TUN_ADDRSIZE];
+    char buf[INET_ADDRSTRLEN];
     int status = 0;
     struct in_addr net;
 
     net.s_addr = tun->addr.s_addr & tun->netmask.s_addr;
 
-    strncpy(saddr, inet_ntoa(tun->addr), sizeof(saddr));
+    strncpy(saddr, inet_ntop(AF_INET, &tun->addr, buf, sizeof(buf)), sizeof(saddr));
     saddr[sizeof(saddr)-1] = 0;
-    strncpy(snet, inet_ntoa(net), sizeof(snet));
+    strncpy(snet, inet_ntop(AF_INET, &net, buf, sizeof(buf)), sizeof(snet));
     snet[sizeof(snet)-1] = 0;
-    strncpy(smask, inet_ntoa(tun->netmask), sizeof(smask));
+    strncpy(smask, inet_ntop(AF_INET, &tun->netmask, buf, sizeof(buf)), sizeof(smask));
     smask[sizeof(smask)-1] = 0;
 
     if ((status = fork()) < 0)

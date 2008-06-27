@@ -179,7 +179,7 @@ static void sig_handler(int signum)
 			keep_going = 0;
 			break;
 		case SIGALRM:  /* Alarm handler for general house keeping */
-		    if (options.debug) printf("SIGALRM received!\n");
+		    /* if (options.debug) printf("SIGALRM received!\n"); */
 			do_timeouts = 1;
 			break;
 		case SIGHUP:   /* Sighup handler for rereading configuration file */
@@ -278,8 +278,10 @@ static int leaky_bucket(struct app_conn_t *conn, int octetsup, int octetsdown) {
 int set_env(char *name, char *value, unsigned int len, struct in_addr *addr,
 		uint8_t *mac, long int *integer) {
 	char s[1024];
+  char buf[INET_ADDRSTRLEN];
+
 	if (addr!=NULL) {
-		strncpy(s, inet_ntoa(*addr), sizeof(s)); s[sizeof(s)-1] = 0;
+		strncpy(s, inet_ntop(AF_INET, addr, buf, sizeof(buf)), sizeof(s)); s[sizeof(s)-1] = 0;
 		value = s;
 	}
 	else if (mac != NULL) {
@@ -530,7 +532,6 @@ static int get_namepart6(char *src, char *host, int *port) {
 		return -1;
 	}
 
-	printf("port:%d\n", *port);
 	croch = strstr(src, "[");
 	croch+=1;
 	croch2 = strstr(src, "]");
@@ -549,91 +550,6 @@ static int get_namepart6(char *src, char *host, int *port) {
 		sscanf(colon+1, "%d", port);
 	return 0;
 }
-
-#if 0
-static int set_uamallowed(char *uamallowed, int len) {
-	char *p1 = NULL;
-	char *p2 = NULL;
-	char *p3 = NULL;
-	struct hostent *host = NULL;
-
-	p3 = malloc(len+1);
-	if(!p3)
-	{
-		return -1;
-	}
-
-	memcpy(p3, uamallowed, len);
-
-	p3[len] = 0;
-	p1 = p3;
-	if ((p2 = strchr(p1, ','))) {
-		*p2 = '\0';
-	}
-	while (p1) {
-		if (strchr(p1, '/')) {
-			if (options.uamoknetlen>=UAMOKNET_MAX) {
-				sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-						"Too many network segments in uamallowed %s!",
-						p3);
-				free(p3);
-				return -1;
-			}
-			if(ippool_aton(&options.uamokaddr[options.uamoknetlen], 
-						&options.uamokmask[options.uamoknetlen], 
-						p1, 0)) {
-				sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-						"Invalid uamallowed network address or mask %s!", 
-						p3);
-				free(p3);
-				return -1;
-			}
-			options.uamoknetlen++;
-		}
-		else {
-			if (!(host = gethostbyname(p1))) {
-				sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
-						"Invalid uamallowed domain or address: %s!", 
-						p3);
-				free(p3);
-				return -1;
-			}
-			else {
-				int j = 0;
-				while (host->h_addr_list[j] != NULL) {
-					if (options.debug & DEBUG_CONF) {
-						printf("Uamallowed IP address #%d:%d: %s\n", 
-								j, options.uamokiplen,
-								inet_ntoa(*(struct in_addr*) host->h_addr_list[j]));
-					}
-					if (options.uamokiplen>=UAMOKIP_MAX) {
-						sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-								"Too many domains or IPs in uamallowed %s!",
-								p3);
-						free(p3);
-						return -1;
-					}
-					else {
-						options.uamokip6[options.uamokiplen++] = 
-							*((struct in6_addr*) host->h_addr_list[j++]);
-					}
-				}
-			}
-		}
-		if (p2) {
-			p1 = p2+1;
-			if ((p2 = strchr(p1, ','))) {
-				*p2 = '\0';
-			}
-		}
-		else {
-			p1 = NULL;
-		}
-	}
-	free(p3);
-	return 0;
-}
-#endif
 
 static int set_uamallowed(char *uamallowed, int len) {
 	char *p1 = NULL;
@@ -859,7 +775,6 @@ static int set_macallowed(char *macallowed, int len) {
 
 static int process_options(int argc, char **argv, int firsttime) {
 	struct gengetopt_args_info args_info;
-	struct hostent *host = NULL;
 	char hostname[USERURLSIZE];
 	unsigned int numargs = 0;
 	char uamserveraddr6[INET6_ADDRSTRLEN];
@@ -870,6 +785,7 @@ static int process_options(int argc, char **argv, int firsttime) {
 	struct addrinfo *rp = NULL;
 	int err = 0;
 	int sfd =0;
+  char buf[INET6_ADDRSTRLEN];
 
 	if (cmdline_parser (argc, argv, &args_info) != 0) {
 		sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1029,36 +945,52 @@ static int process_options(int argc, char **argv, int firsttime) {
 				"Failed to parse uamserver: %s!", args_info.uamserver_arg);
 		return -1;
 	}
+
 	/* TODO: parsing ip url */
 	if(options.debug & DEBUG_CONF) printf("UAM server:%s\n", hostname);
-	if (!(host = gethostbyname2(hostname,AF_INET))) {
-		sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
-				"Could not resolve IP address of uamserver: %s!", 
-				args_info.uamserver_arg);
-		return -1;
-	}
-	else {
-		int j = 0;
-		while (host->h_addr_list[j] != NULL) {
-			inet_ntop( AF_INET,host->h_addr_list[j], uamserveraddr, INET_ADDRSTRLEN);
-			if (options.debug & DEBUG_CONF) {
-				printf("Uamserver IPv6 address #%d: %s\n", j,uamserveraddr);
+  
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = 0;
+  hints.ai_protocol = 0;
 
-			}
-			if (options.uamserverlen>=UAMSERVER_MAX) {
-				sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-						"Too many IPs in uamserver %s!",
-						args_info.uamserver_arg);
-				return -1;
-			}
-			else {
-				options.uamserver[options.uamserverlen++] = 
-					*((struct in_addr*) host->h_addr_list[j++]);
-				uamserveraddr[0] = '\0';
-				j++;
-			}
-		}
+  if(getaddrinfo(hostname, NULL, &hints, &res) != 0)
+  {
+    sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+        "Could not resolve IP address of uamserver: %s!",
+        hostname);
+    return -1;
+  }
+  else
+  {
+    unsigned int j = 0;
+    for (rp = res; rp != NULL; rp = rp->ai_next)
+    {
+      if (options.debug & DEBUG_CONF) 
+      {
+	if(getnameinfo(rp->ai_addr, rp->ai_addrlen, uamserveraddr, INET_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST) == 0)
+	{
+	        printf("Uamserver IP address #%d: %s\n", j, uamserveraddr);
 	}
+      }
+      if (options.uamserverlen>=UAMSERVER_MAX) {
+        sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+            "Too many IPs in uamserver %s!",
+            args_info.uamserver_arg);
+        return -1;
+      }
+      else 
+      {
+        options.uamserver[options.uamserverlen++] =
+          ((struct sockaddr_in*)rp->ai_addr)->sin_addr;
+        uamserveraddr[0] = '\0';
+        j++;
+      }
+    }
+    freeaddrinfo(res);
+  }
+
 	options.uamurl = args_info.uamserver_arg;
 
 	/* uamserver6                                                   */
@@ -1070,38 +1002,53 @@ static int process_options(int argc, char **argv, int firsttime) {
 	if (get_namepart6(args_info.uamserver6_arg, hostname, 
 				&options.uamserverport6)==-1) {
 		sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-				"Failed to parse uamserver: %s!", args_info.uamserver6_arg);
+				"Failed to parse uamserver6: %s!", args_info.uamserver6_arg);
 		return -1;
 	}
 	/* TODO: parsing ipv6 url */
-	if(options.debug) printf("UAM server:%s\n", hostname);
-	if (!(host = gethostbyname2(hostname,AF_INET6))) {
-		sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
-				"Could not resolve IP address of uamserver: %s!", 
-				args_info.uamserver6_arg);
-		return -1;
-	}
-	else {
-		int j = 0;
-		while (host->h_addr_list[j] != NULL) {
-			inet_ntop( AF_INET6,host->h_addr_list[j], uamserveraddr6, INET6_ADDRSTRLEN);
-			if (options.debug & DEBUG_CONF) {
-				printf("Uamserver IPv6 address #%d: %s\n", j,uamserveraddr6);
+	if(options.debug) printf("UAM server6:%s\n", hostname);
 
-			}
-			if (options.uamserverlen6>=UAMSERVER_MAX) {
-				sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-						"Too many IPs in uamserver %s!",
-						args_info.uamserver6_arg);
-				return -1;
-			}
-			else {
-				memcpy(options.uamserver6[options.uamserverlen6++].s6_addr, (struct in6_addr *)uamserveraddr6, strlen(uamserveraddr6));
-				uamserveraddr6[0] = '\0';
-				j++;
-			}
-		}
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_INET6;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = 0;
+  hints.ai_protocol = 0;
+
+  if(getaddrinfo(hostname, NULL, &hints, &res) != 0)
+  {
+    sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+        "Could not resolve IPv6 address of uamserver: %s!",
+        hostname);
+    return -1;
+  }
+  else
+  {
+    unsigned int j = 0;
+    for (rp = res; rp != NULL; rp = rp->ai_next)
+    {
+      if (options.debug & DEBUG_CONF)
+      {
+        if(getnameinfo(rp->ai_addr, rp->ai_addrlen, uamserveraddr6, INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST) == 0)
+        {
+        	printf("Uamserver IPv6 address #%d: %s\n", j, uamserveraddr6);
 	}
+      }
+      if (options.uamserverlen6 >= UAMSERVER_MAX) {
+        sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+            "Too many IPv6s in uamserver6 %s!",
+            args_info.uamserver6_arg);
+        return -1;
+      }
+      else 
+      {
+        memcpy(&options.uamserver6[options.uamserverlen6++], &((struct sockaddr_in6*)rp->ai_addr)->sin6_addr, sizeof(struct in6_addr));
+        uamserveraddr6[0] = '\0';
+        j++;
+      }
+    }
+    freeaddrinfo(res);
+  }
+
 	options.uamurl6 = args_info.uamserver6_arg;
 
 	/* uamhomepage                                                  */
@@ -1111,31 +1058,55 @@ static int process_options(int argc, char **argv, int firsttime) {
 	else {
 		if (get_namepart6(args_info.uamhomepage_arg, hostname,
 					&options.uamhomepageport)) {
-			sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+       if(get_namepart(args_info.uamhomepage_arg, hostname, USERURLSIZE, &options.uamhomepageport))
+       {
+         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 					"Failed to parse uamhomepage: %s!", args_info.uamhomepage_arg);
-			return -1;
+         return -1;
+       }
 		}
-		if (!(host = gethostbyname2(hostname, AF_INET6))) {
-			sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
-					"Invalid uamhomepage: %s!", 
-					args_info.uamhomepage_arg);
-			return -1;
-		}
-		else {
-			int j = 0;
-			while (host->h_addr_list[j] != NULL) {
-				if (options.uamserverlen>=UAMSERVER_MAX) {
-					sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-							"Too many IPs in uamhomepage %s!",
-							args_info.uamhomepage_arg);
-					return -1;
-				}
-				else {
-					options.uamserver6[options.uamserverlen++] = 
-						*((struct in6_addr*) host->h_addr_list[j++]);
-				}
-			}
-		}
+    
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = 0;
+    hints.ai_protocol = 0;
+ 
+    if(getaddrinfo(hostname, NULL, &hints, &res) != 0)
+    {
+      sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+          "Invalid uamhomepage: %s!",
+          args_info.uamhomepage_arg);
+      return -1;
+    }
+    else
+    {
+      unsigned int j = 0;
+      for(rp = res; rp != NULL; rp = rp->ai_next)
+      {
+       
+        if ((rp->ai_family == AF_INET6 && options.uamserverlen6 >= UAMSERVER_MAX) || (rp->ai_family == AF_INET && options.uamserverlen >= UAMSERVER_MAX)) {
+          sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+              "Too many IPs (or IPv6s) in uamhomepage %s!",
+              args_info.uamhomepage_arg);
+          return -1;
+        }
+        else 
+        {
+          if(rp->ai_family == AF_INET6)
+          {
+            memcpy(&options.uamserver6[options.uamserverlen6++], &((struct sockaddr_in6*)rp->ai_addr)->sin6_addr, sizeof(struct in6_addr));
+          }
+          else
+          {
+           memcpy(&options.uamserver[options.uamserverlen++], &((struct sockaddr_in*)rp->ai_addr)->sin_addr, sizeof(struct in_addr));
+          }
+          j++;
+        }
+  
+      }
+    }
+
 		options.uamhomepage = args_info.uamhomepage_arg;
 	}
 
@@ -1145,7 +1116,7 @@ static int process_options(int argc, char **argv, int firsttime) {
 
 	/* uamlisten6                                                   */
 	if (!args_info.uamlisten_arg) {
-		memcpy(options.uamlisten6.s6_addr,options.ip6listen.s6_addr,sizeof(struct in6_addr));
+		memcpy(&options.uamlisten6, &options.ip6listen, sizeof(struct in6_addr));
 	}
 	else if(!inet_pton(AF_INET, args_info.uamlisten_arg, &options.uamlisten)) {
 		sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1305,7 +1276,16 @@ static int process_options(int argc, char **argv, int firsttime) {
 				exit(EXIT_FAILURE);
 			}
 			options.radiuslisten.ss_family = res->ai_family;
-			printf("RADIUS LISTEN:%s\n", inet_ntoa(((struct sockaddr_in *)&options.radiuslisten)->sin_addr));
+      if(res->ai_family == AF_INET)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in *)&options.radiuslisten)->sin_addr, buf, sizeof(buf));
+      }
+      else if(res->ai_family == AF_INET6)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in6 *)&options.radiuslisten)->sin6_addr, buf, sizeof(buf));
+      }
+
+			printf("RADIUS LISTEN:%s\n", buf);
 			freeaddrinfo(res);
 		}
 	}
@@ -1350,7 +1330,17 @@ static int process_options(int argc, char **argv, int firsttime) {
 				exit(EXIT_FAILURE);
 			}
 			options.radiusserver1.ss_family = res->ai_family;
-			printf("RADIUS SERVER1:%s\n", inet_ntoa(((struct sockaddr_in *)&options.radiusserver1)->sin_addr));
+
+      if(res->ai_family == AF_INET)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in *)&options.radiusserver1)->sin_addr, buf, sizeof(buf));
+      }
+      else if(res->ai_family == AF_INET6)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in6 *)&options.radiusserver1)->sin6_addr, buf, sizeof(buf));
+      }
+
+			printf("RADIUS SERVER1:%s\n", buf);
 			freeaddrinfo(res);
 		}
 	}
@@ -1390,7 +1380,17 @@ static int process_options(int argc, char **argv, int firsttime) {
 				exit(EXIT_FAILURE);
 			}
 			options.radiusserver2.ss_family = res->ai_family;
-			printf("RADIUS SERVER2:%s\n", inet_ntoa(((struct sockaddr_in *)&options.radiusserver2)->sin_addr));
+
+      if(res->ai_family == AF_INET)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in *)&options.radiusserver2)->sin_addr, buf, sizeof(buf));
+      }
+      else if(res->ai_family == AF_INET6)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in6 *)&options.radiusserver2)->sin6_addr, buf, sizeof(buf));
+      }
+
+			printf("RADIUS SERVER2:%s\n", buf);
 			freeaddrinfo(res);
 		}
 	}
@@ -1446,8 +1446,18 @@ static int process_options(int argc, char **argv, int firsttime) {
 				fprintf(stderr, "Could not connect\n");
 				exit(EXIT_FAILURE);
 			}
-			options.radiusserver2.ss_family = res->ai_family;
-			printf("RADIUS SERVER2:%s\n", inet_ntoa(((struct sockaddr_in *)&options.radiusnasip)->sin_addr));
+			options.radiusnasip.ss_family = res->ai_family;
+
+      if(res->ai_family == AF_INET)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in *)&options.radiusnasip)->sin_addr, buf, sizeof(buf));
+      }
+      else if(res->ai_family == AF_INET6)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in6 *)&options.radiusnasip)->sin6_addr, buf, sizeof(buf));
+      }
+
+			printf("RADIUS NAS IP:%s\n", buf);
 			freeaddrinfo(res);
 		}
 	}
@@ -1529,7 +1539,16 @@ static int process_options(int argc, char **argv, int firsttime) {
 				exit(EXIT_FAILURE);
 			}
 			options.proxylisten.ss_family = res->ai_family;
-			printf("RADIUS SERVER2:%s\n", inet_ntoa(((struct sockaddr_in *)&options.proxylisten)->sin_addr));
+      if(res->ai_family == AF_INET)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in *)&options.proxylisten)->sin_addr, buf, sizeof(buf));
+      }
+      else if(res->ai_family == AF_INET6)
+      {
+        inet_ntop(res->ai_family, &((struct sockaddr_in6 *)&options.proxylisten)->sin6_addr, buf, sizeof(buf));
+      }
+
+			printf("RADIUS PROXY LISTEN:%s\n", buf);
 			freeaddrinfo(res);
 		}
 	}
@@ -2529,9 +2548,9 @@ static int dnprot_reject(struct app_conn_t *appconn) {
 							"Failed allocate dynamic IP address");
 					return 0;
 				}
-				memcpy(appconn->hisipv6.s6_addr,ipm->addrv6.s6_addr, sizeof(struct in6_addr));
+				memcpy(&appconn->hisipv6, &ipm->addrv6, sizeof(struct in6_addr));
 
-				memcpy(appconn->ouripv6.s6_addr,options.ip6listen.s6_addr, sizeof(struct in6_addr));
+				memcpy(&appconn->ouripv6, &options.ip6listen, sizeof(struct in6_addr));
 			} else {
 				/* Allocate dynamic IP address */
 				if (ippool_newip(ippool, &ipm, &appconn->reqip, 0)) {
@@ -2832,6 +2851,7 @@ int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len) {
 	struct in_addr dst;
 	struct tun_packet_t *iph = (struct tun_packet_t*) pack;
 	struct app_conn_t *appconn = NULL;
+  char buf[INET_ADDRSTRLEN];
 
   /* To avoid unused parameter warning */
 	tun_obj = NULL;
@@ -2840,7 +2860,7 @@ int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len) {
 		printf("cb_tun_ind. Packet received: Forwarding to link layer\n");
 
 	dst.s_addr = iph->dst;
-	printf("will send to %s\n", inet_ntoa(dst));
+	printf("will send to %s\n", inet_ntop(AF_INET, &dst, buf, sizeof(buf)));
 
 	if (ippool_getip(ippool, &ipm, &dst)) {
 		if (options.debug) printf("Received packet with no destination!!!\n");
@@ -3257,12 +3277,12 @@ int access_request(struct radius_packet_t *pack,
 			for (n=0; n<hisprefixattr->l-2; n++) printf("%.2x", hisprefixattr->v.t[n]); 
 			printf("\n");
 		}
-		if ((hisprefixattr->l-2) != sizeof(hisprefix.s6_addr)) {
+		if ((hisprefixattr->l-2) != sizeof(hisprefix)) {
 			sys_err(LOG_ERR, __FILE__, __LINE__, 0,
 					"Wrong length of framed IPv6 Prefix");
 			return radius_resp(radius, &radius_pack, peer, pack->authenticator);
 		}
-		memcpy(hisprefix.s6_addr,&hisprefixattr->v.i, sizeof(struct in6_addr));
+		memcpy(&hisprefix, &hisprefixattr->v.i, sizeof(struct in6_addr));
 	}
 	
 	/* Framed Interface Id (Conditional) */
@@ -3651,9 +3671,9 @@ int upprot_getipv6(struct app_conn_t *appconn,
 				return dnprot_reject(appconn);
 			}
 		}
-		memcpy(appconn->hisipv6.s6_addr,ipm->addrv6.s6_addr, sizeof(struct in6_addr));;
+		memcpy(&appconn->hisipv6, &ipm->addrv6, sizeof(struct in6_addr));;
 
-		memcpy(appconn->ouripv6.s6_addr,options.ip6listen.s6_addr, sizeof(struct in6_addr));
+		memcpy(&appconn->ouripv6, &options.ip6listen, sizeof(struct in6_addr));
 
 		appconn->uplink = ipm;
 		ipm->peer   = appconn; 
@@ -3943,7 +3963,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
 			statip = 1;
 		}
 		else {
-			hisipv6 = (struct in6_addr*) &appconn->hisipv6.s6_addr;
+			hisipv6 = &appconn->hisipv6;
 		}
 	} else {
 		if (!radius_getattr(pack, &hisipattr, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0, 0)) {
@@ -4504,6 +4524,7 @@ int cb_dhcp_disconnectv6(struct dhcp_conn_t *conn)
 int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr) {
 	struct ippoolm_t *ipm = NULL;
 	struct app_conn_t *appconn = conn->peer;
+  char buf[INET_ADDRSTRLEN];
 
 	if (options.debug) printf("DHCP requested IP address\n");
 
@@ -4552,7 +4573,7 @@ int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr) {
 				conn->hismac[0], conn->hismac[1], 
 				conn->hismac[2], conn->hismac[3],
 				conn->hismac[4], conn->hismac[5], 
-				inet_ntoa(appconn->hisip));
+				inet_ntop(AF_INET, &appconn->hisip, buf, sizeof(buf)));
 
 		/* TODO: Listening address is network address plus 1 */
 		appconn->ourip.s_addr = htonl((ntohl(options.net.s_addr)+1));
@@ -4618,13 +4639,14 @@ int cb_dhcp_connect(struct dhcp_conn_t *conn) {
 /* Callback when a dhcp connection is deleted */
 int cb_dhcp_disconnect(struct dhcp_conn_t *conn) {
 	struct app_conn_t *appconn = NULL;
+  char buf[INET_ADDRSTRLEN];
 
 	sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
 			"DHCP addr released by MAC=%.2X-%.2X-%.2X-%.2X-%.2X-%.2X IP=%s", 
 			conn->hismac[0], conn->hismac[1], 
 			conn->hismac[2], conn->hismac[3],
 			conn->hismac[4], conn->hismac[5], 
-			inet_ntoa(conn->hisip));
+			inet_ntop(AF_INET, &conn->hisip, buf, sizeof(buf)));
 
 	if (options.debug) printf("DHCP connection removed\n");
 
@@ -4850,7 +4872,7 @@ static int uam_msg(struct redir_msg_t *msg) {
 
 	if (!msg->ipv6 && ippool_getip(ippool, &ipm, &msg->addr)) {
 		if (options.debug) printf("UAM login with unknown IP address: %s\n",
-				inet_ntoa(msg->addr));
+				inet_ntop(AF_INET, &msg->addr, buf, sizeof(buf)));
 		return 0;
 	}
 
@@ -4874,14 +4896,14 @@ static int uam_msg(struct redir_msg_t *msg) {
 		if (appconn->uamabort) {
 			sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
 					"UAM login from username=%s IP=%s was aborted!", 
-					msg->username, msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntoa(appconn->hisip));
+					msg->username, msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntop(AF_INET, &appconn->hisip, buf, sizeof(buf)));
 			appconn->uamabort = 0;
 			return 0;
 		}
 
 		sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
 				"Successful UAM login from username=%s IP=%s", 
-				msg->username, msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntoa(appconn->hisip));
+				msg->username, msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntop(AF_INET, &appconn->hisip, buf, sizeof(buf)));
 
 		if (options.debug)
 			printf("Received login from UAM\n");
@@ -4940,37 +4962,6 @@ static int uam_msg(struct redir_msg_t *msg) {
 #endif
 
 		if(msg->ipv6)
-		{
-			/* [SV] This is the one and only place UAM authentication for IPv6 is accepted */
-			dhcpconn->authstate = DHCP_AUTH_PASS;
-
-			/* Initialise parameters for accounting */
-			appconn->userlen = appconn->proxyuserlen;
-			memcpy(appconn->user, appconn->proxyuser, appconn->userlen);
-			/*appconn->nasip = appconn->proxynasip;*/
-			appconn->nasport = appconn->proxynasport;
-			memcpy(appconn->hismac, appconn->proxyhismac, DHCP_ETH_ALEN);
-			memcpy(appconn->ourmac, appconn->proxyourmac, DHCP_ETH_ALEN);
-
-			/* Run connection up script */
-			if ((options.conup) && (!appconn->authenticated))
-			{
-				if (options.debug)
-					printf("Calling connection up script: %s\n", options.conup);
-
-				(void) runscript(appconn, options.conup);
-			}
-
-			/* This is the one and only place state is switched to authenticated */
-			if (!appconn->authenticated) 
-			{
-				appconn->authenticated = 1;
-				(void) acct_req(appconn, RADIUS_STATUS_TYPE_START);
-			}
-			return 0;
-		}
-
-		if(msg->ipv6)
 			return upprot_getipv6(appconn, NULL);
 		else
 			return upprot_getip(appconn, NULL, 0);
@@ -4979,7 +4970,7 @@ static int uam_msg(struct redir_msg_t *msg) {
 
 		sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
 				"Received UAM logoff from username=%s IP=%s",
-				appconn->user, msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntoa(appconn->hisip));
+				appconn->user, msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntop(AF_INET, &appconn->hisip, buf, sizeof(buf)));
 
 		if (options.debug)
 			printf("Received logoff from UAM\n");
@@ -5001,7 +4992,7 @@ static int uam_msg(struct redir_msg_t *msg) {
 	else if (msg->type == REDIR_ABORT) {
 
 		sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
-				"Received UAM abort from IP=%s", msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntoa(appconn->hisip));
+				"Received UAM abort from IP=%s", msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntop(AF_INET, &appconn->hisip, buf, sizeof(buf)));
 
 		appconn->uamabort = 1; /* Next login will be aborted */
 		appconn->uamtime = 0;  /* Force generation of new challenge */
@@ -5059,7 +5050,9 @@ int main(int argc, char **argv)
 	if (options.debug) 
 		printf("PepperSpot version %s started.\n", VERSION);
 
-	syslog(LOG_INFO, "PepperSpot %s. Copyright 2002-2005 Mondru AB. Licensed under GPL. See http://www.pepperspot.org for credits.", VERSION);
+	syslog(LOG_INFO, "PepperSpot %s. Copyright 2002-2005 Mondru AB. Licensed under GPL.\n"
+	"Copyright 2008 Thibault Vancon <thibault.vancon@eturs.u-strasbg.fr> and Sebastien Vincent <vincent@lsiit.u-strasbg.fr>.\n Licensed under GPL.\n"
+	"See http://www.pepperspot.org/ for credits.", VERSION);
 
 	if(options.debug) printf("IPVERSION: %s\n", options.ipversion);
 

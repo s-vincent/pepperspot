@@ -48,7 +48,7 @@ int clearenv (void);
 
 #endif
 
-#ifndef HAVE_DAEMON
+#if !defined(HAVE_DAEMON) || defined(_POSIX_C_SOURCE)
 
 /**
  * \brief daemon replacement function (non POSIX).

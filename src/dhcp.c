@@ -2203,14 +2203,15 @@ int dhcp_undoDNAT(struct dhcp_conn_t *conn,
   struct dhcp_t *this = conn->parent;
   struct dhcp_tcphdr_t *tcph = (struct dhcp_tcphdr_t*) pack->payload;
   struct dhcp_udphdr_t *udph = (struct dhcp_udphdr_t*) pack->payload;
+  char buf[INET_ADDRSTRLEN];
   int i = 0;
 	struct in_addr in1;
 	struct in_addr in2;
 
 	in1.s_addr = pack->iph.saddr;
 	in2.s_addr = pack->iph.daddr;
-	printf("dhcp_undoDNAT\nsource:%s\n",inet_ntoa(in1));
-	printf("dest:%s\n", inet_ntoa(in2));
+	printf("dhcp_undoDNAT\nsource:%s\n", inet_ntop(AF_INET, &in1, buf, sizeof(buf)));
+	printf("dest:%s\n", inet_ntop(AF_INET, &in2, buf, sizeof(buf)));
 	printf("portsrc:%d\n",ntohs(tcph->src));
 	printf("portdest:%d\n",ntohs(tcph->dst));
   /* Was it a DNS reply? */

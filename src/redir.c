@@ -341,7 +341,7 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
     }
     redir_stradd(dst, dstsize,
 		 "<LogoffURL>http://%s:%d/logoff</LogoffURL>\r\n",
-		 inet_ntoa(redir->addr), redir->port);
+		 inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
     if (redirurl) {
       redir_stradd(dst, dstsize,
 		   "<RedirectionURL>%s</RedirectionURL>\r\n", redirurl);
@@ -385,7 +385,7 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
     {
       redir_stradd(dst, dstsize, 
   		 "<LoginURL>%s?res=smartclient&uamip=%s&uamport=%d&challenge=%s</LoginURL>\r\n",
-  		 redir->url, inet_ntoa(redir->addr), redir->port, hexchal);
+  		 redir->url, inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port, hexchal);
   		 redir_stradd(dst, dstsize, 
 		 "<AbortLoginURL>http://%s:%d/abort</AbortLoginURL>\r\n", 
 		 inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
@@ -407,7 +407,7 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
     redir_stradd(dst, dstsize, "<ResponseCode>50</ResponseCode>\r\n");
     redir_stradd(dst, dstsize,
 		 "<LogoffURL>http://%s:%d/logoff</LogoffURL>\r\n",
-		 inet_ntoa(redir->addr), redir->port);
+		 inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
     redir_stradd(dst, dstsize, "</AbortLoginReply>\r\n");
     break;
   case REDIR_STATUS:
@@ -453,10 +453,10 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
 		   conn->maxtotaloctets);
       redir_stradd(dst, dstsize,
 		   "<LogoffURL>http://%s:%d/logoff</LogoffURL>\r\n",
-		   inet_ntoa(redir->addr), redir->port);
+		   inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
       redir_stradd(dst, dstsize,
 		   "<StatusURL>http://%s:%d/status</StatusURL>\r\n",
-		   inet_ntoa(redir->addr), redir->port);
+		   inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
       redir_stradd(dst, dstsize, "</SessionStatus>\r\n");
     }
     break;
@@ -541,7 +541,7 @@ static int redir_reply(struct redir_t *redir, int fd,
      snprintf(buffer, sizeof(buffer), 
 	     "HTTP/1.0 302 Moved Temporarily\r\n"
   	     "Location: %s?res=%s&uamip=%s&uamport=%d", 
-  	     redir->url, resp, inet_ntoa(redir->addr), redir->port);
+  	     redir->url, resp, inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
     }
     buffer[sizeof(buffer)-1] = 0;
   }
@@ -657,6 +657,7 @@ int redir_new(struct redir_t **redir,
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = addr->s_addr;
 	address.sin_port = htons(port);
+	memset(&address.sin_zero, 0x00, sizeof(address.sin_zero));
 #if defined(__FreeBSD__)  || defined (__APPLE__)
 	address.sin_len = sizeof (struct sockaddr_in);
 #endif
@@ -711,7 +712,7 @@ int redir_new(struct redir_t **redir,
   if(addrv6) {
 		/* [SV] */
 		addressv6.sin6_family=AF_INET6;
-		inet_pton(AF_INET6, (char *)addrv6->s6_addr,&addressv6.sin6_addr);
+		memcpy(&addressv6.sin6_addr, addrv6, sizeof(struct in6_addr));
 		addressv6.sin6_port=htons(port);
 		addressv6.sin6_flowinfo = htons(1);
 		/*addressv6.sin6_scope_id = htons(0);*/
@@ -719,7 +720,7 @@ int redir_new(struct redir_t **redir,
 		addressv6.sin6_len = sizeof (struct sockaddr_in6);
 #endif
 
-		memcpy(&(*redir)->addrv6, addressv6.sin6_addr.s6_addr, sizeof(struct in6_addr));
+		memcpy(&(*redir)->addrv6, &addressv6.sin6_addr, sizeof(struct in6_addr));
 	   
 		if(((*redir)->fdv6=socket(AF_INET6, SOCK_STREAM, 0))<0)
 		{
@@ -1482,6 +1483,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   unsigned char user_password[REDIR_MD5LEN+1];
   uint64_t suf = 0;
   struct in6_addr idv6;
+  char buf[INET6_ADDRSTRLEN];
 
   MD5_CTX context;
 
@@ -1543,33 +1545,40 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   }
 
   if(redir->radiuslisten.ss_family == AF_INET)
+  {
   	radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_IP_ADDRESS, 0, 0,
 		 ntohl(((struct sockaddr_in *)&redir->radiusnasip)->sin_addr.s_addr), NULL, 0); /* WISPr_V1.0 */
+  }
   else
+  {
   	radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_NAS_IPV6_ADDRESS, 0, 0,
 		 ((struct sockaddr_in6 *)&redir->radiusnasip)->sin6_addr, NULL, 0); /* WISPr_V1.0 */
+  }
 				
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_SERVICE_TYPE, 0, 0,
 		 RADIUS_SERVICE_TYPE_LOGIN, NULL, 0); /* WISPr_V1.0 */
    
    if(!conn->ipv6)
+   {
   	(void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0,
 		 ntohl(conn->hisip.s_addr), NULL, 0);
-   else {
-   	 (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_IPV6_PREFIX, 0, 0,
-   	 	redir->prefix, NULL, redir->prefixlen+2);
-   	 /* todo : interface id */   
-   	 
-	 ippool_getv6suffix(&idv6, &conn->hisipv6, 64);
-		
-	 suf = idv6.s6_addr32[3];
-	 suf <<= 32;
-	 suf |= idv6.s6_addr32[2];
+  }
+  else 
+  {
+ 	 (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_IPV6_PREFIX, 0, 0,
+   	redir->prefix, NULL, redir->prefixlen+2);
+  	/* todo : interface id */   
+  	 
+    ippool_getv6suffix(&idv6, &conn->hisipv6, 64);
 	
-	 memcpy(idv6.s6_addr, (void *)&suf, 8);
-		
-	 (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_INTERFACE_ID, 0, 0, idv6, NULL, 8);
-	
+ 	  suf = idv6.s6_addr32[3];
+ 	  suf <<= 32;
+ 	  suf |= idv6.s6_addr32[2];
+ 	
+ 	  memcpy(idv6.s6_addr, (void *)&suf, 8);
+ 		
+    (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_INTERFACE_ID, 0, 0, idv6, NULL, 8);
+
    }
    
 
@@ -1617,9 +1626,18 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 		   (uint8_t*) redir->radiuslocationname, 
 		   strlen(redir->radiuslocationname));
 
-  snprintf(url, REDIR_URL_LEN-1, "http://%s:%d/logoff",
-	   inet_ntoa(redir->addr), redir->port);
-  url[REDIR_URL_LEN-1] = 0;
+  if(!conn->ipv6)
+  {
+    snprintf(url, REDIR_URL_LEN-1, "http://%s:%d/logoff",
+  	   inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
+    url[REDIR_URL_LEN-1] = 0;
+  }
+  else 
+  {
+    snprintf(url, REDIR_URL_LEN-1, "http://[%s]:%d/logoff",
+      inet_ntop(AF_INET6, &redir->addrv6, buf, sizeof(buf)), redir->port);
+    url[REDIR_URL_LEN-1] = 0;
+  }
   
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_VENDOR_SPECIFIC,
 		 RADIUS_VENDOR_WISPR, RADIUS_ATTR_WISPR_LOGOFF_URL, 0,

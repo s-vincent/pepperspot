@@ -100,7 +100,7 @@ You can turn it on with this:
 
 To keep this configuration, you can uncomment the following line in /etc/sysctl.conf file:
 
-net.ipv6.ip_forward=1
+net.ipv6.conf.all.forwarding=1
 
 
 IPv6 forwarding will disable the IPv6 autoconfiguration, so network configuration must be set staticly.
@@ -486,7 +486,7 @@ OR check the SVN source :
 
 # svn co https://pepperspot.svn.sourceforge.net/svnroot/pepperspot pepperspot 
 # cd pepperspot
-# autoconf && autoheader && autoconf -i && autoreconf -i && automake --add-missing
+# autoconf && autoheader && autoconf -i && automake --add-missing
 # ./configure
 # make
 # make install

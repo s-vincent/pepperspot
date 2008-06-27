@@ -52,7 +52,7 @@ int clearenv (void)
 
 #endif
 
-#ifndef HAVE_DAEMON
+#if !defined(HAVE_DAEMON) || defined(_POSIX_C_SOURCE)
 
 int daemon(int nochdir, int noclose)
 {

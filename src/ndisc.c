@@ -66,7 +66,6 @@
 #include <net/if_arp.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
-#include <ifaddrs.h>
 
 #include "icmp6.h"
 #include "util.h"
@@ -74,8 +73,10 @@
 /* #include "rtnl.h" */
 
 #if defined (__FreeBSD__)   || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
+#include <ifaddrs.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>
+#include <ifaddrs.h>
 #endif
 
 #if defined(__linux__)

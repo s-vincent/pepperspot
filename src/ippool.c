@@ -85,6 +85,8 @@
 
 int ippool_printaddr(struct ippool_t *this) {
   int n = 0;
+  char buf[INET_ADDRSTRLEN];
+
   printf("ippool_printaddr\n");
   printf("Firstdyn %d\n", this->firstdyn - this->member);
   printf("Lastdyn %d\n",  this->lastdyn - this->member);
@@ -98,7 +100,7 @@ int ippool_printaddr(struct ippool_t *this) {
 	   this->member[n].inuse,
 	   this->member[n].prev - this->member,
 	   this->member[n].next - this->member,
-	   inet_ntoa(this->member[n].addr),	
+	   inet_ntop(AF_INET, &this->member[n].addr, buf, sizeof(buf)),	
 	   this->member[n].addr.s_addr
 	   );
   }
