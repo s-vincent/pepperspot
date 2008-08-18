@@ -101,6 +101,10 @@
 #include <net/if_tun.h>
 #endif
 
+#if defined(__FreeBSD__)
+#include <netinet/in.h>
+#endif
+
 #include <time.h>
 #include <sys/time.h>
 
@@ -779,7 +783,7 @@ static int process_options(int argc, char **argv, int firsttime) {
 	unsigned int numargs = 0;
 	char uamserveraddr6[INET6_ADDRSTRLEN];
 	char uamserveraddr[INET_ADDRSTRLEN];
-	struct in6_addr any_addr = IN6ADDR_ANY_INIT;
+	struct in6_addr any_addr = in6addr_any;
 	struct addrinfo hints;
 	struct addrinfo *res = NULL;
 	struct addrinfo *rp = NULL;

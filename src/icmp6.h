@@ -27,6 +27,7 @@
 #ifndef __ICMP6_H__
 #define __ICMP6_H__ 1
 
+#include <netinet/in.h>
 #include <netinet/icmp6.h>
 
 struct icmp6_handler {

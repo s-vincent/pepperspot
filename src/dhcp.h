@@ -87,10 +87,10 @@
 #define DHCP_TAG_VLEN 255        /* Tag value always shorter than this */
 
 struct dhcp_tag_t {
-  uint8_t t:8;
-  uint8_t l:8;
+  uint8_t t;
+  uint8_t l;
   uint8_t v[DHCP_TAG_VLEN];
-};
+}__attribute__((packed));
 
 
 /* Option constants */
@@ -157,10 +157,10 @@ struct dhcp_ethhdr_t
 #define DHCP_IPV6_TCP 6
 
 struct dhcp_iphdr_t {
-  uint8_t  ihl:4;
-  uint8_t  version:4;
-  uint8_t  tos;
-  uint16_t tot_len;
+  uint32_t  ihl : 4;
+  uint32_t  version : 4;
+  uint32_t  tos : 8;
+  uint32_t tot_len : 16;
   uint16_t id;
   uint16_t frag_off;
   uint8_t  ttl;
@@ -168,7 +168,7 @@ struct dhcp_iphdr_t {
   uint16_t check;
   uint32_t saddr;
   uint32_t daddr;
-};
+}__attribute__((packed));
 
 /* [SV] */
 struct dhcp_ipv6hdr_t 
@@ -181,7 +181,7 @@ struct dhcp_ipv6hdr_t
   uint8_t hop_limit;
   uint8_t src_addr[16];
   uint8_t dst_addr[16];
-};
+} __attribute__((packed));
 
 
 #define DHCP_IP_PLEN 1500 /* IP Payload length */
@@ -408,28 +408,27 @@ struct dhcp_conn_t {
 #define DHCP_EAPOL_TAG_VLEN 255        /* Tag value always shorter than this */
 
 struct dhcp_eapol_tag_t {
-  uint8_t t:8;
-  uint8_t l:8;
+  uint8_t t;
+  uint8_t l;
   uint8_t v[DHCP_EAPOL_TAG_VLEN];
-};
+}__attribute__((packed));
 
 
 struct dhcp_dot1xhdr_t {
-  uint8_t  ver:8;
-  uint8_t  type:8;
-  uint16_t len:16;
+  uint8_t  ver;
+  uint8_t  type;
+  uint16_t len;
 } __attribute__((packed));
 
 #define DHCP_EAP_PLEN 1500 /* Dot1x Payload length */
 
 struct dhcp_eap_t {
-  uint8_t  code:8;
-  uint8_t  id:8;
-  uint16_t length:16;
-  uint8_t  type:8;
+  uint8_t  code;
+  uint8_t  id;
+  uint16_t length;
+  uint8_t  type;
   uint8_t payload[DHCP_EAP_PLEN];
 } __attribute__((packed));
-
 
 
 struct dhcp_dot1xpacket_t {

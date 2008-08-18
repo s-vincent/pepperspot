@@ -50,6 +50,7 @@
 # include <sys/types.h>
 # include <sys/select.h>
 
+#include <netinet/in.h>
 #include <net/if.h>
 #ifndef IFNAMSIZ
 #define IFNAMSIZ IF_NAMESIZE

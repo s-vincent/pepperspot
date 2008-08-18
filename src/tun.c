@@ -72,6 +72,8 @@
  *
  */
 
+#include "compat.h"
+
 #include <syslog.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,7 +123,6 @@
 
 #include "tun.h"
 #include "syserr.h"
-#include "compat.h"
 
 #if defined(__linux__)
 
