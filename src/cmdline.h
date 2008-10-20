@@ -48,7 +48,7 @@ struct gengetopt_args_info
   char * dns2_orig;	/* Secondary DNS server IP address original value given at command line.  */
   char * staticipv6_arg; /**< IPv6 address of the TUN interface */
   char * staticipv6_orig; /**< IPv6 address of the TUN interface */
-  char * ipv6prefix_arg; /* IPv6 prefix (default='2001:660:4701:f047::/64'). */
+  char * ipv6prefix_arg; /* IPv6 prefix (default='2001:db8::/64'). */
   char * ipv6prefix_orig; /* IPv6 prefix original value given at command line.  */
   char * domain_arg;	/* Domain to use for DNS lookups (default='key.pepperspot.org').  */
   char * domain_orig;	/* Domain to use for DNS lookups original value given at command line.  */

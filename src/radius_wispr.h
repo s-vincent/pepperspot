@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -82,3 +80,4 @@
 #define	RADIUS_ATTR_WISPR_BILLING_CLASS_OF_SERVICE     11 /* string */
 
 #endif	/* !_RADIUS_WISPR_H */
+

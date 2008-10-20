@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -246,43 +244,43 @@ struct dhcp_tcphdr_t {
 
 struct dhcp_packet_t { /* From RFC 2131 */
   uint8_t op;       /* 1 Message op code / message type.  1 =
-			  BOOTREQUEST, 2 = BOOTREPLY */
+                       BOOTREQUEST, 2 = BOOTREPLY */
   uint8_t htype;    /* 1 Hardware address type, see ARP section
-			  in "Assigned Numbers" RFC; e.g., '1' =
-			  10mb ethernet.*/
+                       in "Assigned Numbers" RFC; e.g., '1' =
+                       10mb ethernet.*/
   uint8_t hlen;     /* 1 Hardware address length (e.g.  '6' for
-			  10mb ethernet).*/
+                       10mb ethernet).*/
   uint8_t hops;     /* 1 Client sets to zero, optionally used
-			  by relay agents when booting via a
-			  relay agent.*/
+                       by relay agents when booting via a
+                       relay agent.*/
   uint32_t xid;    /* 4 Transaction ID, a random number chosen
-			  by the client, used by the client and
-			  server to associate messages and
-			  responses between a client and a
-			  server.*/
+                      by the client, used by the client and
+                      server to associate messages and
+                      responses between a client and a
+                      server.*/
   uint16_t secs;   /* 2 Filled in by client, seconds elapsed since
-			  client began address acquisition or renewal
-			  process.*/
+                      client began address acquisition or renewal
+                      process.*/
   uint16_t flags;  /* 2  Flags (see figure 2).*/
   uint32_t ciaddr; /* 4 Client IP address; only filled in if
-			  client is in BOUND, RENEW or REBINDING state
-			  and can respond to ARP requests.*/
+                      client is in BOUND, RENEW or REBINDING state
+                      and can respond to ARP requests.*/
   uint32_t yiaddr; /* 4 'your' (client) IP address.*/
   uint32_t siaddr; /* 4 IP address of next server to use in
-			  bootstrap; returned in DHCPOFFER,
-			  DHCPACK by server.*/
+                      bootstrap; returned in DHCPOFFER,
+                      DHCPACK by server.*/
   uint32_t giaddr; /* 4 Relay agent IP address, used in
-			  booting via a relay agent.*/
+                      booting via a relay agent.*/
   uint8_t  chaddr[DHCP_CHADDR_LEN]; /* 16 Client hardware address.*/
   uint8_t sname[DHCP_SNAME_LEN]; /* 64 Optional server host name,
-			  null terminated string.*/
+                                    null terminated string.*/
   uint8_t file[DHCP_FILE_LEN]; /* 128 Boot file name, null terminated
-                          string; "generic" name or null in
-                          DHCPDISCOVER, fully qualified directory-path
-                          name in DHCPOFFER.*/
+                                  string; "generic" name or null in
+                                  DHCPDISCOVER, fully qualified directory-path
+                                  name in DHCPOFFER.*/
   uint8_t options[DHCP_OPTIONS_LEN]; /* var Optional parameters
-                          field.  See the options documents for a list
-                          of defined options.*/
+                                        field.  See the options documents for a list
+                                        of defined options.*/
 } __attribute__((packed));
 
 
@@ -299,21 +297,21 @@ struct dhcp_fullpacket_t {
 
 struct dhcp_arp_packet_t { /* From RFC 826 */
   uint16_t hrd; /* 16.bit: (ar$hrd) Hardware address space (e.g.,
-		    Ethernet, Packet Radio Net.) */
+                   Ethernet, Packet Radio Net.) */
   uint16_t pro; /* 16.bit: (ar$pro) Protocol address space.  For
-		    Ethernet hardware, this is from the set of type
-		    fields ether_typ$<protocol>. */
+                   Ethernet hardware, this is from the set of type
+                   fields ether_typ$<protocol>. */
   uint8_t hln;  /* 8.bit: (ar$hln) byte length of each hardware address */
   uint8_t pln;  /* 8.bit: (ar$pln) byte length of each protocol address */
   uint16_t op;  /* 16.bit: (ar$op)  opcode (ares_op$REQUEST | ares_op$REPLY) */
   uint8_t sha[DHCP_ETH_ALEN]; /* nbytes: (ar$sha) Hardware address of
-		    sender of this packet, n from the ar$hln field. */
+                                 sender of this packet, n from the ar$hln field. */
   uint8_t spa[DHCP_IP_ALEN];  /* mbytes: (ar$spa) Protocol address of
-		    sender of this packet, m from the ar$pln field. */
+                                 sender of this packet, m from the ar$pln field. */
   uint8_t tha[DHCP_ETH_ALEN]; /* nbytes: (ar$tha) Hardware address of
-		  target of this packet (if known). */
+                                 target of this packet (if known). */
   uint8_t tpa[DHCP_IP_ALEN]; /* mbytes: (ar$tpa) Protocol address of
-				 target.*/
+                                target.*/
 } __attribute__((packed));
 
 struct dhcp_arp_fullpacket_t {
@@ -350,7 +348,7 @@ struct dhcp_dns_fullpacket6_t {
 } __attribute__((packed));
 
 int dhcp_checkDNS(struct dhcp_conn_t *conn, 
-		  struct dhcp_ippacket_t *pack, int len);
+    struct dhcp_ippacket_t *pack, int len);
 
 #endif
 
@@ -401,7 +399,7 @@ struct dhcp_conn_t {
   struct in6_addr dnatipv6[DHCP_DNATV6_MAX]; /**< Destination NAT destination IPv6 address */
   uint16_t dnatportv6[DHCP_DNATV6_MAX]; /**< Destination NAT source port */
 
-/*  uint16_t mtu;                 Maximum transfer unit */
+  /*  uint16_t mtu;                 Maximum transfer unit */
 };
 
 
@@ -501,7 +499,7 @@ struct dhcp_t {
   struct in6_addr *uamokmask6; /* Allowed network IPv6 masks */
   int uamoknetlen;          /* Number of allowed networks */
   int uamoknetlen6;          /* Number of allowed networks */
-  
+
   /* Connection management */
   struct dhcp_conn_t *conn;
   struct dhcp_conn_t *firstfreeconn; /* First free in linked list */
@@ -531,7 +529,7 @@ struct dhcp_t {
   int (*cb_request) (struct dhcp_conn_t *conn, struct in_addr *addr);
   int (*cb_connect) (struct dhcp_conn_t *conn);
   int (*cb_disconnect) (struct dhcp_conn_t *conn);
-  
+
   /* [SV] */
   /**
    * \brief Inform the application about the IPv6 for this peer.
@@ -563,19 +561,19 @@ struct dhcp_t {
 const char* dhcp_version(void);
 
 int dhcp_new(struct dhcp_t **dhcp, int numconn, char *interface,
-	 int usemac, uint8_t *mac, int promisc, 
-	 struct in_addr *listen, struct in6_addr* listenv6, int lease, int allowdyn,
-	 struct in_addr *uamlisten, struct in6_addr *uamlisten6, uint16_t uamport, int useeapol, char *ipversion);
+    int usemac, uint8_t *mac, int promisc, 
+    struct in_addr *listen, struct in6_addr* listenv6, int lease, int allowdyn,
+    struct in_addr *uamlisten, struct in6_addr *uamlisten6, uint16_t uamport, int useeapol, char *ipversion);
 
 int dhcp_set(struct dhcp_t *dhcp, int debug,
-	 struct in_addr *authip, int authiplen, int anydns,
-	 struct in_addr *uamokip, int uamokiplen, struct in_addr *uamokaddr,
-	 struct in_addr *uamokmask, int uamoknetlen);
+    struct in_addr *authip, int authiplen, int anydns,
+    struct in_addr *uamokip, int uamokiplen, struct in_addr *uamokaddr,
+    struct in_addr *uamokmask, int uamoknetlen);
 
 int dhcp_setv6(struct dhcp_t *dhcp, int debug,
-	 struct in6_addr *authip, int authiplen, int anydns,
-	 struct in6_addr *uamokip, int uamokiplen, struct in6_addr *uamokaddr,
-	 struct in6_addr *uamokmask, int uamoknetlen);
+    struct in6_addr *authip, int authiplen, int anydns,
+    struct in6_addr *uamokip, int uamokiplen, struct in6_addr *uamokaddr,
+    struct in6_addr *uamokmask, int uamoknetlen);
 
 int dhcp_free(struct dhcp_t *dhcp);
 
@@ -586,16 +584,16 @@ struct timeval* dhcp_timeleft(struct dhcp_t *this, struct timeval *tvp);
 int dhcp_validate(struct dhcp_t *this);
 
 int dhcp_set_addrsv6(struct dhcp_conn_t *conn, 
-	       struct in6_addr *hisip,
-	       struct in6_addr *ourip, char *domain);
-	       
+    struct in6_addr *hisip,
+    struct in6_addr *ourip, char *domain);
+
 int dhcp_set_addrs(struct dhcp_conn_t *conn,
-		   struct in_addr *hisip,
-		   struct in_addr *hismask,
-		   struct in_addr *ourip,
-		   struct in_addr *dns1,
-		   struct in_addr *dns2,
-		   char *domain);
+    struct in_addr *hisip,
+    struct in_addr *hismask,
+    struct in_addr *ourip,
+    struct in_addr *dns1,
+    struct in_addr *dns2,
+    char *domain);
 
 /* Called whenever a packet arrives */
 int dhcp_decaps(struct dhcp_t *this);
@@ -620,27 +618,27 @@ int dhcp_set_cb_connectv6(struct dhcp_t *this,  int (*cb_connect) (struct dhcp_c
 int dhcp_set_cb_disconnectv6(struct dhcp_t *this,  int (*cb_disconnect) (struct dhcp_conn_t *conn));
 
 int dhcp_set_cb_data_ind(struct dhcp_t *this, 
-  int (*cb_data_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
+    int (*cb_data_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
 
 int dhcp_set_cb_request(struct dhcp_t *this, 
-  int (*cb_request) (struct dhcp_conn_t *conn, struct in_addr *addr));
+    int (*cb_request) (struct dhcp_conn_t *conn, struct in_addr *addr));
 
 int dhcp_set_cb_disconnect(struct dhcp_t *this, 
-  int (*cb_disconnect) (struct dhcp_conn_t *conn));
+    int (*cb_disconnect) (struct dhcp_conn_t *conn));
 
 int dhcp_set_cb_connect(struct dhcp_t *this, 
-  int (*cb_connect) (struct dhcp_conn_t *conn));
+    int (*cb_connect) (struct dhcp_conn_t *conn));
 
 int dhcp_set_cb_eap_ind(struct dhcp_t *this, 
-  int (*cb_eap_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
+    int (*cb_eap_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
 
 int dhcp_hashget(struct dhcp_t *this, struct dhcp_conn_t **conn,
-	     uint8_t *hwaddr);
+    uint8_t *hwaddr);
 
 int dhcp_getmac(const char *ifname, unsigned char *macaddr);
 
 int dhcp_newconn(struct dhcp_t *this, struct dhcp_conn_t **conn, 
-	     uint8_t *hwaddr);
+    uint8_t *hwaddr);
 
 int dhcp_freeconn(struct dhcp_conn_t *conn);
 
@@ -667,3 +665,4 @@ int dhcp_ipv6_req(struct dhcp_conn_t* conn, void* pack, unsigned len);
 int dhcp_receive(struct dhcp_t* this);
 
 #endif	/* !_DHCP_H */
+

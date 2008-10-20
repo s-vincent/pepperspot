@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -83,5 +81,5 @@ int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize);
 /* Delete existing address pool */
 extern int iphash_free(struct ippool_t *this);
 
-
 #endif	/* !_IPHASH_H */
+

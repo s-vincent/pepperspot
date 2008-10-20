@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -119,21 +117,21 @@ char credits[] =
 
 /* redir signal handler */
 static void redir_sig_handler(int signum) {
-	switch(signum) {
-		case SIGTERM:
-			if (optionsdebug) printf("Terminating redir client!\n");
-  			keep_going = 0;
-			break;
-		case SIGINT:
-			if (optionsdebug) printf("Terminating redir client!\n");
-  			keep_going = 0;
-			break;
-		case SIGALRM:
-		  	sys_err(LOG_WARNING, __FILE__, __LINE__, 0,
-	  			"Client process timed out: %d", termstate);
-  			exit(0);
-			break;
-	}
+  switch(signum) {
+    case SIGTERM:
+      if (optionsdebug) printf("Terminating redir client!\n");
+      keep_going = 0;
+      break;
+    case SIGINT:
+      if (optionsdebug) printf("Terminating redir client!\n");
+      keep_going = 0;
+      break;
+    case SIGALRM:
+      sys_err(LOG_WARNING, __FILE__, __LINE__, 0,
+          "Client process timed out: %d", termstate);
+      exit(0);
+      break;
+  }
 }
 
 /* Generate a 16 octet random challenge */
@@ -143,16 +141,16 @@ static int redir_challenge(unsigned char *dst) {
 
   if ((file = fopen("/dev/urandom", "r")) == NULL) {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-	    "fopen(/dev/urandom, r) failed");
+        "fopen(/dev/urandom, r) failed");
     return -1;
   }
-  
+
   if (fread(dst, 1, REDIR_MD5LEN, file) != REDIR_MD5LEN) {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-	    "fread() failed");
+        "fread() failed");
     return -1;
   }
-  
+
   fclose(file);
   return 0;
 }
@@ -164,7 +162,7 @@ static int redir_hextochar(char *src, unsigned char * dst) {
   char x[3];
   int n = 0;
   int y = 0;
-  
+
   for (n=0; n< REDIR_MD5LEN; n++) {
     x[0] = src[n*2+0];
     x[1] = src[n*2+1];
@@ -184,7 +182,7 @@ static int redir_chartohex(unsigned char *src, char *dst) {
 
   char x[3];
   int n = 0;
-  
+
   for (n=0; n<REDIR_MD5LEN; n++) {
     snprintf(x, 3, "%.2x", src[n]);
     dst[n*2+0] = x[0];
@@ -201,30 +199,30 @@ static int redir_urlencode( char *src, int srclen, char *dst, int dstsize) {
   char x[3];
   int n = 0;
   int i = 0;
-  
+
   for (n=0; n<srclen; n++) {
     if ((('A' <= src[n]) && (src[n] <= 'Z')) ||
-	(('a' <= src[n]) && (src[n] <= 'z')) ||
-	(('0' <= src[n]) && (src[n] <= '9')) ||
-	('-' == src[n]) ||
-	('_' == src[n]) ||
-	('.' == src[n]) ||
-	('!' == src[n]) ||
-	('~' == src[n]) ||
-	('*' == src[n]) ||
-	('\'' == src[n]) ||
-	('(' == src[n]) ||
-	(')' == src[n])) {
+        (('a' <= src[n]) && (src[n] <= 'z')) ||
+        (('0' <= src[n]) && (src[n] <= '9')) ||
+        ('-' == src[n]) ||
+        ('_' == src[n]) ||
+        ('.' == src[n]) ||
+        ('!' == src[n]) ||
+        ('~' == src[n]) ||
+        ('*' == src[n]) ||
+        ('\'' == src[n]) ||
+        ('(' == src[n]) ||
+        (')' == src[n])) {
       if (i<dstsize-1) {
-	dst[i++] = src[n];
+        dst[i++] = src[n];
       }
     }
     else {
       snprintf(x, 3, "%.2x", src[n]);
       if (i<dstsize-3) {
-	dst[i++] = '%';
-	dst[i++] = x[0];
-	dst[i++] = x[1];
+        dst[i++] = '%';
+        dst[i++] = x[0];
+        dst[i++] = x[1];
       }
     }
   }
@@ -243,12 +241,12 @@ static int redir_urldecode(  char *src, int srclen, char *dst, unsigned int dsts
   while (n<srclen) {
     if (src[n] == '%') {
       if ((n+2) < srclen) {
-	x[0] = src[n+1];
-	x[1] = src[n+2];
-	x[2] = 0;
-	c = '_';
-	sscanf(x, "%x", &c);
-	if (i<(dstsize-1)) dst[i++] = c; 
+        x[0] = src[n+1];
+        x[1] = src[n+2];
+        x[2] = 0;
+        c = '_';
+        sscanf(x, "%x", &c);
+        if (i<(dstsize-1)) dst[i++] = c; 
       }
       n += 3;
     }
@@ -283,188 +281,188 @@ static int redir_stradd(char *dst, unsigned int dstsize, char *fmt, ...) {
 
 /* Make an XML Reply */
 static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn, 
-			  int res, long int timeleft, char* hexchal, 
-			  char* reply, char* redirurl,
-			  char *dst, int dstsize) {
+    int res, long int timeleft, char* hexchal, 
+    char* reply, char* redirurl,
+    char *dst, int dstsize) {
   char buf[INET6_ADDRSTRLEN];
 
   snprintf(dst, dstsize,
-	   "<!--\r\n"
-	   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
-	   "<WISPAccessGatewayParam\r\n"
-	   "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n"
-	   "  xsi:noNamespaceSchemaLocation=\"http://www.acmewisp.com/WISPAccessGatewayParam.xsd\""
-	   ">\r\n");
+      "<!--\r\n"
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+      "<WISPAccessGatewayParam\r\n"
+      "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n"
+      "  xsi:noNamespaceSchemaLocation=\"http://www.acmewisp.com/WISPAccessGatewayParam.xsd\""
+      ">\r\n");
   dst[dstsize-1] = 0;
 
   switch (res) {
-  case REDIR_ALREADY:
-    redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
-    redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
-    redir_stradd(dst, dstsize, "<ResponseCode>102</ResponseCode>\r\n");
-    redir_stradd(dst, dstsize, 
-		 "<ReplyMessage>Already logged on</ReplyMessage>\r\n");
-    redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
-    break;
-  case REDIR_FAILED_REJECT:
-    redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
-    redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
-    redir_stradd(dst, dstsize, "<ResponseCode>100</ResponseCode>\r\n");
-    if (reply) {
-      redir_stradd(dst, dstsize, "<ReplyMessage>%s</ReplyMessage>\r\n", reply);
-    }
-    else {
+    case REDIR_ALREADY:
+      redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
+      redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
+      redir_stradd(dst, dstsize, "<ResponseCode>102</ResponseCode>\r\n");
       redir_stradd(dst, dstsize, 
-		   "<ReplyMessage>Invalid Password</ReplyMessage>\r\n");
-    }
-    redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
-    break;
-  case REDIR_FAILED_OTHER:
-    redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
-    redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
-    redir_stradd(dst, dstsize, "<ResponseCode>102</ResponseCode>\r\n");
-    if (reply) {
-      redir_stradd(dst, dstsize, "<ReplyMessage>%s</ReplyMessage>\r\n", reply);
-    }
-    else {
-      redir_stradd(dst, dstsize, 
-		   "<ReplyMessage>Radius error</ReplyMessage>\r\n");
-    }
-    redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
-    break;
-  case REDIR_SUCCESS:
-    redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
-    redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
-    redir_stradd(dst, dstsize, "<ResponseCode>50</ResponseCode>\r\n");
-    if (reply) {
-      redir_stradd(dst, dstsize, "<ReplyMessage>%s</ReplyMessage>\r\n", reply);
-    }
-    redir_stradd(dst, dstsize,
-		 "<LogoffURL>http://%s:%d/logoff</LogoffURL>\r\n",
-		 inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
-    if (redirurl) {
+          "<ReplyMessage>Already logged on</ReplyMessage>\r\n");
+      redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
+      break;
+    case REDIR_FAILED_REJECT:
+      redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
+      redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
+      redir_stradd(dst, dstsize, "<ResponseCode>100</ResponseCode>\r\n");
+      if (reply) {
+        redir_stradd(dst, dstsize, "<ReplyMessage>%s</ReplyMessage>\r\n", reply);
+      }
+      else {
+        redir_stradd(dst, dstsize, 
+            "<ReplyMessage>Invalid Password</ReplyMessage>\r\n");
+      }
+      redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
+      break;
+    case REDIR_FAILED_OTHER:
+      redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
+      redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
+      redir_stradd(dst, dstsize, "<ResponseCode>102</ResponseCode>\r\n");
+      if (reply) {
+        redir_stradd(dst, dstsize, "<ReplyMessage>%s</ReplyMessage>\r\n", reply);
+      }
+      else {
+        redir_stradd(dst, dstsize, 
+            "<ReplyMessage>Radius error</ReplyMessage>\r\n");
+      }
+      redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
+      break;
+    case REDIR_SUCCESS:
+      redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
+      redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
+      redir_stradd(dst, dstsize, "<ResponseCode>50</ResponseCode>\r\n");
+      if (reply) {
+        redir_stradd(dst, dstsize, "<ReplyMessage>%s</ReplyMessage>\r\n", reply);
+      }
       redir_stradd(dst, dstsize,
-		   "<RedirectionURL>%s</RedirectionURL>\r\n", redirurl);
-    }
-    redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
-    break;
-  case REDIR_LOGOFF:
-    redir_stradd(dst, dstsize, "<LogoffReply>\r\n");
-    redir_stradd(dst, dstsize, "<MessageType>130</MessageType>\r\n");
-    redir_stradd(dst, dstsize, "<ResponseCode>150</ResponseCode>\r\n");
-    redir_stradd(dst, dstsize, "</LogoffReply>\r\n");
-    break;
-  case REDIR_NOTYET:
-    redir_stradd(dst, dstsize, "<Redirect>\r\n");
-    redir_stradd(dst, dstsize, "<AccessProcedure>1.0</AccessProcedure>\r\n");
-    if (redir->radiuslocationid) {
-      redir_stradd(dst, dstsize, 
-		   "<AccessLocation>%s</AccessLocation>\r\n",
-		   redir->radiuslocationid);
-    }
-    if (redir->radiuslocationname) {
-      redir_stradd(dst, dstsize, 
-	       "<LocationName>%s</LocationName>\r\n",
-	       redir->radiuslocationname);
-    }
-
-    /* [SV] */
-    if(conn->ipv6)
-    {
-      redir_stradd(dst, dstsize,
-                      "<LoginURL>%s?res=smartclient&uamip=[%s]&uamport=%d&challenge=%s</LoginURL>\r\n",
-                       redir->url6, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port, hexchal);
-
-      printf("<LoginURL>%s?res=smartclient&uamip=[%s]&uamport=%d&challenge=%s</LoginURL>\r\n",
-                             redir->url6, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port, hexchal);
-      redir_stradd(dst, dstsize, 
-		 "<AbortLoginURL>http://[%s]:%d/abort</AbortLoginURL>\r\n", 
-		 inet_ntop(AF_INET6, &redir->addrv6, buf, sizeof(buf)), redir->port);
-    }
-    else
-    {
-      redir_stradd(dst, dstsize, 
-  		 "<LoginURL>%s?res=smartclient&uamip=%s&uamport=%d&challenge=%s</LoginURL>\r\n",
-  		 redir->url, inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port, hexchal);
-  		 redir_stradd(dst, dstsize, 
-		 "<AbortLoginURL>http://%s:%d/abort</AbortLoginURL>\r\n", 
-		 inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
-    }
-
-    redir_stradd(dst, dstsize, "<MessageType>100</MessageType>\r\n");
-    redir_stradd(dst, dstsize, "<ResponseCode>0</ResponseCode>\r\n");
-    redir_stradd(dst, dstsize, "</Redirect>\r\n");
-    break;
-  case REDIR_ABORT_ACK:
-    redir_stradd(dst, dstsize, "<AbortLoginReply>\r\n");
-    redir_stradd(dst, dstsize, "<MessageType>150</MessageType>\r\n");
-    redir_stradd(dst, dstsize, "<ResponseCode>151</ResponseCode>\r\n");
-    redir_stradd(dst, dstsize, "</AbortLoginReply>\r\n");
-    break;
-  case REDIR_ABORT_NAK:
-    redir_stradd(dst, dstsize, "<AbortLoginReply>\r\n");
-    redir_stradd(dst, dstsize, "<MessageType>150</MessageType>\r\n");
-    redir_stradd(dst, dstsize, "<ResponseCode>50</ResponseCode>\r\n");
-    redir_stradd(dst, dstsize,
-		 "<LogoffURL>http://%s:%d/logoff</LogoffURL>\r\n",
-		 inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
-    redir_stradd(dst, dstsize, "</AbortLoginReply>\r\n");
-    break;
-  case REDIR_STATUS:
-    redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
-    redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
-    if (conn->authenticated != 1) {
+          "<LogoffURL>http://%s:%d/logoff</LogoffURL>\r\n",
+          inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
+      if (redirurl) {
+        redir_stradd(dst, dstsize,
+            "<RedirectionURL>%s</RedirectionURL>\r\n", redirurl);
+      }
+      redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
+      break;
+    case REDIR_LOGOFF:
+      redir_stradd(dst, dstsize, "<LogoffReply>\r\n");
+      redir_stradd(dst, dstsize, "<MessageType>130</MessageType>\r\n");
       redir_stradd(dst, dstsize, "<ResponseCode>150</ResponseCode>\r\n");
-      redir_stradd(dst, dstsize, 
-		   "<ReplyMessage>Not logged on</ReplyMessage>\r\n");
-    }
-    else {
+      redir_stradd(dst, dstsize, "</LogoffReply>\r\n");
+      break;
+    case REDIR_NOTYET:
+      redir_stradd(dst, dstsize, "<Redirect>\r\n");
+      redir_stradd(dst, dstsize, "<AccessProcedure>1.0</AccessProcedure>\r\n");
+      if (redir->radiuslocationid) {
+        redir_stradd(dst, dstsize, 
+            "<AccessLocation>%s</AccessLocation>\r\n",
+            redir->radiuslocationid);
+      }
+      if (redir->radiuslocationname) {
+        redir_stradd(dst, dstsize, 
+            "<LocationName>%s</LocationName>\r\n",
+            redir->radiuslocationname);
+      }
+
+      /* [SV] */
+      if(conn->ipv6)
+      {
+        redir_stradd(dst, dstsize,
+            "<LoginURL>%s?res=smartclient&uamip=[%s]&uamport=%d&challenge=%s</LoginURL>\r\n",
+            redir->url6, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port, hexchal);
+
+        printf("<LoginURL>%s?res=smartclient&uamip=[%s]&uamport=%d&challenge=%s</LoginURL>\r\n",
+            redir->url6, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port, hexchal);
+        redir_stradd(dst, dstsize, 
+            "<AbortLoginURL>http://[%s]:%d/abort</AbortLoginURL>\r\n", 
+            inet_ntop(AF_INET6, &redir->addrv6, buf, sizeof(buf)), redir->port);
+      }
+      else
+      {
+        redir_stradd(dst, dstsize, 
+            "<LoginURL>%s?res=smartclient&uamip=%s&uamport=%d&challenge=%s</LoginURL>\r\n",
+            redir->url, inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port, hexchal);
+        redir_stradd(dst, dstsize, 
+            "<AbortLoginURL>http://%s:%d/abort</AbortLoginURL>\r\n", 
+            inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
+      }
+
+      redir_stradd(dst, dstsize, "<MessageType>100</MessageType>\r\n");
+      redir_stradd(dst, dstsize, "<ResponseCode>0</ResponseCode>\r\n");
+      redir_stradd(dst, dstsize, "</Redirect>\r\n");
+      break;
+    case REDIR_ABORT_ACK:
+      redir_stradd(dst, dstsize, "<AbortLoginReply>\r\n");
+      redir_stradd(dst, dstsize, "<MessageType>150</MessageType>\r\n");
+      redir_stradd(dst, dstsize, "<ResponseCode>151</ResponseCode>\r\n");
+      redir_stradd(dst, dstsize, "</AbortLoginReply>\r\n");
+      break;
+    case REDIR_ABORT_NAK:
+      redir_stradd(dst, dstsize, "<AbortLoginReply>\r\n");
+      redir_stradd(dst, dstsize, "<MessageType>150</MessageType>\r\n");
       redir_stradd(dst, dstsize, "<ResponseCode>50</ResponseCode>\r\n");
       redir_stradd(dst, dstsize,
-		   "<ReplyMessage>Already logged on</ReplyMessage>\r\n");
-    }
-    redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
-
-    if (conn->authenticated == 1) {
-      struct timeval timenow;
-      uint32_t sessiontime;
-      gettimeofday(&timenow, NULL);
-      sessiontime = timenow.tv_sec - conn->start_time.tv_sec;
-      sessiontime += (timenow.tv_usec - conn->start_time.tv_usec) / 1000000;
-      redir_stradd(dst, dstsize, "<SessionStatus>\r\n");
-      if (timeleft) {
-	redir_stradd(dst, dstsize, "<SessionTimeLeft>%d</SessionTimeLeft>\r\n",
-		     timeleft);
+          "<LogoffURL>http://%s:%d/logoff</LogoffURL>\r\n",
+          inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
+      redir_stradd(dst, dstsize, "</AbortLoginReply>\r\n");
+      break;
+    case REDIR_STATUS:
+      redir_stradd(dst, dstsize, "<AuthenticationPollReply>\r\n");
+      redir_stradd(dst, dstsize, "<MessageType>140</MessageType>\r\n");
+      if (conn->authenticated != 1) {
+        redir_stradd(dst, dstsize, "<ResponseCode>150</ResponseCode>\r\n");
+        redir_stradd(dst, dstsize, 
+            "<ReplyMessage>Not logged on</ReplyMessage>\r\n");
       }
-      redir_stradd(dst, dstsize, "<Acct-Session-Time>%d</Acct-Session-Time>\r\n", sessiontime);
-      redir_stradd(dst, dstsize, "<Start-Time>%d</Start-Time>\r\n" , conn->start_time);
-      redir_stradd(dst, dstsize, "<Acct-Input-Octets>%d</Acct-Input-Octets>\r\n",
-		   conn->input_octets);
-      redir_stradd(dst, dstsize, "<Acct-Output-Octets>%d</Acct-Output-Octets>\r\n",
-		   conn->output_octets);
-      redir_stradd(dst, dstsize, "<Session-Timeout>%d</Session-Timeout>\r\n",
-		   conn->sessiontimeout);
-      redir_stradd(dst, dstsize, "<PepperSpot-Max-Input-Octets>%d</PepperSpot-Max-Input-Octets>\r\n",
-		   conn->maxinputoctets);
+      else {
+        redir_stradd(dst, dstsize, "<ResponseCode>50</ResponseCode>\r\n");
+        redir_stradd(dst, dstsize,
+            "<ReplyMessage>Already logged on</ReplyMessage>\r\n");
+      }
+      redir_stradd(dst, dstsize, "</AuthenticationPollReply>\r\n");
 
-      redir_stradd(dst, dstsize, "<PepperSpot-Max-Output-Octets>%d</PepperSpot-Max-Output-Octets>\r\n",
-		   conn->maxoutputoctets);
-      redir_stradd(dst, dstsize, "<PepperSpot-Max-Total-Octets>%d</PepperSpot-Max-Total-Octets>\r\n",
-		   conn->maxtotaloctets);
-      redir_stradd(dst, dstsize,
-		   "<LogoffURL>http://%s:%d/logoff</LogoffURL>\r\n",
-		   inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
-      redir_stradd(dst, dstsize,
-		   "<StatusURL>http://%s:%d/status</StatusURL>\r\n",
-		   inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
-      redir_stradd(dst, dstsize, "</SessionStatus>\r\n");
-    }
-    break;
-  default:
-    sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Unknown res in switch");
-    return -1;
+      if (conn->authenticated == 1) {
+        struct timeval timenow;
+        uint32_t sessiontime;
+        gettimeofday(&timenow, NULL);
+        sessiontime = timenow.tv_sec - conn->start_time.tv_sec;
+        sessiontime += (timenow.tv_usec - conn->start_time.tv_usec) / 1000000;
+        redir_stradd(dst, dstsize, "<SessionStatus>\r\n");
+        if (timeleft) {
+          redir_stradd(dst, dstsize, "<SessionTimeLeft>%d</SessionTimeLeft>\r\n",
+              timeleft);
+        }
+        redir_stradd(dst, dstsize, "<Acct-Session-Time>%d</Acct-Session-Time>\r\n", sessiontime);
+        redir_stradd(dst, dstsize, "<Start-Time>%d</Start-Time>\r\n" , conn->start_time);
+        redir_stradd(dst, dstsize, "<Acct-Input-Octets>%d</Acct-Input-Octets>\r\n",
+            conn->input_octets);
+        redir_stradd(dst, dstsize, "<Acct-Output-Octets>%d</Acct-Output-Octets>\r\n",
+            conn->output_octets);
+        redir_stradd(dst, dstsize, "<Session-Timeout>%d</Session-Timeout>\r\n",
+            conn->sessiontimeout);
+        redir_stradd(dst, dstsize, "<PepperSpot-Max-Input-Octets>%d</PepperSpot-Max-Input-Octets>\r\n",
+            conn->maxinputoctets);
+
+        redir_stradd(dst, dstsize, "<PepperSpot-Max-Output-Octets>%d</PepperSpot-Max-Output-Octets>\r\n",
+            conn->maxoutputoctets);
+        redir_stradd(dst, dstsize, "<PepperSpot-Max-Total-Octets>%d</PepperSpot-Max-Total-Octets>\r\n",
+            conn->maxtotaloctets);
+        redir_stradd(dst, dstsize,
+            "<LogoffURL>http://%s:%d/logoff</LogoffURL>\r\n",
+            inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
+        redir_stradd(dst, dstsize,
+            "<StatusURL>http://%s:%d/status</StatusURL>\r\n",
+            inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
+        redir_stradd(dst, dstsize, "</SessionStatus>\r\n");
+      }
+      break;
+    default:
+      sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Unknown res in switch");
+      return -1;
   }
-  
+
   redir_stradd(dst, dstsize, "</WISPAccessGatewayParam>\r\n");
   redir_stradd(dst, dstsize, "-->\r\n");
   return 0;
@@ -472,55 +470,55 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
 
 /* Make an HTTP redirection reply and send it to the client */
 static int redir_reply(struct redir_t *redir, int fd, 
-		       struct redir_conn_t *conn, int res, 
-		       long int timeleft,
-		       char* hexchal, char* uid, char* userurl, char* reply, 
-		       char* redirurl, uint8_t *hismac) {
+    struct redir_conn_t *conn, int res, 
+    long int timeleft,
+    char* hexchal, char* uid, char* userurl, char* reply, 
+    char* redirurl, uint8_t *hismac) {
   char buffer[REDIR_MAXBUFFER];
   char xmlreply[REDIR_MAXBUFFER];
   char *resp = NULL;
   char buf[INET6_ADDRSTRLEN];
-  
+
   buffer[0] = 0;
   xmlreply[0] = 0;
 
   (void) redir_xmlreply(redir, conn, res, timeleft, hexchal, reply, redirurl,
-			xmlreply, sizeof(xmlreply));
-  
+      xmlreply, sizeof(xmlreply));
+
   switch (res) {
-  case REDIR_ALREADY:
-    resp = "already";
-    break;
-  case REDIR_FAILED_REJECT:
-  case REDIR_FAILED_OTHER:
-    resp = "failed";
-    break;
-  case REDIR_SUCCESS:
-    resp = "success";
-    break;
-  case REDIR_LOGOFF:
-    resp = "logoff";
-    break;
-  case REDIR_NOTYET:
-    resp = "notyet";
-    break;
-  case REDIR_ABORT_ACK:
-    resp = "logoff";
-    break;
-  case REDIR_ABORT_NAK:
-    resp = "already";
-    break;
-  case REDIR_ABOUT:
-    break;
-  case REDIR_STATUS:
-    if (conn->authenticated == 1)
+    case REDIR_ALREADY:
       resp = "already";
-    else
+      break;
+    case REDIR_FAILED_REJECT:
+    case REDIR_FAILED_OTHER:
+      resp = "failed";
+      break;
+    case REDIR_SUCCESS:
+      resp = "success";
+      break;
+    case REDIR_LOGOFF:
+      resp = "logoff";
+      break;
+    case REDIR_NOTYET:
       resp = "notyet";
-    break;
-  default:
-    sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Unknown res in switch");
-    return -1;
+      break;
+    case REDIR_ABORT_ACK:
+      resp = "logoff";
+      break;
+    case REDIR_ABORT_NAK:
+      resp = "already";
+      break;
+    case REDIR_ABOUT:
+      break;
+    case REDIR_STATUS:
+      if (conn->authenticated == 1)
+        resp = "already";
+      else
+        resp = "notyet";
+      break;
+    default:
+      sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Unknown res in switch");
+      return -1;
   }
 
   if (resp) {
@@ -528,20 +526,20 @@ static int redir_reply(struct redir_t *redir, int fd,
     /* [SV] */
     if(conn->ipv6)
     {
-     snprintf(buffer, sizeof(buffer),
-                  "HTTP/1.0 302 Moved Temporarily\r\n"
-                  "Location: %s?res=%s&uamip=[%s]&uamport=%d",
-                  redir->url6, resp, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port);
+      snprintf(buffer, sizeof(buffer),
+          "HTTP/1.0 302 Moved Temporarily\r\n"
+          "Location: %s?res=%s&uamip=[%s]&uamport=%d",
+          redir->url6, resp, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port);
       printf("HTTP/1.0 302 Moved Temporarily\r\n"
-                        "Location: %s?res=%s&uamip=[%s]&uamport=%d",
-                                          redir->url6, resp, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port);
+          "Location: %s?res=%s&uamip=[%s]&uamport=%d",
+          redir->url6, resp, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port);
     }
     else
     {
-     snprintf(buffer, sizeof(buffer), 
-	     "HTTP/1.0 302 Moved Temporarily\r\n"
-  	     "Location: %s?res=%s&uamip=%s&uamport=%d", 
-  	     redir->url, resp, inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
+      snprintf(buffer, sizeof(buffer), 
+          "HTTP/1.0 302 Moved Temporarily\r\n"
+          "Location: %s?res=%s&uamip=%s&uamport=%d", 
+          redir->url, resp, inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
     }
     buffer[sizeof(buffer)-1] = 0;
   }
@@ -553,18 +551,18 @@ static int redir_reply(struct redir_t *redir, int fd,
   if (hexchal) {
     redir_stradd(buffer, sizeof(buffer), "&challenge=%s", hexchal);
   }
-  
+
   if (uid) {
     char mid2[REDIR_MAXBUFFER];
     mid2[0] = 0;
     (void)redir_urlencode(uid, strlen(uid), mid2, sizeof(mid2));
     redir_stradd(buffer, sizeof(buffer), "&uid=%s", mid2);
   }
-  
+
   if (timeleft) {
     redir_stradd(buffer, sizeof(buffer), "&timeleft=%ld", timeleft);
   }
-  
+
   if (userurl) {
     char mid2[REDIR_MAXBUFFER];
     mid2[0] = 0;
@@ -583,7 +581,7 @@ static int redir_reply(struct redir_t *redir, int fd,
     char mid2[REDIR_MAXBUFFER];
     mid2[0] = 0;
     (void)redir_urlencode(redir->radiusnasid, strlen(redir->radiusnasid),
-		    mid2, sizeof(mid2));
+        mid2, sizeof(mid2));
     redir_stradd(buffer, sizeof(buffer), "&nasid=%s", mid2);
   }
 
@@ -591,7 +589,7 @@ static int redir_reply(struct redir_t *redir, int fd,
     char mid2[REDIR_MAXBUFFER];
     mid2[0] = 0;
     (void)redir_urlencode(redirurl, strlen(redirurl), 
-		    mid2, sizeof(mid2));
+        mid2, sizeof(mid2));
     redir_stradd(buffer, sizeof(buffer), "&redirurl=%s", mid2);
   }
 
@@ -600,32 +598,32 @@ static int redir_reply(struct redir_t *redir, int fd,
     char mid2[REDIR_MAXBUFFER];
     mid2[0] = 0;
     snprintf(mac, REDIR_MACSTRLEN+1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
-	     hismac[0], hismac[1],
-	     hismac[2], hismac[3],
-	     hismac[4], hismac[5]);
+        hismac[0], hismac[1],
+        hismac[2], hismac[3],
+        hismac[4], hismac[5]);
     (void)redir_urlencode(mac, strlen(mac), mid2, sizeof(mid2));
     redir_stradd(buffer, sizeof(buffer), "&mac=%s", mid2);
   }
-  
+
   redir_stradd(buffer, sizeof(buffer), 
-	       "\r\n"
-	       "Content-type: text/html"
-	       "\r\n\r\n"
-	       "<HTML>\r\n"
-	       "<HEAD><TITLE>PepperSpot</TITLE></HEAD>");
+      "\r\n"
+      "Content-type: text/html"
+      "\r\n\r\n"
+      "<HTML>\r\n"
+      "<HEAD><TITLE>PepperSpot</TITLE></HEAD>");
   redir_stradd(buffer, sizeof(buffer), credits);
 
   if (resp) {
     redir_stradd(buffer, sizeof(buffer), 
-		 "<BODY><H2>Browser error!</H2>"
-		 "Browser does not support redirects!</BODY>\r\n");
+        "<BODY><H2>Browser error!</H2>"
+        "Browser does not support redirects!</BODY>\r\n");
     redir_stradd(buffer, sizeof(buffer), xmlreply);
   }
   redir_stradd(buffer, sizeof(buffer), "</HTML>\r\n");
 
   if (optionsdebug) printf("redir_reply: Sending http reply: %s\n",
-			   buffer);
-  
+      buffer);
+
   if (send(fd, buffer, strlen(buffer), 0) < 0) {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "send() failed!");
     return -1;
@@ -635,8 +633,8 @@ static int redir_reply(struct redir_t *redir, int fd,
 
 /* Allocate new instance of redir */
 int redir_new(struct redir_t **redir,
-	      struct in_addr *addr, struct in6_addr* addrv6, int port) {
-  
+    struct in_addr *addr, struct in6_addr* addrv6, int port) {
+
   struct sockaddr_in address;
   struct sockaddr_in6 addressv6;
   int optval = 1;
@@ -646,128 +644,128 @@ int redir_new(struct redir_t **redir,
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "calloc() failed");
     return EOF;
   }
-  
+
   (*redir)->port = port;
   (*redir)->starttime = 0;
   (*redir)->fdv6 = -1;
   (*redir)->fd = -1;
 
   if(addr) {
-	/* Set up address */
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = addr->s_addr;
-	address.sin_port = htons(port);
-	memset(&address.sin_zero, 0x00, sizeof(address.sin_zero));
+    /* Set up address */
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = addr->s_addr;
+    address.sin_port = htons(port);
+    memset(&address.sin_zero, 0x00, sizeof(address.sin_zero));
 #if defined(__FreeBSD__)  || defined (__APPLE__)
-	address.sin_len = sizeof (struct sockaddr_in);
+    address.sin_len = sizeof (struct sockaddr_in);
 #endif
-	(*redir)->addr = *addr; 
+    (*redir)->addr = *addr; 
 
     if (((*redir)->fd  = socket(AF_INET ,SOCK_STREAM ,0)) < 0) {
-			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket() failed");
-			return -1;
-		}
+      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket() failed");
+      return -1;
+    }
 
 #if defined(__FreeBSD__)  || defined (__APPLE__)
-	  /* TODO: FreeBSD */
-		if (setsockopt((*redir)->fd, SOL_SOCKET, SO_REUSEPORT,
-				&optval, sizeof(optval))) {
-				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt() failed");
-			close((*redir)->fd);
-			return -1;
-		}
+    /* TODO: FreeBSD */
+    if (setsockopt((*redir)->fd, SOL_SOCKET, SO_REUSEPORT,
+          &optval, sizeof(optval))) {
+      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt() failed");
+      close((*redir)->fd);
+      return -1;
+    }
 #endif 
 
-		if (setsockopt((*redir)->fd, SOL_SOCKET, SO_REUSEADDR,
-				&optval, sizeof(optval))) {
-			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt() failed");
-			close((*redir)->fd);
-			return -1;
-		}
+    if (setsockopt((*redir)->fd, SOL_SOCKET, SO_REUSEADDR,
+          &optval, sizeof(optval))) {
+      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt() failed");
+      close((*redir)->fd);
+      return -1;
+    }
 
-		while (bind((*redir)->fd, (struct sockaddr *)&address, sizeof(address))) {
-			if ((EADDRINUSE == errno) && (10 > n++)) {
-				sys_err(LOG_WARNING, __FILE__, __LINE__, 0, 
-					"UAM port already in use. Waiting for retry.");
-				if (sleep(30)) { /* In case we got killed */
-					close((*redir)->fd);
-					return -1;
-				}
-			}
-			else {
-				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "bind() failed");
-				close((*redir)->fd);
-				return -1;
-			}
-		}
+    while (bind((*redir)->fd, (struct sockaddr *)&address, sizeof(address))) {
+      if ((EADDRINUSE == errno) && (10 > n++)) {
+        sys_err(LOG_WARNING, __FILE__, __LINE__, 0, 
+            "UAM port already in use. Waiting for retry.");
+        if (sleep(30)) { /* In case we got killed */
+          close((*redir)->fd);
+          return -1;
+        }
+      }
+      else {
+        sys_err(LOG_ERR, __FILE__, __LINE__, errno, "bind() failed");
+        close((*redir)->fd);
+        return -1;
+      }
+    }
 
-		if (listen((*redir)->fd, REDIR_MAXLISTEN)) {
-			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "listen() failed");
-			close((*redir)->fd);
-			return -1;
-		}
-	
+    if (listen((*redir)->fd, REDIR_MAXLISTEN)) {
+      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "listen() failed");
+      close((*redir)->fd);
+      return -1;
+    }
+
   }
 
   if(addrv6) {
-		/* [SV] */
-		addressv6.sin6_family=AF_INET6;
-		memcpy(&addressv6.sin6_addr, addrv6, sizeof(struct in6_addr));
-		addressv6.sin6_port=htons(port);
-		addressv6.sin6_flowinfo = htons(1);
-		/*addressv6.sin6_scope_id = htons(0);*/
+    /* [SV] */
+    addressv6.sin6_family=AF_INET6;
+    memcpy(&addressv6.sin6_addr, addrv6, sizeof(struct in6_addr));
+    addressv6.sin6_port=htons(port);
+    addressv6.sin6_flowinfo = htons(1);
+    /*addressv6.sin6_scope_id = htons(0);*/
 #if defined(__FreeBSD__)  || defined (__APPLE__)
-		addressv6.sin6_len = sizeof (struct sockaddr_in6);
+    addressv6.sin6_len = sizeof (struct sockaddr_in6);
 #endif
 
-		memcpy(&(*redir)->addrv6, &addressv6.sin6_addr, sizeof(struct in6_addr));
-	   
-		if(((*redir)->fdv6=socket(AF_INET6, SOCK_STREAM, 0))<0)
-		{
-			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket6() failed");
-			return -1;
-		}
-	
-		if (setsockopt((*redir)->fdv6, SOL_SOCKET, SO_REUSEADDR,
-	                 &optval, sizeof(optval))) {
-			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt6() failed");
-			close((*redir)->fdv6);
-			if((*redir)->fd != -1) 
+    memcpy(&(*redir)->addrv6, &addressv6.sin6_addr, sizeof(struct in6_addr));
+
+    if(((*redir)->fdv6=socket(AF_INET6, SOCK_STREAM, 0))<0)
+    {
+      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket6() failed");
+      return -1;
+    }
+
+    if (setsockopt((*redir)->fdv6, SOL_SOCKET, SO_REUSEADDR,
+          &optval, sizeof(optval))) {
+      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "setsockopt6() failed");
+      close((*redir)->fdv6);
+      if((*redir)->fd != -1) 
       {
         close((*redir)->fd);
       }
-			return -1;
-		}
-	
-		if(bind((*redir)->fdv6, (struct sockaddr*)&addressv6, sizeof(addressv6))==-1)
-		{
-			sys_err(LOG_WARNING, __FILE__, __LINE__, errno, "Error bind6().");
-			if((*redir)->fd != -1)
-      {
-			  close((*redir)->fd);
-      }
-			close((*redir)->fdv6);
-			return -1;
-		}
-	
-		if(listen((*redir)->fdv6, REDIR_MAXLISTEN))
-		{
-			sys_err(LOG_ERR, __FILE__, __LINE__, errno, "listen6() failed");
-			if((*redir)->fd != -1) 
+      return -1;
+    }
+
+    if(bind((*redir)->fdv6, (struct sockaddr*)&addressv6, sizeof(addressv6))==-1)
+    {
+      sys_err(LOG_WARNING, __FILE__, __LINE__, errno, "Error bind6().");
+      if((*redir)->fd != -1)
       {
         close((*redir)->fd);
       }
       close((*redir)->fdv6);
-			return -1;
-		}
+      return -1;
+    }
+
+    if(listen((*redir)->fdv6, REDIR_MAXLISTEN))
+    {
+      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "listen6() failed");
+      if((*redir)->fd != -1) 
+      {
+        close((*redir)->fd);
+      }
+      close((*redir)->fdv6);
+      return -1;
+    }
 
   }
-  
+
   if (((*redir)->msgid = msgget(IPC_PRIVATE, 0)) < 0) {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgget() failed");
     sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
-	    "Most likely your computer does not have System V IPC installed");
-		if((*redir)->fd != -1) 
+        "Most likely your computer does not have System V IPC installed");
+    if((*redir)->fd != -1) 
     {
       close((*redir)->fd);
     }
@@ -779,46 +777,46 @@ int redir_new(struct redir_t **redir,
 
 
 /* Free instance of redir */
-int redir_free(struct redir_t *redir) {
-  if (redir->fd != -1)
-  {
-    if(close(redir->fd)) 
+  int redir_free(struct redir_t *redir) {
+    if (redir->fd != -1)
     {
-      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "close() failed");
+      if(close(redir->fd)) 
+      {
+        sys_err(LOG_ERR, __FILE__, __LINE__, errno, "close() failed");
+      }
     }
-  }
 
-	/* [SV] */
-	if(redir->fdv6 != -1)
-  {
-    if(close(redir->fdv6))
-	  {
-		  sys_err(LOG_ERR, __FILE__, __LINE__, errno, "close6() failed");
+    /* [SV] */
+    if(redir->fdv6 != -1)
+    {
+      if(close(redir->fdv6))
+      {
+        sys_err(LOG_ERR, __FILE__, __LINE__, errno, "close6() failed");
+      }
     }
-	}
 
-  if (msgctl(redir->msgid, IPC_RMID, NULL)) {
-    sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgctl() failed");
+    if (msgctl(redir->msgid, IPC_RMID, NULL)) {
+      sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgctl() failed");
+    }
+
+    free(redir);
+    return 0;
   }
-  
-  free(redir);
-  return 0;
-}
 
 
 /* Set redir parameters */
 void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int prefixlen,
-	       char *url, char* url6, char *homepage, char* secret,
-	       struct sockaddr_storage *radiuslisten, 
-	       struct sockaddr_storage *radiusserver0, struct sockaddr_storage *radiusserver1,
-	       uint16_t radiusauthport, uint16_t radiusacctport,
-	       char* radiussecret, char* radiusnasid,
-	       struct sockaddr_storage *radiusnasip, char* radiuscalled,
-	       char* radiuslocationid, char* radiuslocationname,
-	       int radiusnasporttype) {
+    char *url, char* url6, char *homepage, char* secret,
+    struct sockaddr_storage *radiuslisten, 
+    struct sockaddr_storage *radiusserver0, struct sockaddr_storage *radiusserver1,
+    uint16_t radiusauthport, uint16_t radiusacctport,
+    char* radiussecret, char* radiusnasid,
+    struct sockaddr_storage *radiusnasip, char* radiuscalled,
+    char* radiuslocationid, char* radiuslocationname,
+    int radiusnasporttype) {
 
   optionsdebug = 1; /* TODO: Do not change static variable from instance */
-  
+
   redir->debug = debug;
   memcpy(&redir->prefix, prefix, prefixlen);
   redir->prefixlen = prefixlen;
@@ -853,7 +851,7 @@ static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsiz
   char *p3 = NULL;
   char *peol = NULL;
   int dstlen = 0;
-  
+
   /* To avoid unused parameter warning */
   redir = NULL;
 
@@ -871,7 +869,7 @@ static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsiz
   }
 
   while (*p1 == ' ') p1++; /* Advance through additional white space */
-  
+
   if (*p1 == '/')
     p1++;
   else
@@ -925,14 +923,14 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
   redir = NULL;
 
   dst[0] = 0; /* Null terminate in case of error return */
-   
+
   if (!(peol = strstr(src, "\r\n"))) /* End of the line */
     return -1;
 
   /* HTTP Request can be 
      GET and HEAD: OK
      POST, PUT, DELETE, TRACE, CONNECT: Not OK
-  */
+     */
 
   if (!strncmp("GET ", src, 4)) {
     p1 = src + 4;
@@ -945,7 +943,7 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
   }
 
   while (*p1 == ' ') p1++; /* Advance through additional white space */
-  
+
   p3 = strstr(p1, " ");   /* The path ends with a space */
 
   if ((p3 == NULL) || (p3 >= peol))  /* Not found at all or at first line */
@@ -959,7 +957,7 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
 
   p1 += 7;
   while (*p1 == ' ') p1++; /* Advance through additional white space */
-  
+
   if (!(peol = strstr(p1, "\r\n"))) /* End of the line */
     return -1;
 
@@ -985,8 +983,8 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
 /* Get a parameter of an HTTP request. Parameter is url decoded */
 /* TODO: Should be merged with other parsers */
 static int redir_getparam(struct redir_t *redir, char *src, 
-		   char *param,
-		   char *dst, int dstsize) {
+    char *param,
+    char *dst, int dstsize) {
 
   char *p1 = NULL;
   char *p2 = NULL;
@@ -994,11 +992,11 @@ static int redir_getparam(struct redir_t *redir, char *src,
   char *peol = NULL;
   char sstr[255];
   int len = 0;
-  
+
   /* To avoid unused parameter warning */
   redir = NULL;
 
-   printf("Looking for: %s\n", param); /*TODO*/ 
+  printf("Looking for: %s\n", param); /*TODO*/ 
 
   if (!(peol = strstr(src, "\n"))) /* End of the first line */
     return -1;
@@ -1015,7 +1013,7 @@ static int redir_getparam(struct redir_t *redir, char *src,
 
   if (!(p1 = strstr(src, sstr)))
     return -1;
-  
+
   p1 += strlen(sstr);
 
   /* The parameter ends with a & or a space */
@@ -1023,7 +1021,7 @@ static int redir_getparam(struct redir_t *redir, char *src,
   p3 = strstr(p1, " ");
 
   printf("p1:\n%s\n\np2\n%s\n\np3:%s\n\n", p1, p2, p3);
-  
+
   if ((p2 == NULL) && (p3 == NULL))  /* Not found at all */
     return -1;
 
@@ -1067,7 +1065,7 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
 
   memset(buffer, 0, sizeof(buffer));
   memset(path, 0, sizeof(path));
-  
+
   /* Read whatever the client send to us */
   while ((redir->starttime + REDIR_HTTP_MAX_TIME) > time(NULL)) {
     FD_ZERO(&fds);
@@ -1076,29 +1074,29 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
     idleTime.tv_usec = REDIR_HTTP_SELECT_TIME;
 
     switch (status = select(maxfd + 1, &fds, NULL, NULL, &idleTime)) {
-    case -1:
-      sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-	      "select() returned -1!");
-      return -1;
-    case 0:
-      break; 
-    default:
-      break;
+      case -1:
+        sys_err(LOG_ERR, __FILE__, __LINE__, errno,
+            "select() returned -1!");
+        return -1;
+      case 0:
+        break; 
+      default:
+        break;
     }
-  
+
     if ((status > 0) && FD_ISSET(fd, &fds)) {
       if ((recvlen = 
-	   recv(fd, buffer+buflen, sizeof(buffer)-1 - buflen, 0)) < 0) {
-	if (errno != ECONNRESET)
-	  sys_err(LOG_ERR, __FILE__, __LINE__, errno, "recv() failed!");
-	return -1;
+            recv(fd, buffer+buflen, sizeof(buffer)-1 - buflen, 0)) < 0) {
+        if (errno != ECONNRESET)
+          sys_err(LOG_ERR, __FILE__, __LINE__, errno, "recv() failed!");
+        return -1;
       }
       buflen += recvlen;
       buffer[buflen] = 0;
       if (strstr(buffer, "\n")) break; /* Only interested in first line */
     }
   }
-  
+
   for (i = 0; i<buflen; i++) if (buffer[i] == 0) buffer[i] = 0x0a; /* TODO: Hack to make Flash work */
 
   if (buflen <= 0) {
@@ -1112,28 +1110,28 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
   }
 
   if (!redir_getparam(redir, buffer, "userurl",
-		     conn->userurl, sizeof(conn->userurl))) {
+        conn->userurl, sizeof(conn->userurl))) {
     if (optionsdebug) printf("User URL: %s!\n", conn->userurl);
   }
-  
+
   if ((!strcmp(path, "logon")) || (!strcmp(path, "login"))) {
     if (redir_getparam(redir, buffer, "username", 
-		       conn->username, sizeof(conn->username))) {
+          conn->username, sizeof(conn->username))) {
       if (optionsdebug) printf("No username found!\n");
       return -1;
     }
 
     /* SV */
     printf("username = %s\n", conn->username);
-    
+
     if (!redir_getparam(redir, buffer, "response",
-			resp, sizeof(resp))) {
+          resp, sizeof(resp))) {
       (void)redir_hextochar(resp, conn->chappassword);
       conn->chap = 1;
       conn->password[0] = 0;
     }
     else if (!redir_getparam(redir, buffer, "password",
-			     resp, sizeof(resp))) {
+          resp, sizeof(resp))) {
       (void)redir_hextochar(resp, conn->password);
       conn->chap = 0;
       conn->chappassword[0] = 0;
@@ -1181,9 +1179,9 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
 
 /* Radius callback when access accept/reject/challenge has been received */
 static int redir_cb_radius_auth_conf(struct radius_t *radius,
-			      struct radius_packet_t *pack,
-			      struct radius_packet_t *pack_req, void *cbp) {
-  
+    struct radius_packet_t *pack,
+    struct radius_packet_t *pack_req, void *cbp) {
+
   struct radius_attr_t *interimattr = NULL;
   struct radius_attr_t *stateattr = NULL;
   struct radius_attr_t *classattr = NULL;
@@ -1191,11 +1189,11 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   char attrs[RADIUS_ATTR_VLEN+1];
   struct tm stt;
   int tzhour = 0; 
-	int tzmin = 0;
+  int tzmin = 0;
   char *tz = NULL;
   int result = 0;
   struct redir_conn_t *conn = (struct redir_conn_t*) cbp;
-  
+
   /* To avoid unused parameter warning */
   radius = NULL;
   pack_req = NULL;
@@ -1203,13 +1201,13 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   if (optionsdebug)
     printf("Received access request confirmation from radius server\n");
-  
+
   if (!conn) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-	    "No peer protocol defined");
+        "No peer protocol defined");
     return 0;
   }
-  
+
   if (!pack) { /* Timeout */
     sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Radius request timed out");
     conn->response = REDIR_FAILED_OTHER;
@@ -1221,7 +1219,7 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
       (pack->code != RADIUS_CODE_ACCESS_CHALLENGE) &&
       (pack->code != RADIUS_CODE_ACCESS_ACCEPT)) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
-	    "Unknown radius access reply code %d", pack->code);
+        "Unknown radius access reply code %d", pack->code);
     conn->response = REDIR_FAILED_OTHER;
     return 0;
   }
@@ -1236,7 +1234,7 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
     conn->replybuf[0] = 0;
     conn->reply = NULL;
   }
-  
+
   /* ACCESS-ACCEPT */
   if (pack->code != RADIUS_CODE_ACCESS_ACCEPT) {
     conn->response = REDIR_FAILED_REJECT;
@@ -1247,7 +1245,7 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_SERVICE_TYPE, 0, 0, 0)) {
     if(ntohl(attr->v.i) == RADIUS_SERVICE_TYPE_PEPPERSPOT_AUTHORIZE_ONLY) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-	      "Pepperspot-Authorize-Only Service-Type in Access-Accept");
+          "Pepperspot-Authorize-Only Service-Type in Access-Accept");
       conn->response = REDIR_FAILED_REJECT;
       return 0;
     }
@@ -1261,7 +1259,7 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   else {
     conn->statelen = 0;
   }
-  
+
   /* Class */
   if (!radius_getattr(pack, &classattr, RADIUS_ATTR_CLASS, 0, 0, 0)) {
     conn->classlen = classattr->l-2;
@@ -1274,7 +1272,7 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Session timeout */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_SESSION_TIMEOUT,
-		      0, 0, 0)) {
+        0, 0, 0)) {
     conn->sessiontimeout = ntohl(attr->v.i);
   }
   else {
@@ -1283,7 +1281,7 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Idle timeout */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_IDLE_TIMEOUT,
-		      0, 0, 0)) {
+        0, 0, 0)) {
     conn->idletimeout = ntohl(attr->v.i);
   }
   else {
@@ -1292,7 +1290,7 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Filter ID */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_FILTER_ID,
-		      0, 0, 0)) {
+        0, 0, 0)) {
     conn->filteridlen = attr->l-2;
     memcpy(conn->filteridbuf, attr->v.t, attr->l-2);
     conn->filteridbuf[attr->l-2] = 0;
@@ -1306,18 +1304,18 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Interim interval */
   if (!radius_getattr(pack, &interimattr, RADIUS_ATTR_ACCT_INTERIM_INTERVAL, 
-		      0, 0, 0)) {
+        0, 0, 0)) {
     conn->interim_interval = ntohl(interimattr->v.i);
     if (conn->interim_interval < 60) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-	      "Received too small radius Acct-Interim-Interval value: %d. Disabling interim accounting",
-	      conn->interim_interval);
+          "Received too small radius Acct-Interim-Interval value: %d. Disabling interim accounting",
+          conn->interim_interval);
       conn->interim_interval = 0;
     } 
     else if (conn->interim_interval < 600) {
       sys_err(LOG_WARNING, __FILE__, __LINE__, 0,
-	      "Received small radius Acct-Interim-Interval value: %d",
-	      conn->interim_interval);
+          "Received small radius Acct-Interim-Interval value: %d",
+          conn->interim_interval);
     }
   }
   else {
@@ -1327,8 +1325,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Redirection URL */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
-		      RADIUS_VENDOR_WISPR,
-		      RADIUS_ATTR_WISPR_REDIRECTION_URL, 0)) {
+        RADIUS_VENDOR_WISPR,
+        RADIUS_ATTR_WISPR_REDIRECTION_URL, 0)) {
     conn->redirurllen = attr->l-2;
     memcpy(conn->redirurlbuf, attr->v.t, attr->l-2);
     conn->redirurlbuf[attr->l-2] = 0;
@@ -1342,8 +1340,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Bandwidth up */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
-		      RADIUS_VENDOR_WISPR,
-		      RADIUS_ATTR_WISPR_BANDWIDTH_MAX_UP, 0)) {
+        RADIUS_VENDOR_WISPR,
+        RADIUS_ATTR_WISPR_BANDWIDTH_MAX_UP, 0)) {
     conn->bandwidthmaxup = ntohl(attr->v.i);
   }
   else {
@@ -1352,8 +1350,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Bandwidth down */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
-		      RADIUS_VENDOR_WISPR,
-		      RADIUS_ATTR_WISPR_BANDWIDTH_MAX_DOWN, 0)) {
+        RADIUS_VENDOR_WISPR,
+        RADIUS_ATTR_WISPR_BANDWIDTH_MAX_DOWN, 0)) {
     conn->bandwidthmaxdown = ntohl(attr->v.i);
   }
   else {
@@ -1363,8 +1361,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 #ifdef RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_UP
   /* Bandwidth up */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
-		      RADIUS_VENDOR_PEPPERSPOT,
-		      RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_UP, 0)) {
+        RADIUS_VENDOR_PEPPERSPOT,
+        RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_UP, 0)) {
     conn->bandwidthmaxup = ntohl(attr->v.i) * 1000;
   }
 #endif
@@ -1372,16 +1370,16 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 #ifdef RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_DOWN
   /* Bandwidth down */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
-		      RADIUS_VENDOR_PEPPERSPOT,
-		      RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_DOWN, 0)) {
+        RADIUS_VENDOR_PEPPERSPOT,
+        RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_DOWN, 0)) {
     conn->bandwidthmaxdown = ntohl(attr->v.i) * 1000;
   }
 #endif
 
   /* Max input octets */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
-		      RADIUS_VENDOR_PEPPERSPOT,
-		      RADIUS_ATTR_PEPPERSPOT_MAX_INPUT_OCTETS, 0)) {
+        RADIUS_VENDOR_PEPPERSPOT,
+        RADIUS_ATTR_PEPPERSPOT_MAX_INPUT_OCTETS, 0)) {
     conn->maxinputoctets = ntohl(attr->v.i);
   }
   else {
@@ -1390,8 +1388,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Max output octets */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
-		      RADIUS_VENDOR_PEPPERSPOT,
-		      RADIUS_ATTR_PEPPERSPOT_MAX_OUTPUT_OCTETS, 0)) {
+        RADIUS_VENDOR_PEPPERSPOT,
+        RADIUS_ATTR_PEPPERSPOT_MAX_OUTPUT_OCTETS, 0)) {
     conn->maxoutputoctets = ntohl(attr->v.i);
   }
   else {
@@ -1400,8 +1398,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Max total octets */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
-		      RADIUS_VENDOR_PEPPERSPOT,
-		      RADIUS_ATTR_PEPPERSPOT_MAX_TOTAL_OCTETS, 0)) {
+        RADIUS_VENDOR_PEPPERSPOT,
+        RADIUS_ATTR_PEPPERSPOT_MAX_TOTAL_OCTETS, 0)) {
     conn->maxtotaloctets = ntohl(attr->v.i);
   }
   else {
@@ -1410,17 +1408,17 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Session-Terminate-Time */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
-		      RADIUS_VENDOR_WISPR,
-		      RADIUS_ATTR_WISPR_SESSION_TERMINATE_TIME, 0)) {
+        RADIUS_VENDOR_WISPR,
+        RADIUS_ATTR_WISPR_SESSION_TERMINATE_TIME, 0)) {
     struct timeval timenow;
     gettimeofday(&timenow, NULL);
     memcpy(attrs, attr->v.t, attr->l-2);
     attrs[attr->l-2] = 0;
     memset(&stt, 0, sizeof(stt));
     result = sscanf(attrs, "%d-%d-%dT%d:%d:%d %d:%d",
-		    &stt.tm_year, &stt.tm_mon, &stt.tm_mday,
-		    &stt.tm_hour, &stt.tm_min, &stt.tm_sec,
-		    &tzhour, &tzmin);
+        &stt.tm_year, &stt.tm_mon, &stt.tm_mday,
+        &stt.tm_hour, &stt.tm_min, &stt.tm_sec,
+        &tzhour, &tzmin);
     if (result == 8) { /* Timezone */
       /* tzhour and tzmin is hours and minutes east of GMT */
       /* timezone is defined as seconds west of GMT. Excludes DST */
@@ -1435,9 +1433,9 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
       tzset();
       conn->sessionterminatetime = mktime(&stt);
       if (tz) 
-			setenv("TZ", tz, 1); 
+        setenv("TZ", tz, 1); 
       else
-			unsetenv("TZ");
+        unsetenv("TZ");
       tzset();
     }
     else if (result >= 6) { /* Local time */
@@ -1450,28 +1448,28 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
     else {
       conn->sessionterminatetime = 0;
       sys_err(LOG_WARNING, __FILE__, __LINE__, 0,
-	      "Illegal WISPr-Session-Terminate-Time received: %s", attrs);
+          "Illegal WISPr-Session-Terminate-Time received: %s", attrs);
     }
     if ((conn->sessionterminatetime) && 
-	(timenow.tv_sec > conn->sessionterminatetime)) {
+        (timenow.tv_sec > conn->sessionterminatetime)) {
       conn->response = REDIR_FAILED_OTHER;
       sys_err(LOG_WARNING, __FILE__, __LINE__, 0,
-	      "WISPr-Session-Terminate-Time in the past received: %s", attrs);
+          "WISPr-Session-Terminate-Time in the past received: %s", attrs);
       return 0;
     }
   }
   else {
     conn->sessionterminatetime = 0;
   }
-  
+
   conn->response = REDIR_SUCCESS;
   return 0;
-  
+
 }
 
 /* Send radius Access-Request and wait for answer */
 static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
-		 struct redir_conn_t *conn) {
+    struct redir_conn_t *conn) {
   struct radius_t *radius = NULL;      /* Radius client instance */
   struct radius_packet_t radius_pack;
   int maxfd = 0;	        /* For select() */
@@ -1493,12 +1491,12 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 
   /* To avoid unused parameter warning */
   addr = NULL;
- 
+
   if (radius_new(&radius,
-		 &redir->radiuslisten, 0, 0,
-		 NULL, 0, NULL, NULL, NULL)) {
+        &redir->radiuslisten, 0, 0,
+        NULL, 0, NULL, NULL, NULL)) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-	    "Failed to create radius");
+        "Failed to create radius");
     return -1;
   }
 
@@ -1506,16 +1504,16 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
     maxfd = radius->fd;
 
   radius_set(radius, 1,
-	     &redir->radiusserver0, &redir->radiusserver1,
-	     redir->radiusauthport, redir->radiusacctport,
-	     redir->radiussecret);
-  
+      &redir->radiusserver0, &redir->radiusserver1,
+      redir->radiusauthport, redir->radiusacctport,
+      redir->radiussecret);
+
   radius_set_cb_auth_conf(radius, redir_cb_radius_auth_conf);
 
   radius_default_pack(radius, &radius_pack, RADIUS_CODE_ACCESS_REQUEST);
-  
+
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_USER_NAME, 0, 0, 0,
-		 (uint8_t*) conn->username, strlen(conn->username));
+      (uint8_t*) conn->username, strlen(conn->username));
 
   if (redir->secret) {
     /* Get MD5 hash on challenge and uamsecret */
@@ -1527,121 +1525,121 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   else {
     memcpy(chap_challenge, conn->uamchal, REDIR_MD5LEN);
   }
-  
+
   if (conn->chap == 0) {
     for (n=0; n<REDIR_MD5LEN; n++) 
       user_password[n] = conn->password[n] ^ chap_challenge[n];
     user_password[REDIR_MD5LEN] = 0;
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_USER_PASSWORD, 0, 0, 0,
-		   user_password, strlen((char*)user_password));
+        user_password, strlen((char*)user_password));
   }
   else if (conn->chap == 1) {
     chap_password[0] = 0; /* Chap ident */
     memcpy(chap_password +1, conn->chappassword, REDIR_MD5LEN);
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_CHAP_CHALLENGE, 0, 0, 0,
-		   chap_challenge, REDIR_MD5LEN);
+        chap_challenge, REDIR_MD5LEN);
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_CHAP_PASSWORD, 0, 0, 0,
-		   chap_password, REDIR_MD5LEN+1);
+        chap_password, REDIR_MD5LEN+1);
   }
 
   if(redir->radiuslisten.ss_family == AF_INET)
   {
-  	radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_IP_ADDRESS, 0, 0,
-		 ntohl(((struct sockaddr_in *)&redir->radiusnasip)->sin_addr.s_addr), NULL, 0); /* WISPr_V1.0 */
+    radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_IP_ADDRESS, 0, 0,
+        ntohl(((struct sockaddr_in *)&redir->radiusnasip)->sin_addr.s_addr), NULL, 0); /* WISPr_V1.0 */
   }
   else
   {
-  	radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_NAS_IPV6_ADDRESS, 0, 0,
-		 ((struct sockaddr_in6 *)&redir->radiusnasip)->sin6_addr, NULL, 0); /* WISPr_V1.0 */
+    radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_NAS_IPV6_ADDRESS, 0, 0,
+        ((struct sockaddr_in6 *)&redir->radiusnasip)->sin6_addr, NULL, 0); /* WISPr_V1.0 */
   }
-				
+
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_SERVICE_TYPE, 0, 0,
-		 RADIUS_SERVICE_TYPE_LOGIN, NULL, 0); /* WISPr_V1.0 */
-   
-   if(!conn->ipv6)
-   {
-  	(void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0,
-		 ntohl(conn->hisip.s_addr), NULL, 0);
+      RADIUS_SERVICE_TYPE_LOGIN, NULL, 0); /* WISPr_V1.0 */
+
+  if(!conn->ipv6)
+  {
+    (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0,
+        ntohl(conn->hisip.s_addr), NULL, 0);
   }
   else 
   {
- 	 (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_IPV6_PREFIX, 0, 0,
-   	redir->prefix, NULL, redir->prefixlen+2);
-  	/* todo : interface id */   
-  	 
+    (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_IPV6_PREFIX, 0, 0,
+        redir->prefix, NULL, redir->prefixlen+2);
+    /* todo : interface id */   
+
     ippool_getv6suffix(&idv6, &conn->hisipv6, 64);
-	
- 	  suf = idv6.s6_addr32[3];
- 	  suf <<= 32;
- 	  suf |= idv6.s6_addr32[2];
- 	
- 	  memcpy(idv6.s6_addr, (void *)&suf, 8);
- 		
+
+    suf = idv6.s6_addr32[3];
+    suf <<= 32;
+    suf |= idv6.s6_addr32[2];
+
+    memcpy(idv6.s6_addr, (void *)&suf, 8);
+
     (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_INTERFACE_ID, 0, 0, idv6, NULL, 8);
 
-   }
-   
+  }
+
 
   /* Include his MAC address */
   snprintf(mac, REDIR_MACSTRLEN+1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
-	   conn->hismac[0], conn->hismac[1],
-	   conn->hismac[2], conn->hismac[3],
-	   conn->hismac[4], conn->hismac[5]);
-  
+      conn->hismac[0], conn->hismac[1],
+      conn->hismac[2], conn->hismac[3],
+      conn->hismac[4], conn->hismac[5]);
+
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_CALLING_STATION_ID, 0, 0, 0,
-		 (uint8_t*) mac, REDIR_MACSTRLEN);
-  
+      (uint8_t*) mac, REDIR_MACSTRLEN);
+
   if (redir->radiuscalled)
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_CALLED_STATION_ID, 0, 0, 0,
-		   (uint8_t*) redir->radiuscalled, strlen(redir->radiuscalled)); /* WISPr_V1.0 */
+        (uint8_t*) redir->radiuscalled, strlen(redir->radiuscalled)); /* WISPr_V1.0 */
 
   if (redir->radiusnasid)
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_IDENTIFIER, 0, 0, 0,
-		   (uint8_t*) redir->radiusnasid, 
-		   strlen(redir->radiusnasid)); /* WISPr_V1.0 */
+        (uint8_t*) redir->radiusnasid, 
+        strlen(redir->radiusnasid)); /* WISPr_V1.0 */
 
 
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_ACCT_SESSION_ID, 0, 0, 0,
-		 (uint8_t*) conn->sessionid, REDIR_SESSIONID_LEN-1);
+      (uint8_t*) conn->sessionid, REDIR_SESSIONID_LEN-1);
 
 
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_PORT_TYPE, 0, 0,
-		 redir->radiusnasporttype, NULL, 0);
+      redir->radiusnasporttype, NULL, 0);
 
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_PORT, 0, 0,
-		 conn->nasport, NULL, 0);
-  
+      conn->nasport, NULL, 0);
+
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_MESSAGE_AUTHENTICATOR, 
-		 0, 0, 0, NULL, RADIUS_MD5LEN);
+      0, 0, 0, NULL, RADIUS_MD5LEN);
 
   if (redir->radiuslocationid)
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_VENDOR_SPECIFIC,
-		   RADIUS_VENDOR_WISPR, RADIUS_ATTR_WISPR_LOCATION_ID, 0,
-		   (uint8_t*) redir->radiuslocationid,
-		   strlen(redir->radiuslocationid));
+        RADIUS_VENDOR_WISPR, RADIUS_ATTR_WISPR_LOCATION_ID, 0,
+        (uint8_t*) redir->radiuslocationid,
+        strlen(redir->radiuslocationid));
 
   if (redir->radiuslocationname)
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_VENDOR_SPECIFIC,
-		   RADIUS_VENDOR_WISPR, RADIUS_ATTR_WISPR_LOCATION_NAME, 0,
-		   (uint8_t*) redir->radiuslocationname, 
-		   strlen(redir->radiuslocationname));
+        RADIUS_VENDOR_WISPR, RADIUS_ATTR_WISPR_LOCATION_NAME, 0,
+        (uint8_t*) redir->radiuslocationname, 
+        strlen(redir->radiuslocationname));
 
   if(!conn->ipv6)
   {
     snprintf(url, REDIR_URL_LEN-1, "http://%s:%d/logoff",
-  	   inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
+        inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
     url[REDIR_URL_LEN-1] = 0;
   }
   else 
   {
     snprintf(url, REDIR_URL_LEN-1, "http://[%s]:%d/logoff",
-      inet_ntop(AF_INET6, &redir->addrv6, buf, sizeof(buf)), redir->port);
+        inet_ntop(AF_INET6, &redir->addrv6, buf, sizeof(buf)), redir->port);
     url[REDIR_URL_LEN-1] = 0;
   }
-  
+
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_VENDOR_SPECIFIC,
-		 RADIUS_VENDOR_WISPR, RADIUS_ATTR_WISPR_LOGOFF_URL, 0,
-		 (uint8_t*) url, strlen(url));
+      RADIUS_VENDOR_WISPR, RADIUS_ATTR_WISPR_LOGOFF_URL, 0,
+      (uint8_t*) url, strlen(url));
 
   radius_req(radius, &radius_pack, conn);
 
@@ -1650,44 +1648,44 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
     FD_ZERO(&fds);
     if (radius->fd != -1) FD_SET(radius->fd, &fds);
     if (radius->proxyfd != -1) FD_SET(radius->proxyfd, &fds);
-    
+
     idleTime.tv_sec = 0;
     idleTime.tv_usec = REDIR_RADIUS_SELECT_TIME;
     radius_timeleft(radius, &idleTime);
 
     switch (status = select(maxfd + 1, &fds, NULL, NULL, &idleTime)) {
-    case -1:
-      sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-	      "select() returned -1!");
-      break;  
-    case 0:
-      if (optionsdebug) printf("Select returned 0\n");
-      radius_timeout(radius);
-      break; 
-    default:
-      break;
+      case -1:
+        sys_err(LOG_ERR, __FILE__, __LINE__, errno,
+            "select() returned -1!");
+        break;  
+      case 0:
+        if (optionsdebug) printf("Select returned 0\n");
+        radius_timeout(radius);
+        break; 
+      default:
+        break;
     }
 
     if (status > 0) {
       if ((radius->fd != -1) && FD_ISSET(radius->fd, &fds) && 
-	  radius_decaps(radius) < 0) {
-	sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-		"radius_ind() failed!");
+          radius_decaps(radius) < 0) {
+        sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+            "radius_ind() failed!");
       }
-      
+
       if ((radius->proxyfd != -1) && FD_ISSET(radius->proxyfd, &fds) && 
-	  radius_proxy_ind(radius) < 0) {
-	sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-		"radius_proxy_ind() failed!");
+          radius_proxy_ind(radius) < 0) {
+        sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+            "radius_proxy_ind() failed!");
       }
-      
+
     }
-  
+
     if (conn->response) {
       radius_free(radius);
       return 0;
     }
-    
+
   }
   return 0;
 
@@ -1711,28 +1709,28 @@ void redir_memcopy(int msg_type, unsigned char *challenge, char *hexchal, struct
   memcpy(&msg->uamchal, challenge, REDIR_MD5LEN);
   return;
 }
-  
-/* redir_accept() does the following:
- 1) forks a child process
- 2) Accepts the tcp connection 
- 3) Analyses a HTTP get request
- 4) GET request can be one of the following:
-    a) Logon request with username and challenge response
-       - Does a radius request
-       - If OK send result to parent and redirect to welcome page
-       - Else redirect to error login page
-    b) Logoff request
-       - Send logoff request to parent
-       - Redirect to login page?
-    c) Request for another server
-       - Redirect to login server.
 
- Incoming requests are identified only by their IP address. No MAC
- address information is obtained. The main security problem is denial
- of service attacks by malicious hosts sending logoff requests for
- clients. This can be prevented by checking incoming packets for
- matching MAC and src IP addresses.
-*/
+/* redir_accept() does the following:
+   1) forks a child process
+   2) Accepts the tcp connection 
+   3) Analyses a HTTP get request
+   4) GET request can be one of the following:
+   a) Logon request with username and challenge response
+   - Does a radius request
+   - If OK send result to parent and redirect to welcome page
+   - Else redirect to error login page
+   b) Logoff request
+   - Send logoff request to parent
+   - Redirect to login page?
+   c) Request for another server
+   - Redirect to login server.
+
+   Incoming requests are identified only by their IP address. No MAC
+   address information is obtained. The main security problem is denial
+   of service attacks by malicious hosts sending logoff requests for
+   clients. This can be prevented by checking incoming packets for
+   matching MAC and src IP addresses.
+   */
 
 int redir_accept(struct redir_t *redir, int ipv6) {
 
@@ -1761,7 +1759,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   memset(&msg, 0, sizeof(msg));
 
   if ((new_socket = accept((ipv6 ? redir->fdv6 : redir->fd), (struct sockaddr *)&addrstorage, 
-			   (socklen_t*) &addrlen)) 
+          (socklen_t*) &addrlen)) 
       < 0) {
     if (errno != ECONNABORTED && errno != EINTR)
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "accept() failed!");
@@ -1779,7 +1777,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
 
   if ((status = fork()) < 0) {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-	    "fork() returned -1!");
+        "fork() returned -1!");
     return 0;
   }
 
@@ -1802,7 +1800,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   itval.it_value.tv_usec = 0; 
   if (setitimer(ITIMER_REAL, &itval, NULL)) {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-	    "setitimer() failed!");
+        "setitimer() failed!");
   }
 
 
@@ -1829,7 +1827,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
     msg.ipv6=0;
     if (!redir->cb_getstate) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-  	    "No cb_getstate() defined!");
+          "No cb_getstate() defined!");
       exit(0);
     }
     state = redir->cb_getstate(redir, &address.sin_addr, &conn);
@@ -1852,13 +1850,13 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   if (optionsdebug) printf("Processing received request\n");
 
   if (conn.type == REDIR_LOGIN) { 
-    
+
     /* Was client was already logged on? */
     if (state == 1) {
       if (optionsdebug) printf("redir_accept: Already logged on\n");
       redir_reply(redir, new_socket, &conn, REDIR_ALREADY, 0, 
-		  NULL, NULL, conn.userurl, NULL,
-		  NULL, conn.hismac);
+          NULL, NULL, conn.userurl, NULL,
+          NULL, conn.hismac);
       redir_close(new_socket);
       exit(0);
     }
@@ -1866,16 +1864,16 @@ int redir_accept(struct redir_t *redir, int ipv6) {
     /* Did the challenge expire? */
     if ((conn.uamtime + REDIR_CHALLENGETIMEOUT2) < time(NULL)) {
       if (optionsdebug) printf("redir_accept: Challenge expired: %d : %d\n",
-			       conn.uamtime, time(NULL));
+          conn.uamtime, time(NULL));
       redir_memcopy(REDIR_CHALLENGE, challenge, hexchal, &msg, address, addressv6, addrstorage);      
       if (msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t), 0) < 0) {
-				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
-				exit(0);
+        sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
+        exit(0);
       }
 
       redir_reply(redir, new_socket, &conn, REDIR_FAILED_OTHER, 0,
-		  hexchal, NULL, conn.userurl, NULL,
-		  NULL, conn.hismac);
+          hexchal, NULL, conn.userurl, NULL,
+          NULL, conn.hismac);
       redir_close(new_socket);
       exit(0);
     }
@@ -1891,9 +1889,9 @@ int redir_accept(struct redir_t *redir, int ipv6) {
 
     if (conn.response == REDIR_SUCCESS) { /* Radius-Accept */
       redir_reply(redir, new_socket, &conn, conn.response, conn.sessiontimeout,
-                  NULL, conn.username, conn.userurl, conn.reply,
-                  conn.redirurl, conn.hismac);
-      
+          NULL, conn.username, conn.userurl, conn.reply,
+          conn.redirurl, conn.hismac);
+
       msg.type = REDIR_LOGIN;
       strncpy(msg.username, conn.username, sizeof(msg.username));
       msg.username[sizeof(msg.username)-1] = 0;
@@ -1913,23 +1911,23 @@ int redir_accept(struct redir_t *redir, int ipv6) {
       msg.sessionterminatetime = conn.sessionterminatetime;
       msg.filteridlen = conn.filteridlen;
       strncpy(msg.filteridbuf, conn.filteridbuf, sizeof(msg.filteridbuf));
-      
+
       if (msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t), 0) < 0) {
-				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
-				exit(0);
+        sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
+        exit(0);
       }
     }
     else {
       redir_memcopy(REDIR_CHALLENGE, challenge, hexchal, &msg, address, addressv6, addrstorage);      
       if (msgsnd(redir->msgid, &msg, 
-		 sizeof(struct redir_msg_t), 0) < 0) {
-	sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
-	exit(0);
+            sizeof(struct redir_msg_t), 0) < 0) {
+        sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
+        exit(0);
       }
 
       redir_reply(redir, new_socket, &conn, conn.response, 0,
-		  hexchal, NULL, conn.userurl, conn.reply, 
-		  NULL, conn.hismac);
+          hexchal, NULL, conn.userurl, conn.reply, 
+          NULL, conn.hismac);
       redir_close(new_socket);
       exit(0);
     }    
@@ -1940,14 +1938,14 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   else if (conn.type == REDIR_LOGOUT) {
     redir_memcopy(REDIR_LOGOUT, challenge, hexchal, &msg, address, addressv6, addrstorage); 
     if (msgsnd(redir->msgid, &msg, 
-	       sizeof(struct redir_msg_t), 0) < 0) {
+          sizeof(struct redir_msg_t), 0) < 0) {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
       exit(0);
     }
 
     redir_reply(redir, new_socket, &conn, REDIR_LOGOFF, 0, 
-		hexchal, NULL, conn.userurl, NULL, 
-		NULL, conn.hismac);
+        hexchal, NULL, conn.userurl, NULL, 
+        NULL, conn.hismac);
     redir_close(new_socket);    
     exit(0); /* Terminate the client */
   }
@@ -1960,13 +1958,13 @@ int redir_accept(struct redir_t *redir, int ipv6) {
 
     if (state == 1) {
       redir_reply(redir, new_socket, &conn, REDIR_ALREADY, 0, 
-		  NULL, NULL, conn.userurl, NULL,
-		  NULL, conn.hismac);
+          NULL, NULL, conn.userurl, NULL,
+          NULL, conn.hismac);
     }
     else {
       redir_reply(redir, new_socket, &conn, REDIR_NOTYET, 0, 
-		  hexchal, NULL, conn.userurl, NULL,
-		  NULL, conn.hismac);
+          hexchal, NULL, conn.userurl, NULL,
+          NULL, conn.hismac);
     }
     redir_close(new_socket);
     exit(0);
@@ -1974,26 +1972,26 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   else if (conn.type == REDIR_ABORT) {
     if (state == 1) {
       redir_reply(redir, new_socket, &conn, REDIR_ABORT_NAK, 0,
-		  NULL, NULL, conn.userurl, NULL, 
-		  NULL, conn.hismac);
+          NULL, NULL, conn.userurl, NULL, 
+          NULL, conn.hismac);
     }
     else {
       redir_memcopy(REDIR_ABORT, challenge, hexchal, &msg, address, addressv6, addrstorage);
       if (msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t), 0) < 0) {
-				sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
-				exit(0);
+        sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
+        exit(0);
       }
       redir_reply(redir, new_socket, &conn, REDIR_ABORT_ACK, 0, 
-		  hexchal, NULL, conn.userurl, NULL,
-		  NULL, conn.hismac);
+          hexchal, NULL, conn.userurl, NULL,
+          NULL, conn.hismac);
     }
     redir_close(new_socket);
     exit(0);
   }
   else if (conn.type == REDIR_ABOUT) {
     redir_reply(redir, new_socket, &conn, REDIR_ABOUT, 0, 
-		NULL, NULL, NULL, NULL,
-		NULL, NULL);
+        NULL, NULL, NULL, NULL,
+        NULL, NULL);
     redir_close(new_socket);
     exit(0);
   }
@@ -2009,17 +2007,17 @@ int redir_accept(struct redir_t *redir, int ipv6) {
     else
       timeleft = 0;
     redir_reply(redir, new_socket, &conn, REDIR_STATUS, timeleft,
-		NULL, NULL, NULL, NULL,
-		NULL, NULL);
+        NULL, NULL, NULL, NULL,
+        NULL, NULL);
     redir_close(new_socket);
     exit(0);
   }
   else if (conn.type == REDIR_MSDOWNLOAD) {
     buflen = snprintf(buffer, bufsize,
-		      "HTTP/1.0 403 Forbidden\r\n\r\n");
-    
+        "HTTP/1.0 403 Forbidden\r\n\r\n");
+
     send(new_socket, buffer, buflen, 0);
-    
+
     redir_close(new_socket);
     exit(0);
   }
@@ -2034,7 +2032,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
     strncpy(msg.userurl, conn.userurl, sizeof(msg.userurl));
     msg.userurl[sizeof(msg.userurl)-1] = 0;
     if (msgsnd(redir->msgid, &msg, 
-	       sizeof(struct redir_msg_t), 0) < 0) {
+          sizeof(struct redir_msg_t), 0) < 0) {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
       exit(0);
     }
@@ -2042,36 +2040,36 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   else {
     (void)redir_chartohex(conn.uamchal, hexchal);
   }
-  
+
   if (redir->homepage) {
     buflen = snprintf(buffer, bufsize,
-		      "HTTP/1.0 302 Moved Temporarily\r\n"
-		      "Location: "
-		      "%s\r\n"
-		      "Content-type: text/html"
-		      "\r\n\r\n"
-		      "<HTML>"
-		      "<HEAD><TITLE>302 Moved Temporarily</TITLE></HEAD>"
-		      "<BODY><H1>Browser error!</H1>"
-		      "Browser does not support redirects!</BODY></HTML>",
-		      redir->homepage);
+        "HTTP/1.0 302 Moved Temporarily\r\n"
+        "Location: "
+        "%s\r\n"
+        "Content-type: text/html"
+        "\r\n\r\n"
+        "<HTML>"
+        "<HEAD><TITLE>302 Moved Temporarily</TITLE></HEAD>"
+        "<BODY><H1>Browser error!</H1>"
+        "Browser does not support redirects!</BODY></HTML>",
+        redir->homepage);
     buffer[bufsize-1] = 0;
     if (buflen>bufsize) buflen = bufsize;
 
     if (optionsdebug) printf("redir_reply: Sending http reply: %s\n",
-			     buffer);
+        buffer);
 
     send(new_socket, buffer, buflen, 0);
   }
   else if (state == 1) {
     redir_reply(redir, new_socket, &conn, REDIR_ALREADY, 0,
-		NULL, NULL, conn.userurl, NULL,
-		NULL, conn.hismac);
+        NULL, NULL, conn.userurl, NULL,
+        NULL, conn.hismac);
   }
   else {
     redir_reply(redir, new_socket, &conn, REDIR_NOTYET, 0, 
-		hexchal, NULL, conn.userurl, NULL, 
-		NULL, conn.hismac);
+        hexchal, NULL, conn.userurl, NULL, 
+        NULL, conn.hismac);
   }
 
   redir_close(new_socket);
@@ -2089,9 +2087,10 @@ int redir_set_cb_getstatev6(struct redir_t* redir, int (*cb_getstatev6)(struct r
 
 /* Set callback to determine state information for the connection */
 int redir_set_cb_getstate(struct redir_t *redir,
-  int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
-		      struct redir_conn_t *conn)) {
+    int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
+      struct redir_conn_t *conn)) {
 
   redir->cb_getstate = cb_getstate;
   return 0;
 }
+

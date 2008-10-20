@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -129,7 +127,7 @@
 
 /* Struct information for each connection */
 struct app_conn_t {
-  
+
   /* Management of connections */
   int inuse;
   int unit;
@@ -172,7 +170,7 @@ struct app_conn_t {
   time_t sessionterminatetime;
   char filteridbuf[RADIUS_ATTR_VLEN+1];
   int filteridlen;
-  
+
   /* Radius proxy stuff */
   /* Parameters are initialised whenever a radius proxy request is received */
   /* Only one outstanding request allowed at a time */
@@ -204,7 +202,7 @@ struct app_conn_t {
   struct in6_addr hisipv6; /**< Client IPv6 address */
   struct in_addr reqip;        /* IP requested by client */
   uint16_t mtu;
-  
+
   /* Accounting */
   struct timeval start_time;
   struct timeval interim_time;
@@ -366,3 +364,4 @@ extern struct radius_t *radius;          /* Radius client instance */
 extern struct dhcp_t *dhcp;              /* DHCP instance */
 
 #endif /*_PEPPER_H */
+

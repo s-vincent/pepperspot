@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -80,7 +78,7 @@
 
    The above also applies to IPv6 which can be specified as described
    in RFC2373.
-*/
+   */
 
 #define IPPOOL_NOIP6
 
@@ -133,19 +131,19 @@ extern unsigned long int ippool_hash4(struct in_addr *addr);
 
 /* Create new address pool */
 extern int ippool_new(struct ippool_t **this, char *dyn,  char *stat, 
-		      int allowdyn, int allowstat, int flags);
+    int allowdyn, int allowstat, int flags);
 
 /* Delete existing address pool */
 extern int ippool_free(struct ippool_t *this);
 
 /* Find an IP address in the pool */
 extern int ippool_getip(struct ippool_t *this, struct ippoolm_t **member,
-		 struct in_addr *addr);
+    struct in_addr *addr);
 
 /* Get an IP address. If addr = 0.0.0.0 get a dynamic IP address. Otherwise
    check to see if the given address is available */
 extern int ippool_newip(struct ippool_t *this, struct ippoolm_t **member,
-			struct in_addr *addr, int statip);
+    struct in_addr *addr, int statip);
 
 /**
  * \brief Allocate a new IPv6 address.
@@ -161,10 +159,10 @@ extern int ippool_freeip(struct ippool_t *this, struct ippoolm_t *member);
 
 /* Get net and mask based on ascii string */
 extern int ippool_aton(struct in_addr *addr, struct in_addr *mask,
-		       char *pool, int number);
+    char *pool, int number);
 
 int ippool_atonv6(struct in6_addr *prefix, int *prefixlen,  int *mask,
-		char *pool);
+    char *pool);
 
 extern void ippool_getv6suffix(struct in6_addr *suffix, struct in6_addr *addr, int mask);
 
@@ -174,4 +172,6 @@ extern int ippool_returnip6(struct ippool_t *this, struct in6_addr *addr);
 
 extern int ippool_hashadd(struct ippool_t *this, struct ippoolm_t *member);
 extern int ippool_hashadd6(struct ippool_t *this, struct ippoolm_t *member);
+
 #endif	/* !_IPPOOL_H */
+

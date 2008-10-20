@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -105,7 +103,7 @@ struct redir_conn_t {
   int chap; /* 0 if using normal password; 1 if using CHAP */
   uint8_t chappassword[REDIR_MAXCHAR];
   uint8_t password[REDIR_MAXCHAR];
-  
+
   /* Challenge as sent to web server */
   uint8_t uamchal[REDIR_MD5LEN];
   int uamtime;
@@ -176,7 +174,7 @@ struct redir_t {
   int radiusnasporttype;
   int starttime;
   int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
-		      struct redir_conn_t *conn);
+      struct redir_conn_t *conn);
   /* [SV] */
   int (*cb_getstatev6) (struct redir_t *redir, struct in6_addr *addr, struct redir_conn_t *conn);
 };
@@ -209,34 +207,34 @@ struct redir_msg_t {
 
 
 extern int redir_new(struct redir_t **redir,
-		     struct in_addr *addr, struct in6_addr* addrv6, int port);
+    struct in_addr *addr, struct in6_addr* addrv6, int port);
 
 extern int redir_free(struct redir_t *redir);
 
 extern void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int prefixlen,
-		      char *url, char* url6, char *homepage, char* secret,
-		      struct sockaddr_storage *radiuslisten, 
-		      struct sockaddr_storage *radiusserver0,
-		      struct sockaddr_storage *radiusserver1,
-		      uint16_t radiusauthport, uint16_t radiusacctport,
-		      char* radiussecret, char* radiusnasid,
-		      struct sockaddr_storage *radiusnasip, char* radiuscalled,
-		      char* radiuslocationid, char* radiuslocationname,
-		      int radiusnasporttype);
+    char *url, char* url6, char *homepage, char* secret,
+    struct sockaddr_storage *radiuslisten, 
+    struct sockaddr_storage *radiusserver0,
+    struct sockaddr_storage *radiusserver1,
+    uint16_t radiusauthport, uint16_t radiusacctport,
+    char* radiussecret, char* radiusnasid,
+    struct sockaddr_storage *radiusnasip, char* radiuscalled,
+    char* radiuslocationid, char* radiuslocationname,
+    int radiusnasporttype);
 
 
 extern int redir_accept(struct redir_t *redir, int ipv6);
 
 
 extern int redir_setchallenge(struct redir_t *redir, struct in_addr *addr,
-			      unsigned char *challenge);
+    unsigned char *challenge);
 
 /* [SV] */
 int redir_set_cb_getstatev6(struct redir_t* redir, int (*cb_getstatev6)(struct redir_t* redir, struct in6_addr* addr, struct redir_conn_t* conn));
 
 extern int redir_set_cb_getstate(struct redir_t *redir,
-  int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
-		      struct redir_conn_t *conn));
-
+    int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
+      struct redir_conn_t *conn));
 
 #endif	/* !_REDIR_H */
+

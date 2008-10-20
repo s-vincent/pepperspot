@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 #ifdef HAVE_CONFIG_H
@@ -92,8 +90,8 @@ int daemon(int nochdir, int noclose)
           close(fd);
         }
       }
-      
     }
+
     return 0;
   }
   else /* father */

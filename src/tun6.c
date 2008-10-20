@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /* tun6.c - IPv6 tunnel interface definition
@@ -82,9 +80,9 @@ const char os_driver[] = "Linux";
  * so we've got to declare this structure by hand.
  */
 struct in6_ifreq {
-	struct in6_addr ifr6_addr;
-	uint32_t ifr6_prefixlen;
-	int ifr6_ifindex;
+  struct in6_addr ifr6_addr;
+  uint32_t ifr6_prefixlen;
+  int ifr6_ifindex;
 };
 
 # include <net/route.h> /* struct in6_rtmsg */
@@ -92,18 +90,18 @@ struct in6_ifreq {
 
 typedef struct
 {
-	uint16_t flags;
-	uint16_t proto;
+  uint16_t flags;
+  uint16_t proto;
 } tun_head_t;
 
 # define TUN_HEAD_IPV6_INITIALIZER { 0, htons (ETH_P_IPV6) }
 # define tun_head_is_ipv6( h ) (h.proto == htons (ETH_P_IPV6))
 
 #elif defined (__FreeBSD__) || defined (__FreeBSD_kernel__) || \
-      defined (__NetBSD__)  || defined (__NetBSD_kernel__)  || \
-      defined (__OpenBSD__) || defined (__OpenBSD_kernel__) || \
-      defined (__DragonFly__) || \
-      defined (__APPLE__) /* Darwin */
+  defined (__NetBSD__)  || defined (__NetBSD_kernel__)  || \
+defined (__OpenBSD__) || defined (__OpenBSD_kernel__) || \
+defined (__DragonFly__) || \
+defined (__APPLE__) /* Darwin */
 /*
  * BSD tunneling driver
  * NOTE: the driver is NOT tested on Darwin (Mac OS X).
@@ -151,14 +149,14 @@ const char os_driver[] = "Generic";
  * for the moment cross the finger... this function is not safe...
  */
 #define safe_strcpy( tgt, src ) \
-        (strncpy(tgt, src, sizeof(tgt)))
+  (strncpy(tgt, src, sizeof(tgt)))
 /*	((strncpy (tgt, src, sizeof (tgt)) >= sizeof (tgt)) ? -1 : 0) */
 
 struct tun6
 {
-	int  id, fd, reqfd;
+  int  id, fd, reqfd;
 #if defined (USE_BSD)
-	char orig_name[IFNAMSIZ];
+  char orig_name[IFNAMSIZ];
 #endif
 };
 
@@ -173,196 +171,196 @@ struct tun6
  */
 tun6 *tun6_create (const char *req_name)
 {
-/*	(void)bindtextdomain (PACKAGE_NAME, LOCALEDIR); */
-	tun6 *t = (tun6 *)malloc (sizeof (*t));
-	if (t == NULL)
-		return NULL;
-	memset (t, 0, sizeof (*t));
+  /*	(void)bindtextdomain (PACKAGE_NAME, LOCALEDIR); */
+  tun6 *t = (tun6 *)malloc (sizeof (*t));
+  if (t == NULL)
+    return NULL;
+  memset (t, 0, sizeof (*t));
 
-	int reqfd = t->reqfd = socket (AF_INET6, SOCK_DGRAM, 0);
-	if (reqfd == -1)
-	{
-		free (t);
-		return NULL;
-	}
+  int reqfd = t->reqfd = socket (AF_INET6, SOCK_DGRAM, 0);
+  if (reqfd == -1)
+  {
+    free (t);
+    return NULL;
+  }
 
-	fcntl (reqfd, F_SETFD, FD_CLOEXEC);
+  fcntl (reqfd, F_SETFD, FD_CLOEXEC);
 
 #if defined (USE_LINUX)
-	/*
-	 * TUNTAP (Linux) tunnel driver initialization
-	 */
-	static const char tundev[] = "/dev/net/tun";
-	struct ifreq req =
-	{
-		.ifr_flags = IFF_TUN
-	};
+  /*
+   * TUNTAP (Linux) tunnel driver initialization
+   */
+  static const char tundev[] = "/dev/net/tun";
+  struct ifreq req =
+  {
+    .ifr_flags = IFF_TUN
+  };
 
-	if ((req_name != NULL) && safe_strcpy (req.ifr_name, req_name))
-	{
-		free (t);
-		return NULL;
-	}
+  if ((req_name != NULL) && safe_strcpy (req.ifr_name, req_name))
+  {
+    free (t);
+    return NULL;
+  }
 
-	int fd = open (tundev, O_RDWR);
-	if (fd == -1)
-	{
-		syslog (LOG_ERR, "Tunneling driver error (%s): %s", tundev, strerror (errno));
-		(void)close (reqfd);
-		free (t);
-		return NULL;
-	}
+  int fd = open (tundev, O_RDWR);
+  if (fd == -1)
+  {
+    syslog (LOG_ERR, "Tunneling driver error (%s): %s", tundev, strerror (errno));
+    (void)close (reqfd);
+    free (t);
+    return NULL;
+  }
 
-	/* Allocates the tunneling virtual network interface */
-	if (ioctl (fd, TUNSETIFF, (void *)&req))
-	{
-		syslog (LOG_ERR, "Tunneling driver error (%s): %s", "TUNSETIFF", strerror (errno));
-		goto error;
-	}
+  /* Allocates the tunneling virtual network interface */
+  if (ioctl (fd, TUNSETIFF, (void *)&req))
+  {
+    syslog (LOG_ERR, "Tunneling driver error (%s): %s", "TUNSETIFF", strerror (errno));
+    goto error;
+  }
 
-	int id = if_nametoindex (req.ifr_name);
-	if (id == 0)
-		goto error;
+  int id = if_nametoindex (req.ifr_name);
+  if (id == 0)
+    goto error;
 #elif defined (USE_BSD)
-	/*
-	 * BSD tunnel driver initialization
-	 * (see BSD src/sys/net/if_tun.{c,h})
-	 */
-	int fd = open ("/dev/tun", O_RDWR);
-	if ((fd == -1) && (errno == ENOENT))
-	{
-		/*
-		 * Some BSD variants or older kernel versions do not support /dev/tun,
-		 * so fallback to the old scheme.
-		 */
-		int saved_errno = 0;
-		for (unsigned i = 0; fd == -1; i++)
-		{
-			char tundev[5 + IFNAMSIZ];
-			snprintf (tundev, sizeof (tundev), "/dev/tun%u", i);
+  /*
+   * BSD tunnel driver initialization
+   * (see BSD src/sys/net/if_tun.{c,h})
+   */
+  int fd = open ("/dev/tun", O_RDWR);
+  if ((fd == -1) && (errno == ENOENT))
+  {
+    /*
+     * Some BSD variants or older kernel versions do not support /dev/tun,
+     * so fallback to the old scheme.
+     */
+    int saved_errno = 0;
+    for (unsigned i = 0; fd == -1; i++)
+    {
+      char tundev[5 + IFNAMSIZ];
+      snprintf (tundev, sizeof (tundev), "/dev/tun%u", i);
 
-			fd = open (tundev, O_RDWR);
-			if ((fd == -1) && (errno == ENOENT))
+      fd = open (tundev, O_RDWR);
+      if ((fd == -1) && (errno == ENOENT))
         /* If /dev/tun<i> does not exist,
          * /dev/tun<i+1> won't exist either
          */
-				break;
+        break;
 
-			saved_errno = errno;
-		}
-		errno = saved_errno;
-	}
+      saved_errno = errno;
+    }
+    errno = saved_errno;
+  }
 
-	if (fd == -1)
-	{
-		syslog (LOG_ERR, "Tunneling driver error (%s): %s", "/dev/tun*", strerror (errno));
-		goto error;
-	}
-	else
-	{
-		struct stat st;
-		fstat (fd, &st);
+  if (fd == -1)
+  {
+    syslog (LOG_ERR, "Tunneling driver error (%s): %s", "/dev/tun*", strerror (errno));
+    goto error;
+  }
+  else
+  {
+    struct stat st;
+    fstat (fd, &st);
 # ifdef HAVE_DEVNAME_R
-		devname_r (st.st_rdev, S_IFCHR, t->orig_name, sizeof (t->orig_name));
+    devname_r (st.st_rdev, S_IFCHR, t->orig_name, sizeof (t->orig_name));
 # else
-		const char *name = devname (st.st_rdev, S_IFCHR);
-		if (safe_strcpy (t->orig_name, name))
-			goto error;
+    const char *name = devname (st.st_rdev, S_IFCHR);
+    if (safe_strcpy (t->orig_name, name))
+      goto error;
 # endif		
-	}
+  }
 
-	int id = if_nametoindex (t->orig_name);
-	if (id == 0)
-	{
-		syslog (LOG_ERR, "Tunneling driver error (%s): %s",
-		        t->orig_name, strerror (errno));
-		goto error;
-	}
+  int id = if_nametoindex (t->orig_name);
+  if (id == 0)
+  {
+    syslog (LOG_ERR, "Tunneling driver error (%s): %s",
+        t->orig_name, strerror (errno));
+    goto error;
+  }
 
 # ifdef TUNSIFMODE
-	/* Sets sensible tunnel type (broadcast rather than point-to-point) */
-	(void)ioctl (fd, TUNSIFMODE, &(int){ IFF_BROADCAST });
+  /* Sets sensible tunnel type (broadcast rather than point-to-point) */
+  (void)ioctl (fd, TUNSIFMODE, &(int){ IFF_BROADCAST });
 # endif
 
 # if defined (TUNSIFHEAD)
-	/* Enables TUNSIFHEAD */
-	if (ioctl (fd, TUNSIFHEAD, &(int){ 1 }))
-	{
-		syslog (LOG_ERR, "Tunneling driver error (%s): %s",
-		        "TUNSIFHEAD", strerror (errno));
+  /* Enables TUNSIFHEAD */
+  if (ioctl (fd, TUNSIFHEAD, &(int){ 1 }))
+  {
+    syslog (LOG_ERR, "Tunneling driver error (%s): %s",
+        "TUNSIFHEAD", strerror (errno));
 #  if defined (__APPLE__)
-		if (errno == EINVAL)
-			syslog (LOG_NOTICE,
-			        "*** Ignoring tun-tap-osx spurious error ***");
-		else
+    if (errno == EINVAL)
+      syslog (LOG_NOTICE,
+          "*** Ignoring tun-tap-osx spurious error ***");
+    else
 #  endif
-		goto error;
-	}
+      goto error;
+  }
 # elif defined (TUNSLMODE)
-	/* Disables TUNSLMODE (deprecated opposite of TUNSIFHEAD) */
-	if (ioctl (fd, TUNSLMODE, &(int){ 0 }))
-	{
-		syslog (LOG_ERR, "Tunneling driver error (%s): %s",
-		        "TUNSLMODE", strerror (errno));
-		goto error;
-	}
+  /* Disables TUNSLMODE (deprecated opposite of TUNSIFHEAD) */
+  if (ioctl (fd, TUNSLMODE, &(int){ 0 }))
+  {
+    syslog (LOG_ERR, "Tunneling driver error (%s): %s",
+        "TUNSLMODE", strerror (errno));
+    goto error;
+  }
 #endif
 
-	/* Customizes interface name */
-	if (req_name != NULL)
-	{
-		struct ifreq req;
-		memset (&req, 0, sizeof (req));
+  /* Customizes interface name */
+  if (req_name != NULL)
+  {
+    struct ifreq req;
+    memset (&req, 0, sizeof (req));
 
-		if (if_indextoname (id, req.ifr_name) == NULL)
-		{
-			syslog (LOG_ERR, "Tunneling driver error (%s): %s",
-			        "if_indextoname", strerror (errno));
-			goto error;
-		}
-		else
-		if (strcmp (req.ifr_name, req_name))
-		{
+    if (if_indextoname (id, req.ifr_name) == NULL)
+    {
+      syslog (LOG_ERR, "Tunneling driver error (%s): %s",
+          "if_indextoname", strerror (errno));
+      goto error;
+    }
+    else
+      if (strcmp (req.ifr_name, req_name))
+      {
 #ifdef SIOCSIFNAME
-			char ifname[IFNAMSIZ];
-			req.ifr_data = ifname;
+        char ifname[IFNAMSIZ];
+        req.ifr_data = ifname;
 
-			errno = ENAMETOOLONG;
-			if (safe_strcpy (ifname, req_name)
-			 || ioctl (reqfd, SIOCSIFNAME, &req))
+        errno = ENAMETOOLONG;
+        if (safe_strcpy (ifname, req_name)
+            || ioctl (reqfd, SIOCSIFNAME, &req))
 #else
-			syslog (LOG_DEBUG,
-"Tunnel interface renaming is not supported on your operating system.\n"
-"To run miredo or isatapd properly, you need to remove the\n"
-"InterfaceName directive from their respective configuration file.\n");
-			errno = ENOSYS;
+          syslog (LOG_DEBUG,
+              "Tunnel interface renaming is not supported on your operating system.\n"
+              "To run miredo or isatapd properly, you need to remove the\n"
+              "InterfaceName directive from their respective configuration file.\n");
+        errno = ENOSYS;
 #endif
-			{
-				syslog (LOG_ERR, "Tunneling driver error (%s): %s",
-				        "SIOCSIFNAME", strerror (errno));
-				goto error;
-			}
-		}
-	}
+        {
+          syslog (LOG_ERR, "Tunneling driver error (%s): %s",
+              "SIOCSIFNAME", strerror (errno));
+          goto error;
+        }
+      }
+  }
 #else
 # error No tunneling driver implemented on your platform!
 #endif /* HAVE_os */
 
-	fcntl (fd, F_SETFD, FD_CLOEXEC);
-	int val = fcntl (fd, F_GETFL);
-	fcntl (fd, F_SETFL, ((val != -1) ? val : 0) | O_NONBLOCK);
+  fcntl (fd, F_SETFD, FD_CLOEXEC);
+  int val = fcntl (fd, F_GETFL);
+  fcntl (fd, F_SETFL, ((val != -1) ? val : 0) | O_NONBLOCK);
 
-	t->id = id;
-	t->fd = fd;
-	return t;
+  t->id = id;
+  t->fd = fd;
+  return t;
 
 error:
-	(void)close (reqfd);
-	if (fd != -1)
-		(void)close (fd);
-	syslog (LOG_ERR, "%s tunneling interface creation failure", os_driver);
-	free (t);
-	return NULL;
+  (void)close (reqfd);
+  if (fd != -1)
+    (void)close (fd);
+  syslog (LOG_ERR, "%s tunneling interface creation failure", os_driver);
+  free (t);
+  return NULL;
 }
 
 
@@ -375,40 +373,40 @@ error:
  */
 void tun6_destroy (tun6* t)
 {
-	assert (t != NULL);
-	assert (t->fd != -1);
-	assert (t->reqfd != -1);
-	assert (t->id != 0);
+  assert (t != NULL);
+  assert (t->fd != -1);
+  assert (t->reqfd != -1);
+  assert (t->id != 0);
 
-	(void)tun6_setState (t, 0);
+  (void)tun6_setState (t, 0);
 
 #ifdef USE_BSD
 # ifdef SIOCSIFNAME
-	/*
-	 * SIOCSIFDESTROY doesn't work for tunnels (see FreeBSD PR/73673).
-	 * We rename the tunnel to its canonical name to ease the life of other
-	 * programs that may re-open the tunnel after us.
-	 */
-	struct ifreq req;
-	memset (&req, 0, sizeof (req));
-	if (if_indextoname (t->id, req.ifr_name) != NULL)
-	{
-		if (ioctl (t->reqfd, SIOCIFDESTROY, &req))
-		{
-			if ((if_indextoname (t->id, req.ifr_name) != NULL)
-			 && strcmp (t->orig_name, req.ifr_name))
-			{
-				req.ifr_data = t->orig_name;
-				(void)ioctl (t->reqfd, SIOCSIFNAME, &req);
-			}
-		}
-	}
+  /*
+   * SIOCSIFDESTROY doesn't work for tunnels (see FreeBSD PR/73673).
+   * We rename the tunnel to its canonical name to ease the life of other
+   * programs that may re-open the tunnel after us.
+   */
+  struct ifreq req;
+  memset (&req, 0, sizeof (req));
+  if (if_indextoname (t->id, req.ifr_name) != NULL)
+  {
+    if (ioctl (t->reqfd, SIOCIFDESTROY, &req))
+    {
+      if ((if_indextoname (t->id, req.ifr_name) != NULL)
+          && strcmp (t->orig_name, req.ifr_name))
+      {
+        req.ifr_data = t->orig_name;
+        (void)ioctl (t->reqfd, SIOCSIFNAME, &req);
+      }
+    }
+  }
 # endif
 #endif
 
-	(void)close (t->fd);
-	(void)close (t->reqfd);
-	free (t);
+  (void)close (t->fd);
+  (void)close (t->reqfd);
+  free (t);
 }
 
 
@@ -422,29 +420,29 @@ void tun6_destroy (tun6* t)
  */
 int tun6_getId (const tun6 *t)
 {
-	assert (t != NULL);
-	assert (t-> id != 0);
+  assert (t != NULL);
+  assert (t-> id != 0);
 
-	return t->id;
+  return t->id;
 }
 
 
 #if defined (USE_LINUX)
-static int
+  static int
 proc_write_zero (const char *path)
 {
-	int fd = open (path, O_WRONLY);
-	if (fd == -1)
-		return -1;
+  int fd = open (path, O_WRONLY);
+  if (fd == -1)
+    return -1;
 
-	int retval = 0;
+  int retval = 0;
 
-	if (write (fd, "0", 1) != 1)
-		retval = -1;
-	if (close (fd))
-		retval = -1;
+  if (write (fd, "0", 1) != 1)
+    retval = -1;
+  if (close (fd))
+    retval = -1;
 
-	return retval;
+  return retval;
 }
 #endif
 
@@ -454,32 +452,32 @@ proc_write_zero (const char *path)
  *
  * @return 0 on success, -1 on error (see errno).
  */
-int
+  int
 tun6_setState (tun6 *t, int up)
 {
-	assert (t != NULL);
-	assert (t-> id != 0);
+  assert (t != NULL);
+  assert (t-> id != 0);
 
-	struct ifreq req;
-	memset (&req, 0, sizeof (req));	
-	if ((if_indextoname (t->id, req.ifr_name) == NULL)
-	 || ioctl (t->reqfd, SIOCGIFFLAGS, &req))
-		return -1;
+  struct ifreq req;
+  memset (&req, 0, sizeof (req));	
+  if ((if_indextoname (t->id, req.ifr_name) == NULL)
+      || ioctl (t->reqfd, SIOCGIFFLAGS, &req))
+    return -1;
 
-	/* settings we want/don't want: */
-	req.ifr_flags |= IFF_NOARP;
-	req.ifr_flags &= ~(IFF_MULTICAST | IFF_BROADCAST);
-	if (up)
-		req.ifr_flags |= IFF_UP | IFF_RUNNING;
-	else
-		req.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
+  /* settings we want/don't want: */
+  req.ifr_flags |= IFF_NOARP;
+  req.ifr_flags &= ~(IFF_MULTICAST | IFF_BROADCAST);
+  if (up)
+    req.ifr_flags |= IFF_UP | IFF_RUNNING;
+  else
+    req.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
 
-	/* Sets up the interface */
-	if ((if_indextoname (t->id, req.ifr_name) == NULL)
-	 || ioctl (t->reqfd, SIOCSIFFLAGS, &req))
-		return -1;
+  /* Sets up the interface */
+  if ((if_indextoname (t->id, req.ifr_name) == NULL)
+      || ioctl (t->reqfd, SIOCSIFFLAGS, &req))
+    return -1;
 
-	return 0;
+  return 0;
 }
 
 
@@ -487,226 +485,226 @@ tun6_setState (tun6 *t, int up)
 /**
  * Converts a prefix length to a netmask (used for the BSD routing)
  */
-static void
+  static void
 plen_to_mask (unsigned plen, struct in6_addr *mask)
 {
-	assert (plen <= 128);
+  assert (plen <= 128);
 
-	div_t d = div (plen, 8);
-	int i = 0;
+  div_t d = div (plen, 8);
+  int i = 0;
 
-	while (i < d.quot)
-		mask->s6_addr[i++] = 0xff;
+  while (i < d.quot)
+    mask->s6_addr[i++] = 0xff;
 
-	if (d.rem)
-		mask->s6_addr[i++] = 0xff << (8 - d.rem);
+  if (d.rem)
+    mask->s6_addr[i++] = 0xff << (8 - d.rem);
 
-	while (i < 16)
-		mask->s6_addr[i++] = 0;
+  while (i < 16)
+    mask->s6_addr[i++] = 0;
 }
 
 
-static void
+  static void
 plen_to_sin6 (unsigned plen, struct sockaddr_in6 *sin6)
 {
-	memset (sin6, 0, sizeof (struct sockaddr_in6));
+  memset (sin6, 0, sizeof (struct sockaddr_in6));
 
-	/* NetBSD kernel strangeness:
-	 sin6->sin6_family = AF_INET6;*/
+  /* NetBSD kernel strangeness:
+     sin6->sin6_family = AF_INET6;*/
 # ifdef HAVE_SA_LEN
-	sin6->sin6_len = sizeof (struct sockaddr_in6);
+  sin6->sin6_len = sizeof (struct sockaddr_in6);
 # endif
-	plen_to_mask (plen, &sin6->sin6_addr);
+  plen_to_mask (plen, &sin6->sin6_addr);
 }
 #endif /* ifdef SOCAIFADDR_IN6 */
 
 
-static int
+  static int
 _iface_addr (int reqfd, int id, int add,
-             const struct in6_addr *addr, unsigned prefix_len)
+    const struct in6_addr *addr, unsigned prefix_len)
 {
-	void *req = NULL;
-	long cmd = 0;
+  void *req = NULL;
+  long cmd = 0;
 
-	assert (reqfd != -1);
-	assert (id != 0);
+  assert (reqfd != -1);
+  assert (id != 0);
 
-	if ((prefix_len > 128) || (addr == NULL))
-		return -1;
+  if ((prefix_len > 128) || (addr == NULL))
+    return -1;
 
 #if defined (USE_LINUX)
-	/*
-	 * Linux ioctl interface
-	 */
-	union
-	{
-		struct in6_ifreq req6;
-		struct ifreq req;
-	} r;
+  /*
+   * Linux ioctl interface
+   */
+  union
+  {
+    struct in6_ifreq req6;
+    struct ifreq req;
+  } r;
 
-	memset (&r, 0, sizeof (r));
-	r.req6.ifr6_ifindex = id;
-	memcpy (&r.req6.ifr6_addr, addr, sizeof (r.req6.ifr6_addr));
-	r.req6.ifr6_prefixlen = prefix_len;
+  memset (&r, 0, sizeof (r));
+  r.req6.ifr6_ifindex = id;
+  memcpy (&r.req6.ifr6_addr, addr, sizeof (r.req6.ifr6_addr));
+  r.req6.ifr6_prefixlen = prefix_len;
 
-	cmd = add ? SIOCSIFADDR : SIOCDIFADDR;
-	req = &r;
+  cmd = add ? SIOCSIFADDR : SIOCDIFADDR;
+  req = &r;
 #elif defined (USE_BSD)
-	/*
-	 * BSD ioctl interface
-	 */
-	union
-	{
-		struct in6_aliasreq addreq6;
-		struct in6_ifreq delreq6;
-	} r;
+  /*
+   * BSD ioctl interface
+   */
+  union
+  {
+    struct in6_aliasreq addreq6;
+    struct in6_ifreq delreq6;
+  } r;
 
-	if (add)
-	{
-		memset (&r.addreq6, 0, sizeof (r.addreq6));
-		if (if_indextoname (id, r.addreq6.ifra_name) == NULL)
-			return -1;
-		r.addreq6.ifra_addr.sin6_family = AF_INET6;
-		r.addreq6.ifra_addr.sin6_len = sizeof (r.addreq6.ifra_addr);
-		memcpy (&r.addreq6.ifra_addr.sin6_addr, addr,
-		        sizeof (r.addreq6.ifra_addr.sin6_addr));
+  if (add)
+  {
+    memset (&r.addreq6, 0, sizeof (r.addreq6));
+    if (if_indextoname (id, r.addreq6.ifra_name) == NULL)
+      return -1;
+    r.addreq6.ifra_addr.sin6_family = AF_INET6;
+    r.addreq6.ifra_addr.sin6_len = sizeof (r.addreq6.ifra_addr);
+    memcpy (&r.addreq6.ifra_addr.sin6_addr, addr,
+        sizeof (r.addreq6.ifra_addr.sin6_addr));
 
-		plen_to_sin6 (prefix_len, &r.addreq6.ifra_prefixmask);
+    plen_to_sin6 (prefix_len, &r.addreq6.ifra_prefixmask);
 
-		r.addreq6.ifra_lifetime.ia6t_vltime = ND6_INFINITE_LIFETIME;
-		r.addreq6.ifra_lifetime.ia6t_pltime = ND6_INFINITE_LIFETIME;
+    r.addreq6.ifra_lifetime.ia6t_vltime = ND6_INFINITE_LIFETIME;
+    r.addreq6.ifra_lifetime.ia6t_pltime = ND6_INFINITE_LIFETIME;
 
-		cmd = SIOCAIFADDR_IN6;
-		req = &r.addreq6;
-	}
-	else
-	{
-		memset (&r.delreq6, 0, sizeof (r.delreq6));
-		if (if_indextoname (id, r.delreq6.ifr_name) == NULL)
-			return -1;
-		r.delreq6.ifr_addr.sin6_family = AF_INET6;
-		r.delreq6.ifr_addr.sin6_len = sizeof (r.delreq6.ifr_addr);
-		memcpy (&r.delreq6.ifr_addr.sin6_addr, addr,
-		        sizeof (r.delreq6.ifr_addr.sin6_addr));
+    cmd = SIOCAIFADDR_IN6;
+    req = &r.addreq6;
+  }
+  else
+  {
+    memset (&r.delreq6, 0, sizeof (r.delreq6));
+    if (if_indextoname (id, r.delreq6.ifr_name) == NULL)
+      return -1;
+    r.delreq6.ifr_addr.sin6_family = AF_INET6;
+    r.delreq6.ifr_addr.sin6_len = sizeof (r.delreq6.ifr_addr);
+    memcpy (&r.delreq6.ifr_addr.sin6_addr, addr,
+        sizeof (r.delreq6.ifr_addr.sin6_addr));
 
-		cmd = SIOCDIFADDR_IN6;
-		req = &r.delreq6;
-	}
+    cmd = SIOCDIFADDR_IN6;
+    req = &r.delreq6;
+  }
 #else
 # error FIXME tunnel address setup not implemented
 #endif
 
-	return ioctl (reqfd, cmd, req) >= 0 ? 0 : -1;
+  return ioctl (reqfd, cmd, req) >= 0 ? 0 : -1;
 }
 
 
-static int
+  static int
 _iface_route (int reqfd, int id, int add, const struct in6_addr *addr,
-              unsigned prefix_len, int rel_metric)
+    unsigned prefix_len, int rel_metric)
 {
-	assert (reqfd != -1);
-	assert (id != 0);
+  assert (reqfd != -1);
+  assert (id != 0);
 
-	if ((prefix_len > 128) || (addr == NULL))
-		return -1;
+  if ((prefix_len > 128) || (addr == NULL))
+    return -1;
 
-	int retval = -1;
+  int retval = -1;
 
 #if defined (USE_LINUX)
-	/*
-	 * Linux ioctl interface
-	 */
-	struct in6_rtmsg req6 =
-	{
-		.rtmsg_flags = RTF_UP,
-		.rtmsg_ifindex = id,
-		.rtmsg_dst_len = (unsigned short)prefix_len,
-		/* By default, the Linux kernel's metric is 256 for subnets,
-		 * and 1024 for gatewayed route. */
-		.rtmsg_metric = 1024 + rel_metric
-	};
+  /*
+   * Linux ioctl interface
+   */
+  struct in6_rtmsg req6 =
+  {
+    .rtmsg_flags = RTF_UP,
+    .rtmsg_ifindex = id,
+    .rtmsg_dst_len = (unsigned short)prefix_len,
+    /* By default, the Linux kernel's metric is 256 for subnets,
+     * and 1024 for gatewayed route. */
+    .rtmsg_metric = 1024 + rel_metric
+  };
 
-	/* Adds/deletes route */
-	memcpy (&req6.rtmsg_dst, addr, sizeof (req6.rtmsg_dst));
-	if (prefix_len == 128)
-		req6.rtmsg_flags |= RTF_HOST;
-	/* no gateway */
+  /* Adds/deletes route */
+  memcpy (&req6.rtmsg_dst, addr, sizeof (req6.rtmsg_dst));
+  if (prefix_len == 128)
+    req6.rtmsg_flags |= RTF_HOST;
+  /* no gateway */
 
-	if (ioctl (reqfd, add ? SIOCADDRT : SIOCDELRT, &req6) == 0)
-		retval = 0;
+  if (ioctl (reqfd, add ? SIOCADDRT : SIOCDELRT, &req6) == 0)
+    retval = 0;
 #elif defined (USE_BSD)
-	/*
-	 * BSD routing socket interface
-	 * FIXME: metric unimplemented
-	 */
-	(void)rel_metric;
+  /*
+   * BSD routing socket interface
+   * FIXME: metric unimplemented
+   */
+  (void)rel_metric;
 
-	int s = socket (AF_ROUTE, SOCK_RAW, AF_INET6);
-	if (s == -1)
-	{
-		syslog (LOG_ERR, "Error (%s): %s\n", "socket (AF_ROUTE)",
-		        strerror (errno));
-		return -1;
-	}
+  int s = socket (AF_ROUTE, SOCK_RAW, AF_INET6);
+  if (s == -1)
+  {
+    syslog (LOG_ERR, "Error (%s): %s\n", "socket (AF_ROUTE)",
+        strerror (errno));
+    return -1;
+  }
 
-	static int rtm_seq = 0;
-	static pthread_mutex_t rtm_seq_mutex = PTHREAD_MUTEX_INITIALIZER;
-	struct
-	{
-		struct rt_msghdr hdr;
-		struct sockaddr_in6 dst;
-		struct sockaddr_dl gw;
-		struct sockaddr_in6 mask;
-	} msg;
+  static int rtm_seq = 0;
+  static pthread_mutex_t rtm_seq_mutex = PTHREAD_MUTEX_INITIALIZER;
+  struct
+  {
+    struct rt_msghdr hdr;
+    struct sockaddr_in6 dst;
+    struct sockaddr_dl gw;
+    struct sockaddr_in6 mask;
+  } msg;
 
-	shutdown (s, 0);
+  shutdown (s, 0);
 
-	memset (&msg, 0, sizeof (msg));
-	msg.hdr.rtm_msglen = sizeof (msg);
-	msg.hdr.rtm_version = RTM_VERSION;
-	msg.hdr.rtm_type = add ? RTM_ADD : RTM_DELETE;
-	msg.hdr.rtm_index = id;
-	msg.hdr.rtm_flags = RTF_UP | RTF_STATIC;
-	msg.hdr.rtm_addrs = RTA_DST | RTA_GATEWAY | RTA_NETMASK;
-	if (prefix_len == 128)
-		msg.hdr.rtm_flags |= RTF_HOST;
-	msg.hdr.rtm_pid = getpid ();
+  memset (&msg, 0, sizeof (msg));
+  msg.hdr.rtm_msglen = sizeof (msg);
+  msg.hdr.rtm_version = RTM_VERSION;
+  msg.hdr.rtm_type = add ? RTM_ADD : RTM_DELETE;
+  msg.hdr.rtm_index = id;
+  msg.hdr.rtm_flags = RTF_UP | RTF_STATIC;
+  msg.hdr.rtm_addrs = RTA_DST | RTA_GATEWAY | RTA_NETMASK;
+  if (prefix_len == 128)
+    msg.hdr.rtm_flags |= RTF_HOST;
+  msg.hdr.rtm_pid = getpid ();
 
-	pthread_mutex_lock (&rtm_seq_mutex);
-	msg.hdr.rtm_seq = ++rtm_seq;
-	pthread_mutex_unlock (&rtm_seq_mutex);
+  pthread_mutex_lock (&rtm_seq_mutex);
+  msg.hdr.rtm_seq = ++rtm_seq;
+  pthread_mutex_unlock (&rtm_seq_mutex);
 
-	msg.dst.sin6_family = AF_INET6;
-	msg.dst.sin6_len = sizeof (msg.dst);
-	memcpy (&msg.dst.sin6_addr, addr, sizeof (msg.dst.sin6_addr));
+  msg.dst.sin6_family = AF_INET6;
+  msg.dst.sin6_len = sizeof (msg.dst);
+  memcpy (&msg.dst.sin6_addr, addr, sizeof (msg.dst.sin6_addr));
 
-	msg.gw.sdl_family = AF_LINK;
-	msg.gw.sdl_len = sizeof (msg.gw);
-	msg.gw.sdl_index = id;
+  msg.gw.sdl_family = AF_LINK;
+  msg.gw.sdl_len = sizeof (msg.gw);
+  msg.gw.sdl_index = id;
 
-	plen_to_sin6 (prefix_len, &msg.mask);
+  plen_to_sin6 (prefix_len, &msg.mask);
 
-	errno = 0;
+  errno = 0;
 
-	if ((write (s, &msg, sizeof (msg)) == sizeof (msg))
-	 && (errno == 0))
-		retval = 0;
-    	else if (errno == EEXIST)
-		syslog (LOG_NOTICE,
-"Miredo could not configure its network tunnel device properly.\n"
-"There is probably another tunnel with a conflicting route present,\n"
-"most likely left from a previous instance of Miredo (see also FreeBSD\n"
-"Problem Report kern/100080); that is a common bug on BSD kernels.\n"
-"Please cleanup your closed tunnel devices manually or reboot to fix\n"
-"this issue. You might also want to check if this issue has been dealt\n"
-"with in newer version of your BSD of choice.\n");
+  if ((write (s, &msg, sizeof (msg)) == sizeof (msg))
+      && (errno == 0))
+    retval = 0;
+  else if (errno == EEXIST)
+    syslog (LOG_NOTICE,
+        "Miredo could not configure its network tunnel device properly.\n"
+        "There is probably another tunnel with a conflicting route present,\n"
+        "most likely left from a previous instance of Miredo (see also FreeBSD\n"
+        "Problem Report kern/100080); that is a common bug on BSD kernels.\n"
+        "Please cleanup your closed tunnel devices manually or reboot to fix\n"
+        "this issue. You might also want to check if this issue has been dealt\n"
+        "with in newer version of your BSD of choice.\n");
 
-	(void)close (s);
+  (void)close (s);
 #else
 # error FIXME route setup not implemented
 #endif
 
-	return retval;
+  return retval;
 }
 
 
@@ -716,39 +714,39 @@ _iface_route (int reqfd, int id, int add, const struct in6_addr *addr,
  *
  * @return 0 on success, -1 in case error.
  */
-int
+  int
 tun6_addAddress (tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
 {
-	assert (t != NULL);
+  assert (t != NULL);
 
-	int res = _iface_addr (t->reqfd, t->id, 1, addr, prefixlen);
+  int res = _iface_addr (t->reqfd, t->id, 1, addr, prefixlen);
 
 #if defined (USE_LINUX)
-	char ifname[IFNAMSIZ];
-	if ((res == 0)
-	 && (if_indextoname (t->id, ifname) != NULL))
-	{
+  char ifname[IFNAMSIZ];
+  if ((res == 0)
+      && (if_indextoname (t->id, ifname) != NULL))
+  {
 
-		char proc_path[24 + IFNAMSIZ + 16 + 1] = "/proc/sys/net/ipv6/conf/";
+    char proc_path[24 + IFNAMSIZ + 16 + 1] = "/proc/sys/net/ipv6/conf/";
 # if 0
-		/* Disable Autoconfiguration */
-		snprintf (proc_path + 24, sizeof (proc_path) - 24,
-		          "%s/accept_ra", ifname);
-		proc_write_zero (proc_path);
+    /* Disable Autoconfiguration */
+    snprintf (proc_path + 24, sizeof (proc_path) - 24,
+        "%s/accept_ra", ifname);
+    proc_write_zero (proc_path);
 
-		snprintf (proc_path + 24, sizeof (proc_path) - 24,
-		          "%s/autoconf", ifname);
-		proc_write_zero (proc_path);
+    snprintf (proc_path + 24, sizeof (proc_path) - 24,
+        "%s/autoconf", ifname);
+    proc_write_zero (proc_path);
 #endif
-		/* Disable ICMPv6 Redirects. */
-		snprintf (proc_path + 24, sizeof (proc_path) - 24,
-		          "%s/accept_redirects", ifname);
-		proc_write_zero (proc_path);
+    /* Disable ICMPv6 Redirects. */
+    snprintf (proc_path + 24, sizeof (proc_path) - 24,
+        "%s/accept_redirects", ifname);
+    proc_write_zero (proc_path);
 
-	}
+  }
 #endif
 
-	return res;
+  return res;
 }
 
 /**
@@ -757,12 +755,12 @@ tun6_addAddress (tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
  *
  * @return 0 on success, -1 in case error.
  */
-int
+  int
 tun6_delAddress (tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
 {
-	assert (t != NULL);
+  assert (t != NULL);
 
-	return _iface_addr (t->reqfd, t->id, 0, addr, prefixlen);
+  return _iface_addr (t->reqfd, t->id, 0, addr, prefixlen);
 }
 
 
@@ -776,13 +774,13 @@ tun6_delAddress (tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
  *
  * @return 0 on success, -1 in case error.
  */
-int
+  int
 tun6_addRoute (tun6 *t, const struct in6_addr *addr, unsigned prefix_len,
-               int rel_metric)
+    int rel_metric)
 {
-	assert (t != NULL);
+  assert (t != NULL);
 
-	return _iface_route (t->reqfd, t->id, 1, addr, prefix_len, rel_metric);
+  return _iface_route (t->reqfd, t->id, 1, addr, prefix_len, rel_metric);
 }
 
 
@@ -792,14 +790,14 @@ tun6_addRoute (tun6 *t, const struct in6_addr *addr, unsigned prefix_len,
  *
  * @return 0 on success, -1 in case error.
  */
-int
+  int
 tun6_delRoute (tun6 *t, const struct in6_addr *addr, unsigned prefix_len,
-               int rel_metric)
+    int rel_metric)
 {
-	assert (t != NULL);
+  assert (t != NULL);
 
-	return _iface_route (t->reqfd, t->id, 0, addr, prefix_len,
-	                     rel_metric);
+  return _iface_route (t->reqfd, t->id, 0, addr, prefix_len,
+      rel_metric);
 }
 
 
@@ -808,22 +806,22 @@ tun6_delRoute (tun6 *t, const struct in6_addr *addr, unsigned prefix_len,
  *
  * @return 0 on success, -1 in case of error.
  */
-int
+  int
 tun6_setMTU (tun6 *t, unsigned mtu)
 {
-	assert (t != NULL);
+  assert (t != NULL);
 
-	if ((mtu < 1280) || (mtu > 65535))
-		return -1;
+  if ((mtu < 1280) || (mtu > 65535))
+    return -1;
 
-	struct ifreq req =
-	{
-		.ifr_mtu = mtu
-	};
-	if (if_indextoname (t->id, req.ifr_name) == NULL)
-		return -1;
+  struct ifreq req =
+  {
+    .ifr_mtu = mtu
+  };
+  if (if_indextoname (t->id, req.ifr_name) == NULL)
+    return -1;
 
-	return ioctl (t->reqfd, SIOCSIFMTU, &req) ? -1 : 0;
+  return ioctl (t->reqfd, SIOCSIFMTU, &req) ? -1 : 0;
 }
 
 
@@ -839,16 +837,16 @@ tun6_setMTU (tun6 *t, unsigned mtu)
  * first parameter to select()). -1 if any of the file descriptors was
  * bigger than FD_SETSIZE - 1.
  */
-int
+  int
 tun6_registerReadSet (const tun6 *t, fd_set *readset)
 {
-	assert (t != NULL);
+  assert (t != NULL);
 
-	if (t->fd >= (int)FD_SETSIZE)
-		return -1;
+  if (t->fd >= (int)FD_SETSIZE)
+    return -1;
 
-	FD_SET (t->fd, readset);
-	return t->fd;
+  FD_SET (t->fd, readset);
+  return t->fd;
 }
 
 
@@ -861,23 +859,23 @@ tun6_registerReadSet (const tun6 *t, fd_set *readset)
  *
  * @return the packet length on success, -1 if no packet were to be received.
  */
-static inline int
+  static inline int
 tun6_recv_inner (int fd, void *buffer, size_t maxlen)
 {
-	struct iovec vect[2];
-	tun_head_t head;
+  struct iovec vect[2];
+  tun_head_t head;
 
-	vect[0].iov_base = (char *)&head;
-	vect[0].iov_len = sizeof (head);
-	vect[1].iov_base = (char *)buffer;
-	vect[1].iov_len = maxlen;
+  vect[0].iov_base = (char *)&head;
+  vect[0].iov_len = sizeof (head);
+  vect[1].iov_base = (char *)buffer;
+  vect[1].iov_len = maxlen;
 
-	int len = readv (fd, vect, 2);
-	if ((len < (int)sizeof (head))
-	 || !tun_head_is_ipv6 (head))
-		return -1; /* only accept IPv6 packets */
+  int len = readv (fd, vect, 2);
+  if ((len < (int)sizeof (head))
+      || !tun_head_is_ipv6 (head))
+    return -1; /* only accept IPv6 packets */
 
-	return len - sizeof (head);
+  return len - sizeof (head);
 }
 
 
@@ -891,18 +889,18 @@ tun6_recv_inner (int fd, void *buffer, size_t maxlen)
  *
  * @return the packet length on success, -1 if no packet were to be received.
  */
-int
+  int
 tun6_recv (tun6 *t, const fd_set *readset, void *buffer, size_t maxlen)
 {
-	assert (t != NULL);
+  assert (t != NULL);
 
-	int fd = t->fd;
-	if ((fd < (int)FD_SETSIZE) && !FD_ISSET (fd, readset))
-	{
-		errno = EAGAIN;
-		return -1;
-	}
-	return tun6_recv_inner (fd, buffer, maxlen);
+  int fd = t->fd;
+  if ((fd < (int)FD_SETSIZE) && !FD_ISSET (fd, readset))
+  {
+    errno = EAGAIN;
+    return -1;
+  }
+  return tun6_recv_inner (fd, buffer, maxlen);
 }
 
 
@@ -915,10 +913,10 @@ tun6_recv (tun6 *t, const fd_set *readset, void *buffer, size_t maxlen)
  *
  * @return the packet length on success, -1 if no packet were to be received.
  */
-int
+  int
 tun6_wait_recv (tun6 *t, void *buffer, size_t maxlen)
 {
-	return tun6_recv_inner (t->fd, buffer, maxlen);
+  return tun6_recv_inner (t->fd, buffer, maxlen);
 }
 
 
@@ -930,30 +928,30 @@ tun6_wait_recv (tun6 *t, void *buffer, size_t maxlen)
  * @return the number of bytes succesfully transmitted on success,
  * -1 on error.
  */
-int
+  int
 tun6_send (tun6 *t, const void *packet, size_t len)
 {
-	assert (t != NULL);
+  assert (t != NULL);
 
-	if (len > 65535)
-		return -1;
+  if (len > 65535)
+    return -1;
 
-	tun_head_t head = TUN_HEAD_IPV6_INITIALIZER;
-	struct iovec vect[2];
-	vect[0].iov_base = (char *)&head;
-	vect[0].iov_len = sizeof (head);
-	vect[1].iov_base = (char *)packet; /* necessary cast to non-const */
-	vect[1].iov_len = len;
+  tun_head_t head = TUN_HEAD_IPV6_INITIALIZER;
+  struct iovec vect[2];
+  vect[0].iov_base = (char *)&head;
+  vect[0].iov_len = sizeof (head);
+  vect[1].iov_base = (char *)packet; /* necessary cast to non-const */
+  vect[1].iov_len = len;
 
-	int val = writev (t->fd, vect, 2);
-	if (val == -1)
-		return -1;
+  int val = writev (t->fd, vect, 2);
+  if (val == -1)
+    return -1;
 
-	val -= sizeof (head);
-	if (val < 0)
-		return -1;
+  val -= sizeof (head);
+  if (val < 0)
+    return -1;
 
-	return val;
+  return val;
 }
 
 #if 0
@@ -968,120 +966,120 @@ tun6_send (tun6 *t, const void *packet, size_t len)
  */
 static int tun6_addroutegw(struct tun6* this, struct in6_addr* dst, struct in6_addr* gateway, uint8_t prefixlen)
 {
-    int code=-1;
-    char buf[1024];
-    struct in6_rtmsg* rtm=NULL;
+  int code=-1;
+  char buf[1024];
+  struct in6_rtmsg* rtm=NULL;
 
-    rtm=(struct in6_rtmsg*)buf;
-    memset(buf, 0x00, sizeof(buf));
-    rtm->rtmsg_type=0;
-    rtm->rtmsg_metric=1024;
-    rtm->rtmsg_dst_len=prefixlen;
-    rtm->rtmsg_src_len=0;
-    rtm->rtmsg_ifindex=this->id;
-    rtm->rtmsg_flags=RTF_UP | RTF_GATEWAY;
+  rtm=(struct in6_rtmsg*)buf;
+  memset(buf, 0x00, sizeof(buf));
+  rtm->rtmsg_type=0;
+  rtm->rtmsg_metric=1024;
+  rtm->rtmsg_dst_len=prefixlen;
+  rtm->rtmsg_src_len=0;
+  rtm->rtmsg_ifindex=this->id;
+  rtm->rtmsg_flags=RTF_UP | RTF_GATEWAY;
 
-    memcpy(&rtm->rtmsg_dst, dst, sizeof(struct in6_addr));
-    memcpy(&rtm->rtmsg_gateway, gateway, sizeof(struct in6_addr));
+  memcpy(&rtm->rtmsg_dst, dst, sizeof(struct in6_addr));
+  memcpy(&rtm->rtmsg_gateway, gateway, sizeof(struct in6_addr));
 
 
-    code=ioctl(this->reqfd, SIOCADDRT, rtm);
+  code=ioctl(this->reqfd, SIOCADDRT, rtm);
 
-    return code!=-1 ? 0 : -1;
+  return code!=-1 ? 0 : -1;
 }
 #endif
 
 
 int tun6_new(struct tun6_t** tun)
 {
-	*tun=malloc(sizeof(struct tun6_t));
-	if(!(*tun))
-	{
-		return -1;
-	}
+  *tun=malloc(sizeof(struct tun6_t));
+  if(!(*tun))
+  {
+    return -1;
+  }
 
-	memset(*tun, 0x00, sizeof(struct tun6_t));
-	(*tun)->cb_indv6 = NULL;
-	(*tun)->addrsv6 = 0;
-	(*tun)->routesv6 = 0;
+  memset(*tun, 0x00, sizeof(struct tun6_t));
+  (*tun)->cb_indv6 = NULL;
+  (*tun)->addrsv6 = 0;
+  (*tun)->routesv6 = 0;
 
 
-	if(!((*tun)->device=tun6_create(NULL)))
-	{
-		free(*tun);
-		return -1;
-	}
+  if(!((*tun)->device=tun6_create(NULL)))
+  {
+    free(*tun);
+    return -1;
+  }
 
-	(*tun)->fdv6=(*tun)->device->fd;
-        (*tun)->ifindex=(*tun)->device->id;
+  (*tun)->fdv6=(*tun)->device->fd;
+  (*tun)->ifindex=(*tun)->device->id;
 
-	return 0;
+  return 0;
 }
 
 int tun6_free(struct tun6_t* tun)
 {
-	tun6_destroy(tun->device);
-	free(tun);
-	return 0;
+  tun6_destroy(tun->device);
+  free(tun);
+  return 0;
 }
 
 int tun6_decaps(struct tun6_t* this)
 {
 #if defined(__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
 
-    unsigned char buffer[PACKET_MAX];
-    int status;
+  unsigned char buffer[PACKET_MAX];
+  int status;
 
-    if((status=tun6_recv_inner(this->device->fd, buffer, sizeof(buffer)))==-1)
-    {
-    	return 0;
-    }
-
-    if (this->cb_indv6)
-    {
-        return this->cb_indv6(this, buffer, status);
-    }
+  if((status=tun6_recv_inner(this->device->fd, buffer, sizeof(buffer)))==-1)
+  {
     return 0;
+  }
+
+  if (this->cb_indv6)
+  {
+    return this->cb_indv6(this, buffer, status);
+  }
+  return 0;
 
 #endif
-	return -1;
+  return -1;
 }
 
 int tun6_encaps(struct tun6_t* this, void* pack, unsigned int len)
 {
-	return tun6_send(this->device, pack, len);
+  return tun6_send(this->device, pack, len);
 }
 
 int tun6_setaddr(struct tun6_t *this, struct in6_addr *addr, uint8_t prefixlen)
 {
-	int code=tun6_addAddress(this->device, addr, prefixlen);
+  int code=tun6_addAddress(this->device, addr, prefixlen);
   /* turn the interface on */
-	tun6_sifflags(this, IFF_UP | IFF_RUNNING);
-	return code;
+  tun6_sifflags(this, IFF_UP | IFF_RUNNING);
+  return code;
 }
 
 int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *gateway, uint8_t prefixlen)
 {
-	/* TODO : use _iface_route */
-	this=NULL;
-	dst=NULL;
-	gateway=NULL;
-	prefixlen=0;
-	return -1; 
+  /* TODO : use _iface_route */
+  this=NULL;
+  dst=NULL;
+  gateway=NULL;
+  prefixlen=0;
+  return -1; 
 }
 
 int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void *pack, unsigned len))
 {
-	this->cb_indv6=cb_ind;
-	return 0;
+  this->cb_indv6=cb_ind;
+  return 0;
 }
 
 int tun6_runscript(struct tun6_t *tun, char* script)
 {
-	/* TODO */
-	tun = NULL;
-	script = NULL;
-	return 0;
+  /* TODO */
+  tun = NULL;
+  script = NULL;
+  return 0;
 }
 
 /**
@@ -1092,32 +1090,32 @@ int tun6_runscript(struct tun6_t *tun, char* script)
  */
 int tun6_sifflags(struct tun6_t *this, int flags)
 {
-    struct ifreq ifr;
-    int fd = -1;
+  struct ifreq ifr;
+  int fd = -1;
 
-    memset (&ifr, '\0', sizeof (ifr));
-    ifr.ifr_flags = flags;
+  memset (&ifr, '\0', sizeof (ifr));
+  ifr.ifr_flags = flags;
 
-    if(if_indextoname(this->ifindex, ifr.ifr_name)==NULL)
-    {
-    	return -1;
-    }
+  if(if_indextoname(this->ifindex, ifr.ifr_name)==NULL)
+  {
+    return -1;
+  }
 
-    ifr.ifr_name[IFNAMSIZ-1] = 0; /* Make sure to terminate */
+  ifr.ifr_name[IFNAMSIZ-1] = 0; /* Make sure to terminate */
 
-    if ((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
-    {
-        sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-                "socket() failed");
-    }
-    if (ioctl(fd, SIOCSIFFLAGS, &ifr))
-    {
-        sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-                "ioctl(SIOCSIFFLAGS) failed");
-        close(fd);
-        return -1;
-    }
+  if ((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
+  {
+    sys_err(LOG_ERR, __FILE__, __LINE__, errno,
+        "socket() failed");
+  }
+  if (ioctl(fd, SIOCSIFFLAGS, &ifr))
+  {
+    sys_err(LOG_ERR, __FILE__, __LINE__, errno,
+        "ioctl(SIOCSIFFLAGS) failed");
     close(fd);
-    return 0;
+    return -1;
+  }
+  close(fd);
+  return 0;
 }
 

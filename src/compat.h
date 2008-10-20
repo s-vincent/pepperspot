@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 #ifndef COMPAT_H
@@ -35,32 +33,32 @@ extern "C" {
 
 #if defined (__FreeBSD__)  || defined (__APPLE__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #define s6_addr32   __u6_addr.__u6_addr32
-typedef unsigned long u_long;
-typedef unsigned short u_short;
-typedef unsigned int u_int;
-typedef unsigned char u_char;
+  typedef unsigned long u_long;
+  typedef unsigned short u_short;
+  typedef unsigned int u_int;
+  typedef unsigned char u_char;
 #endif
 
 #if !defined(HAVE_CLEARENV) || defined(_POSIX_C_SOURCE)
 
-/**
- * \brief clearenv replacement function (non POSIX).
- * Clear the environnement variables.
- * \return 0
- */
-int clearenv (void);
+  /**
+   * \brief clearenv replacement function (non POSIX).
+   * Clear the environnement variables.
+   * \return 0
+   */
+  int clearenv (void);
 
 #endif
 
 #if !defined(HAVE_DAEMON) || defined(_POSIX_C_SOURCE)
 
-/**
- * \brief daemon replacement function (non POSIX).
- * \param nochdir if 0, the child change to "/" directory
- * \param noclose if 0, the child redirect stdin, stdout and stderr to /dev/null
- * \return O if OK, -1 otherwise (errno is set).
- */
-int daemon(int nochdir, int noclose);
+  /**
+   * \brief daemon replacement function (non POSIX).
+   * \param nochdir if 0, the child change to "/" directory
+   * \param noclose if 0, the child redirect stdin, stdout and stderr to /dev/null
+   * \return O if OK, -1 otherwise (errno is set).
+   */
+  int daemon(int nochdir, int noclose);
 
 #endif
 

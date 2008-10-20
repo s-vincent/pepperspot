@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -210,45 +208,46 @@ int tun6_sifflags(struct tun6_t *this, int flags);
 # ifdef __cplusplus
 extern "C" {
 # endif
-int tun6_driver_diagnose (char *errbuf) LIBTUN6_NONNULL;
+  int tun6_driver_diagnose (char *errbuf) LIBTUN6_NONNULL;
 
-/*
- * All functions are thread-safe.
- *
- * All functions reports error messages via syslog(). You should hence call
- * openlog() before you create a tunnel.
- */
+  /*
+   * All functions are thread-safe.
+   *
+   * All functions reports error messages via syslog(). You should hence call
+   * openlog() before you create a tunnel.
+   */
 
-tun6 *tun6_create (const char *req_name) LIBTUN6_WARN_UNUSED;
-void tun6_destroy (tun6 *t) LIBTUN6_NONNULL;
+  tun6 *tun6_create (const char *req_name) LIBTUN6_WARN_UNUSED;
+  void tun6_destroy (tun6 *t) LIBTUN6_NONNULL;
 
-int tun6_getId (const tun6 *t) LIBTUN6_NONNULL;
+  int tun6_getId (const tun6 *t) LIBTUN6_NONNULL;
 
-int tun6_setState (tun6 *t, int up) LIBTUN6_NONNULL;
+  int tun6_setState (tun6 *t, int up) LIBTUN6_NONNULL;
 
-int tun6_addAddress (tun6 *restrict t, const struct in6_addr *restrict addr,
-                     unsigned prefix_len) LIBTUN6_NONNULL;
-int tun6_delAddress (tun6 *restrict t, const struct in6_addr *restrict addr,
-                     unsigned prefix_len) LIBTUN6_NONNULL;
+  int tun6_addAddress (tun6 *restrict t, const struct in6_addr *restrict addr,
+      unsigned prefix_len) LIBTUN6_NONNULL;
+  int tun6_delAddress (tun6 *restrict t, const struct in6_addr *restrict addr,
+      unsigned prefix_len) LIBTUN6_NONNULL;
 
-int tun6_setMTU (tun6 *t, unsigned mtu) LIBTUN6_NONNULL;
+  int tun6_setMTU (tun6 *t, unsigned mtu) LIBTUN6_NONNULL;
 
-int tun6_addRoute (tun6 *restrict t, const struct in6_addr *restrict addr,
-                   unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
-int tun6_delRoute (tun6 *restrict t, const struct in6_addr *restrict addr,
-                   unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
+  int tun6_addRoute (tun6 *restrict t, const struct in6_addr *restrict addr,
+      unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
+  int tun6_delRoute (tun6 *restrict t, const struct in6_addr *restrict addr,
+      unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
 
-int tun6_registerReadSet (const tun6 *restrict t, fd_set *restrict readset)
-	LIBTUN6_NONNULL LIBTUN6_PURE;
+  int tun6_registerReadSet (const tun6 *restrict t, fd_set *restrict readset)
+    LIBTUN6_NONNULL LIBTUN6_PURE;
 
-int tun6_recv (tun6 *restrict t, const fd_set *restrict readset,
-               void *buf, size_t len) LIBTUN6_NONNULL;
-int tun6_wait_recv (tun6 *restrict t, void *buf, size_t len) LIBTUN6_NONNULL;
-int tun6_send (tun6 *restrict t, const void *packet, size_t len)
-	LIBTUN6_NONNULL;
+  int tun6_recv (tun6 *restrict t, const fd_set *restrict readset,
+      void *buf, size_t len) LIBTUN6_NONNULL;
+  int tun6_wait_recv (tun6 *restrict t, void *buf, size_t len) LIBTUN6_NONNULL;
+  int tun6_send (tun6 *restrict t, const void *packet, size_t len)
+    LIBTUN6_NONNULL;
 
 # ifdef __cplusplus
 }
 # endif /* C++ */
 
 #endif /* ifndef LIBTUN6_TUN6_H */
+

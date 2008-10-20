@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -82,3 +80,4 @@
 #define	RADIUS_SERVICE_TYPE_PEPPERSPOT_AUTHORIZE_ONLY 0x38df0001 /* integer */
 
 #endif	/* !_RADIUS_PEPPERSPOT_H */
+

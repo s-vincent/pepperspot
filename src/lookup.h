@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -79,3 +77,4 @@
 unsigned long int lookup( unsigned char *k, unsigned long int length, unsigned long int level);
 
 #endif	/* !_LOOKUP_H */
+

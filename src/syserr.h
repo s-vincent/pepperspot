@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -72,6 +70,7 @@
 
 void sys_err(int pri, char *filename, int en, int line, char *fmt, ...);
 void sys_errpack(int pri, char *fn, int ln, int en, struct sockaddr_in *peer,
-		 void *pack, unsigned len, char *fmt, ...);
+    void *pack, unsigned len, char *fmt, ...);
 
 #endif	/* !_SYSERR_H */
+

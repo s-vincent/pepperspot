@@ -18,8 +18,6 @@
  *
  * Contact: thibault.vancon@eturs.u-strasbg.fr
  *          vincent@lsiit.u-strasbg.fr
- *
- * You can find a Copy of this license in the LICENSE file
  */
 
 /*
@@ -117,17 +115,17 @@ int tun_decaps(struct tun_t *this);
 int tun_encaps(struct tun_t *tun, void *pack, unsigned len);
 
 int tun_addaddr(struct tun_t *this, struct in_addr *addr,
-		       struct in_addr *dstaddr, struct in_addr *netmask);
+    struct in_addr *dstaddr, struct in_addr *netmask);
 
 
 int tun_setaddr(struct tun_t *this, struct in_addr *our_adr, 
-		       struct in_addr *his_adr, struct in_addr *net_mask);
+    struct in_addr *his_adr, struct in_addr *net_mask);
 
 int tun_addroute(struct tun_t *this, struct in_addr *dst, 
-		 struct in_addr *gateway, struct in_addr *mask);
+    struct in_addr *gateway, struct in_addr *mask);
 
 int tun_set_cb_ind(struct tun_t *this, 
-     int (*cb_ind) (struct tun_t *tun, void *pack, unsigned len));
+    int (*cb_ind) (struct tun_t *tun, void *pack, unsigned len));
 
 
 int tun_runscript(struct tun_t *tun, char* script);
