@@ -116,11 +116,11 @@ configuration. PepperSpot integrates a DHCP module to attribute an IPv4 address 
 in the PepperSpot configuration if the wireless link already have a DHCP server, or if clients configuration is set 
 statically. You need nevertheless to configure the interface linked to the IPv4 network.
 
-In the same way, enable the IPv4 forwarding by typping:
+In the same way, enable the IPv4 forwarding by:
 
 # echo "1" > /proc/sys/net/ipv4/conf/all/forwarding
 
-or uncommenting into /etc/sysctl.conf:
+or set the following line in /etc/sysctl.conf:
 
 net.ipv4.ip_forward=1
 
@@ -522,8 +522,7 @@ values regarding to your configuration. Note that for dual stack configuration $
 
 Depending to the mode, you must configure parameters in /etc/pepper.conf file.
 
-Change ipversion value to chose the mode:
-You have 3 choices for the value:
+Change ipversion value to chose the mode, you can choose one of the followings:
 
     * dual
     * ipv4
@@ -538,18 +537,17 @@ If you choose dual for ipversion, look at the both following sections.
 
 staticipv6 2001:db8:1::1234
 
-
 - Modify uamserver6 (don't forget the brackets):
 
 uamserver6 https://[2001:db8:1::1234]/cgi-bin/hotspotlogin.cgi
 
-The IPv6 address of the url must be the same than staticipv6
+The IPv6 address of the url must be the same as staticipv6 (brackets are mandatory when using IPv6 address)
 
 - Modify prefix:
 
 prefix 2001:db8:1::/64
 
-It must be the prefix of staticipv6
+Note: it have to be the prefix of staticipv6
 
 5.3.2) IPv4
 ------------
@@ -562,7 +560,7 @@ net 192.168.0.1/24
 
 uamserver https://192.168.0.1/cgi-bin/hotspotlogin.cgi
 
-Must be the first address of net
+Note: the IPv4 address have to be the first address of the network.
 
 5.4) Radius
 ------------
@@ -591,10 +589,8 @@ uamsecret testing234
 
 and update $uamsecret in /usr/lib/cgi-bin/hotspotlogin.cgi with the same value.
 
-Others parameters of the /etc/pepper.conf file are describes on the man. 
-
+Others parameters of the /etc/pepper.conf file are describes on the man, for example radiusnasip, ...
 # man pepper
-
 
 ++++++++++++++++++++++++++++++++
 6) Running PepperSpot          +
