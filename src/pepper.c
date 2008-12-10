@@ -157,9 +157,9 @@ struct app_conn_t *lastusedconn = NULL;  /* Last used in linked list */
 struct timeval checktime;
 struct timeval rereadtime;
 
-static int keep_going = 1;
-static int do_timeouts = 1;
-static int do_sighup = 0;
+static volatile sig_atomic_t keep_going = 1;
+static volatile sig_atomic_t do_timeouts = 1;
+static volatile sig_atomic_t do_sighup = 0;
 
 /* Forward declarations */
 static int acct_req(struct app_conn_t *conn, int status_type);
