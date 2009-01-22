@@ -69,6 +69,8 @@
 #ifndef _DHCP_H
 #define _DHCP_H
 
+#include <net/if.h>
+
 /* DHCP Ethernet frame types */
 #define DHCP_ETH_IP                 0x0800
 /* [SV] */

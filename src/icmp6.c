@@ -57,13 +57,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <syslog.h>
-#include <netinet/in.h>
-
-#include <netinet/ip6.h>
-#include <netinet/icmp6.h>
-#include "icmp6.h"
-#include "util.h"
 #include <assert.h>
+
+#include "icmp6.h"
+
+#include "util.h"
 /*
 #include "debug.h" 
 #include "conf.h"

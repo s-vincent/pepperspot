@@ -38,7 +38,7 @@ extern "C" {
   typedef unsigned char u_char;
 #endif
 
-#if !defined(HAVE_CLEARENV) || defined(_POSIX_C_SOURCE)
+#if !defined(HAVE_CLEARENV)
 
   /**
    * \brief clearenv replacement function (non POSIX).
@@ -49,7 +49,7 @@ extern "C" {
 
 #endif
 
-#if !defined(HAVE_DAEMON) || defined(_POSIX_C_SOURCE)
+#if !defined(HAVE_DAEMON)
 
   /**
    * \brief daemon replacement function (non POSIX).

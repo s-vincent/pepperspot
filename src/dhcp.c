@@ -2129,7 +2129,7 @@ int dhcp_undoDNATv6(struct dhcp_conn_t *conn, struct dhcp_ipv6packet_t *pack, in
     return 0;
 
   /* icmpv6 */
-  if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.src_addr, &conn->ouripv6) && pack->ip6h.next_header==htons(DHCP_IPV6_ICMPV6))
+  if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.src_addr, &conn->ouripv6) && pack->ip6h.next_header==DHCP_IPV6_ICMPV6)
   {
     return 0;
   }

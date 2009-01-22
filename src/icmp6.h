@@ -25,8 +25,17 @@
 #ifndef __ICMP6_H__
 #define __ICMP6_H__ 1
 
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
+
+#ifdef __APPLE__
+#include <sys/socketvar.h>
+#include <netinet/in_pcb.h>
+#endif
+
 #include <netinet/icmp6.h>
+#include <netinet/ip6.h>
 
 struct sock 
 {
