@@ -50,7 +50,6 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-/* #include <pthread.h> */
 #include <sys/socket.h>
 #include <errno.h>
 #include <stdio.h>
@@ -69,84 +68,8 @@
 #include "debug.h" 
 #include "conf.h"
 */
-enum {
-  ICMP6_DU = 0,
-  ICMP6_PP = 1,
-  ICMP6_RA = 3,
-  ICMP6_NA = 4,
-  ICMP6_DRQ = 5,
-  ICMP6_DRP = 6,
-  ICMP6_MPS = 7,
-  ICMP6_MPA = 8,
-  __ICMP6_SENTINEL = 9
-};
-
-
-/* static pthread_rwlock_t handler_lock; */
-static struct icmp6_handler *handlers[__ICMP6_SENTINEL + 1];
-
 
 struct sock icmp6_sock;
-/* static pthread_t icmp6_listener;  */
-
-static inline int icmp6_type_map(uint8_t type)
-{
-  switch (type) {
-    case ICMP6_DST_UNREACH:
-      return ICMP6_DU;
-    case ICMP6_PARAM_PROB:
-      return ICMP6_PP;	
-    case ND_ROUTER_ADVERT:
-      return ICMP6_RA;
-    case ND_NEIGHBOR_ADVERT:
-      return ICMP6_NA;
-      /*case MIP_HA_DISCOVERY_REQUEST:
-        return ICMP6_DRQ;
-        case MIP_HA_DISCOVERY_REPLY:
-        return ICMP6_DRP;
-        case MIP_PREFIX_SOLICIT:
-        return ICMP6_MPS;
-        case MIP_PREFIX_ADVERT:
-        return ICMP6_MPA;
-        */
-    default:
-      return __ICMP6_SENTINEL;
-  }
-}
-
-static inline struct icmp6_handler *icmp6_handler_get(uint8_t type)
-{
-  return handlers[icmp6_type_map(type)]; 
-}
-
-void icmp6_handler_reg(uint8_t type, struct icmp6_handler *handler)
-{
-  int i = icmp6_type_map(type);
-
-  assert(handler->next == NULL);
-
-  /* pthread_rwlock_wrlock(&handler_lock); */
-  handler->next = handlers[i];
-  handlers[i] = handler;
-  /*	pthread_rwlock_unlock(&handler_lock); */
-}
-
-void icmp6_handler_dereg(uint8_t type, struct icmp6_handler *handler)
-{
-  struct icmp6_handler **h = NULL; 
-  int i = icmp6_type_map(type);
-  /* pthread_rwlock_wrlock(&handler_lock); */
-  h = &handlers[i];
-  while (*h) {
-    if (*h == handler) {
-      *h = handler->next;
-      handler->next = NULL;
-      break;
-    }
-    h = &(*h)->next;
-  }
-  /*	pthread_rwlock_unlock(&handler_lock); */
-}
 
 /**
  * if_mc_group - join or leave multicast group
@@ -180,55 +103,6 @@ int if_mc_group(int sock, int ifindex, const struct in6_addr *mc_addr, int cmd)
   return setsockopt(sock, IPPROTO_IPV6, cmd, &mreq, sizeof(mreq));
 }
 
-#if 0
-void *icmp6_listen(void *arg)
-{
-  uint8_t msg[MAX_PKT_LEN];
-  struct sockaddr_in6 addr;
-  struct in6_addr *saddr, *daddr = NULL;
-  struct in6_pktinfo pkt_info;
-  struct icmp6_hdr *ih = NULL;
-  int iif = 0;
-  int hoplimit = 0;
-  unsigned int len = 0;
-  struct icmp6_handler *h = NULL;
-
-  /* To avoid unused parameter warning */
-  arg = NULL; 
-
-  /*	pthread_dbg("thread started"); */
-
-  printf("Thread started\n");
-  while (1) { 
-    /* pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL); */
-    len = icmp6_recv(icmp6_sock.fd, msg, sizeof(msg),
-        &addr, &pkt_info, &hoplimit);
-    /* check if socket has closed */
-    if (-len == EBADF)
-      return NULL;
-    /* common validity check */
-    if (len < sizeof(struct icmp6_hdr))
-      return NULL;
-    saddr = &addr.sin6_addr;
-    daddr = &pkt_info.ipi6_addr;
-    iif = pkt_info.ipi6_ifindex;
-
-    ih = (struct icmp6_hdr *)msg;
-    /* multiplex to right handler */
-    /*		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL); */
-    /*		pthread_rwlock_rdlock(&handler_lock); */
-
-
-    if ((h = icmp6_handler_get(ih->icmp6_type)) != NULL)
-      h->recv(ih, len, saddr, daddr, iif, hoplimit);
-
-
-    /*		pthread_rwlock_unlock(&handler_lock); */
-  } 
-  pthread_exit(NULL); 
-}
-#endif
-
 int icmp6_init(void)
 {
   struct icmp6_filter filter;
@@ -258,18 +132,7 @@ int icmp6_init(void)
   if (setsockopt(icmp6_sock.fd, IPPROTO_RAW, IPV6_CHECKSUM, 
         &val, sizeof(val)) < 0)
     return -1;
-  /* create ICMP listener thread */
-
-  /*      pthread_mutexattr_init(&mattrs); 
-          pthread_mutexattr_settype(&mattrs, PTHREAD_MUTEX_FAST_NP); 
-
-          if (pthread_mutex_init(&icmp6_sock.send_mutex, &mattrs) ||
-          pthread_rwlock_init(&handler_lock, NULL) ||
-          pthread_create(&icmp6_listener, NULL, icmp6_listen, NULL))
-          return -1;
-
-          pthread_create(&icmp6_listener, NULL, icmp6_listen, NULL);
-          */
+  
   return 0;
 }
 
@@ -356,7 +219,6 @@ int icmp6_send(int oif, uint8_t hoplimit,
   msg.msg_name = (void *)&daddr;
   msg.msg_namelen = CMSG_SPACE(sizeof(struct in6_pktinfo));
 
-  /* pthread_mutex_lock(&icmp6_sock.send_mutex);  */
   setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_PKTINFO,
       &on, sizeof(int));
   setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_UNICAST_HOPS, 
@@ -368,133 +230,13 @@ int icmp6_send(int oif, uint8_t hoplimit,
   if (ret < 0)
     printf("sendmsg: %s\n", strerror(errno));
 
-  /* pthread_mutex_unlock(&icmp6_sock.send_mutex); */
-
   free(cmsg);
 
   return ret;
 }
 
-#define CMSG_BUF_LEN 128
-
-ssize_t icmp6_recv(int sockfd, unsigned char *msg, size_t msglen,
-    struct sockaddr_in6 *addr, struct in6_pktinfo *pkt_info,
-    int *hoplimit)
-{
-  struct msghdr mhdr;
-  struct cmsghdr *cmsg = NULL;
-  struct iovec iov;
-  static unsigned char chdr[CMSG_BUF_LEN];
-  ssize_t len = 0;
-
-  iov.iov_len = msglen;
-  iov.iov_base = (unsigned char *) msg;
-
-  mhdr.msg_name = (void *)addr;
-  mhdr.msg_namelen = sizeof(struct sockaddr_in6);
-  mhdr.msg_iov = &iov;
-  mhdr.msg_iovlen = 1;
-  mhdr.msg_control = (void *)chdr;
-  mhdr.msg_controllen = CMSG_BUF_LEN;
-
-  if ((len = recvmsg(sockfd, &mhdr, 0)) < 0)
-    return -errno;
-
-  for (cmsg = CMSG_FIRSTHDR(&mhdr); cmsg; 
-      cmsg = CMSG_NXTHDR(&mhdr, cmsg)) {
-    if (cmsg->cmsg_level != IPPROTO_IPV6)
-      continue;
-    switch(cmsg->cmsg_type) {
-      case IPV6_HOPLIMIT:
-        *hoplimit = *(int *)CMSG_DATA(cmsg);
-        break;
-      case IPV6_PKTINFO:
-        memcpy(pkt_info, CMSG_DATA(cmsg), sizeof(*pkt_info));
-        break;
-    }
-  }
-  return len;
-}
-
-struct ip6_subopt_hdr {
-  u_int8_t	opttype;
-  u_int8_t	optlen;
-};
-
-#if 0
-int icmp6_parse_data(struct ip6_hdr *ip6h, unsigned int len, 
-    struct in6_addr **lhoa, struct in6_addr **rhoa)
-{
-  uint8_t *data = (uint8_t *)ip6h;
-  unsigned int hoff = sizeof(struct ip6_hdr);
-  uint8_t htype;
-
-  if (len < hoff)
-    return -1;
-
-  htype = ip6h->ip6_nxt;
-
-  /* The minumum length of an extension header is eight octets,
-     so check that we at least have room for that */
-  while (hoff + 8 < len) {
-    struct ip6_ext *h = (struct ip6_ext *) (data + hoff);
-    unsigned int hlen = (h->ip6e_len + 1) << 3;
-
-    if (htype != IPPROTO_DSTOPTS && 
-        htype != IPPROTO_ROUTING &&
-        htype != IPPROTO_HOPOPTS)
-      return 0;
-
-    if (len < hoff + hlen)
-      return -1;
-
-    if (htype == IPPROTO_DSTOPTS) {
-      uint8_t *odata = (uint8_t *) h;
-      uint32_t ooff = 2;
-      while (ooff < hlen) {
-        struct ip6_subopt_hdr *o;
-        o = (struct ip6_subopt_hdr *) (odata + ooff);
-        if (o->opttype == IP6OPT_PAD0) {
-          ooff++;
-          continue;
-        }
-        /* invalid TLV option length */
-        if (hlen < ooff + 2 ||
-            hlen < ooff + 2 + o->optlen)
-          break;
-        if (o->opttype == IP6OPT_HOME_ADDRESS &&
-            o->optlen == sizeof(struct in6_addr)) {
-          *lhoa = (struct in6_addr *) (o + 1);
-          /*dbg("HAO %x:%x:%x:%x:%x:%x:%x:%x\n",
-            NIP6ADDR(*lhoa));*/
-          break;
-        }
-        ooff += 2 + o->optlen;
-      }
-    } else if (htype == IPPROTO_ROUTING) {
-      struct ip6_rthdr2 *rth = (struct ip6_rthdr2 *) h;
-      if (rth->ip6r2_type == 2 && 
-          rth->ip6r2_len == 2 && rth->ip6r2_segleft == 1)
-        *rhoa = &rth->ip6r2_homeaddr;
-      /*
-       * dbg("RTH2 %x:%x:%x:%x:%x:%x:%x:%x\n", NIP6ADDR(*rhoa));
-       */
-    } else if (htype != IPPROTO_HOPOPTS) {
-      return 0;
-    }
-    hoff += hlen;
-    htype = h->ip6e_nxt;
-  }
-  return 0;
-}
-#endif
-
 void icmp6_cleanup(void)
 {
   close(icmp6_sock.fd);
-  /* pthread_cancel(icmp6_listener);
-     pthread_join(icmp6_listener, NULL);
-     */
-
 }
 
