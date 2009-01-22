@@ -172,24 +172,24 @@ static inline void ipv6_addr_set(struct in6_addr *addr,
     uint32_t w1, uint32_t w2,
     uint32_t w3, uint32_t w4)
 {
-  addr->s6_addr32[0] = w1;
-  addr->s6_addr32[1] = w2;
-  addr->s6_addr32[2] = w3;
-  addr->s6_addr32[3] = w4;
+  ((uint32_t*)addr->s6_addr)[0] = w1;
+  ((uint32_t*)addr->s6_addr)[1] = w2;
+  ((uint32_t*)addr->s6_addr)[2] = w3;
+  ((uint32_t*)addr->s6_addr)[3] = w4;
 }
 
 static inline void ipv6_addr_solict_mult(const struct in6_addr *addr,
     struct in6_addr *solicited)
 {
   ipv6_addr_set(solicited, htonl(0xFF020000), 0, htonl(0x1),
-      htonl(0xFF000000) | addr->s6_addr32[3]);
+      htonl(0xFF000000) | ((uint32_t*)addr->s6_addr)[3]);
 }
 
 static inline void ipv6_addr_llocal(const struct in6_addr *addr,
     struct in6_addr *llocal)
 {
   ipv6_addr_set(llocal, htonl(0xFE800000), 0,
-      addr->s6_addr32[2], addr->s6_addr32[3]);
+      ((uint32_t*)addr->s6_addr)[2], ((uint32_t*)addr->s6_addr)[3]);
 }
 
 static inline int in6_is_addr_routable_unicast(const struct in6_addr *a)
@@ -199,16 +199,6 @@ static inline int in6_is_addr_routable_unicast(const struct in6_addr *a)
         !IN6_IS_ADDR_MULTICAST(a) &&
         !IN6_IS_ADDR_LINKLOCAL(a)));
 }
-
-#define NIP6ADDR(addr) \
-  ntohs((addr)->s6_addr16[0]), \
-ntohs((addr)->s6_addr16[1]), \
-ntohs((addr)->s6_addr16[2]), \
-ntohs((addr)->s6_addr16[3]), \
-ntohs((addr)->s6_addr16[4]), \
-ntohs((addr)->s6_addr16[5]), \
-ntohs((addr)->s6_addr16[6]), \
-ntohs((addr)->s6_addr16[7])
 
 /**
  * free_iov_data - free vector data

@@ -32,7 +32,6 @@ extern "C" {
 #endif
 
 #if defined (__FreeBSD__)  || defined (__APPLE__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#define s6_addr32   __u6_addr.__u6_addr32
   typedef unsigned long u_long;
   typedef unsigned short u_short;
   typedef unsigned int u_int;

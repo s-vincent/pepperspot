@@ -212,7 +212,7 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->eapolenable_flag = 0;
   args_info->uamserver_arg = gengetopt_strdup ("https://login.hotradius.com");
   args_info->uamserver_orig = NULL;
-  args_info->uamserver6_arg = gengetopt_strdup ("https://login.hotradius.com");
+  args_info->uamserver6_arg = NULL; /* MUST be specified in configuration file with IPv6 address (with brackets) */
   args_info->uamserver6_orig = NULL;
   args_info->uamhomepage_arg = NULL;
   args_info->uamhomepage_orig = NULL;

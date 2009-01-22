@@ -76,11 +76,6 @@
 #include "ippool.h"
 #include "lookup.h"
 
-
-#if defined(__APPLE__) || defined(__FreeBSD__)
-#define s6_addr32   __u6_addr.__u6_addr32
-#endif
-
 int ippool_printaddr(struct ippool_t *this) {
   int n = 0;
   char buf[INET_ADDRSTRLEN];
@@ -245,7 +240,7 @@ void ippool_getv6suffix(struct in6_addr *suffix, struct in6_addr *addr, int mask
 
   for(i=0;i<4;i++) 
   {
-    suffix->s6_addr32[i] = addr->s6_addr32[i] & ~val[i];
+    ((uint32_t*)suffix->s6_addr)[i] = ((uint32_t*)addr->s6_addr)[i] & ~val[i]; 
   }
 }
 

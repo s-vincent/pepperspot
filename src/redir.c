@@ -95,10 +95,6 @@
 #include "ippool.h"
 #include "../config.h"
 
-#if defined (__FreeBSD__)  || defined (__APPLE__)
-#define s6_addr32   __u6_addr.__u6_addr32
-#endif
-
 static int optionsdebug = 1; /* TODO: Should be changed to instance */
 
 static int keep_going = 1;   /* OK as global variable for child process */
@@ -1569,9 +1565,9 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 
     ippool_getv6suffix(&idv6, &conn->hisipv6, 64);
 
-    suf = idv6.s6_addr32[3];
+    suf = ((uint32_t*)idv6.s6_addr)[3];
     suf <<= 32;
-    suf |= idv6.s6_addr32[2];
+    suf |= ((uint32_t*)idv6.s6_addr)[2];
 
     memcpy(idv6.s6_addr, (void *)&suf, 8);
 

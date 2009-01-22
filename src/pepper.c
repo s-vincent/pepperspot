@@ -1000,6 +1000,13 @@ static int process_options(int argc, char **argv, int firsttime) {
   }
   memset(options.uamserver6, 0, sizeof(options.uamserver6));
   options.uamserverlen6 = 0;
+
+  if(!args_info.uamserver6_arg && (!strcmp(options.ipversion, "dual") || !strcmp(options.ipversion, "ipv6")))
+  {
+    printf("uamserver6 option must be configured!\n");
+    return -1;
+  }
+
   if (get_namepart6(args_info.uamserver6_arg, hostname, 
         &options.uamserverport6)==-1) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1713,9 +1720,6 @@ static void reprocess_options(int argc, char **argv) {
         options.uamokaddr6, options.uamokmask6, options.uamoknetlen6);
   }
 
-
-
-
   /* Reinit RADIUS parameters */
   (void) radius_set(radius, (options.debug & DEBUG_RADIUS),
       &options.radiusserver1, &options.radiusserver2,
@@ -1738,15 +1742,12 @@ static void reprocess_options(int argc, char **argv) {
 
 static void free_options(void)
 {
-
   if(options.radiuscalled) free(options.radiuscalled);           
-
 }
 
 /* 
  * A few functions to manage connections 
  */
-
 static int initconn(void)
 {
   int n = 0;
@@ -2437,9 +2438,9 @@ static int acct_req(struct app_conn_t *conn, int status_type)
 
     ippool_getv6suffix(&idv6, &conn->hisipv6, options.ipv6mask);
 
-    suf = idv6.s6_addr32[3];
+    suf = ((uint32_t*)idv6.s6_addr)[3];
     suf <<= 32;
-    suf |= idv6.s6_addr32[2];
+    suf |= ((uint32_t*)idv6.s6_addr)[2];
 
     memcpy(idv6.s6_addr, (void *)&suf, 8);
 
