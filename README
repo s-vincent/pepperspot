@@ -498,8 +498,12 @@ OR check the SVN source:
 # make install
 
 Note for Mac OS X users:
-Edit src/Makefile.am and add -D_DARWIN_C_SOURCE to the AM_CFLAGS. You should have a line like this:
-AM_CFLAGS = -D_DARWIN_C_SOURCE -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600 -fno-builtin -DSBINDIR='"$(sbindir)"' -Wall -Wextra -pedantic -std=c99 -Wstrict-prototypes -Wredundant-decls
+
+Mac OS X has old "/usr/include" files, so to compile PepperSpot on this system, edit src/Makefile.am 
+and add -D_DARWIN_C_SOURCE to the AM_CFLAGS instead off -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600.
+
+You should have a line like this:
+AM_CFLAGS = -D_DARWIN_C_SOURCE -fno-builtin -DSBINDIR='"$(sbindir)"' -Wall -Wextra -pedantic -std=c99 -Wstrict-prototypes -Wredundant-decls
 
 Copy some configuration files:
 # cp doc/pepper.conf /etc/
