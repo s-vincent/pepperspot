@@ -216,7 +216,7 @@ int icmp6_send(int oif, uint8_t hoplimit,
   msg.msg_iovlen = iovlen;
   msg.msg_name = (void *)&daddr;
   msg.msg_namelen = CMSG_SPACE(sizeof(struct in6_pktinfo));
-
+ 
   setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_PKTINFO,
       &on, sizeof(int));
   setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_UNICAST_HOPS, 

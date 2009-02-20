@@ -25,8 +25,6 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__ 1
 
-#include "compat.h"
-
 #define MAX_PKT_LEN 1540
 
 #define TIME_SEC_MSEC	1000

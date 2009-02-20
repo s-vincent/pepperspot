@@ -73,7 +73,7 @@
  */
 const char os_driver[] = "Linux";
 # define USE_LINUX 1
-#include <linux/if.h>
+/* #include <linux/if.h> */
 # include <linux/if_tun.h> /* TUNSETIFF - Linux tunnel driver */
 /*
  * <linux/ipv6.h> conflicts with <netinet/in.h> and <arpa/inet.h>,

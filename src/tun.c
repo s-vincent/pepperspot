@@ -70,8 +70,6 @@
  *
  */
 
-#include "compat.h"
-
 #include <syslog.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -95,14 +93,16 @@
 #include <errno.h>
 #include <net/route.h>
 
+#include "tun.h"
+
 #if defined(__linux__)
-#include <linux/if.h>
+/* #include <linux/if.h> */
 #include <linux/if_tun.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
 #elif defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__)
-#include <net/if.h>
+#include <net/if.h> 
 #include <net/if_tun.h>
 
 #elif defined (__APPLE__)
@@ -119,7 +119,6 @@
 #error  "Unknown platform!"
 #endif
 
-#include "tun.h"
 #include "syserr.h"
 
 #if defined(__linux__)

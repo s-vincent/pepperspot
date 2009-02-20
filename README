@@ -25,6 +25,11 @@ Most likely, the Radius and routing service are shared on different servers, but
 
 Depending to the mode, the box inwhich will be installed PepperSpot needs to be configured for IPv4 or IPv6.
 
+1.1) Kernel
+-----------
+
+PepperSpot is known to run on Linux kernel > 2.6.24.
+
 1.1) IPv6 
 ----------
 
@@ -492,7 +497,7 @@ Untar the PepperSpot source and compile it:
 OR check the SVN source: 
 # svn co https://pepperspot.svn.sourceforge.net/svnroot/pepperspot pepperspot 
 # cd pepperspot
-# autoconf && autoheader && autoconf -i && automake --add-missing
+# autoreconf -i
 # ./configure
 # make
 # make install

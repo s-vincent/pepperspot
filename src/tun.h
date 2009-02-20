@@ -66,6 +66,7 @@
 #ifndef _TUN_H
 #define _TUN_H
 
+#include <sys/types.h>
 #include <net/if.h>
 #ifndef IFNAMSIZ
 #define IFNAMSIZ IF_NAMESIZE

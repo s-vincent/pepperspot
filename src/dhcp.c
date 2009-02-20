@@ -93,14 +93,16 @@
 #include <fcntl.h>
 #include <stdint.h> /* ISO C99 types */
 #include <arpa/inet.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <net/if.h>
 
 #include "util.h"
 #include "ndisc.h"
 
 #if defined(__linux__)
-#include <linux/if.h>
+/* #include <linux/if.h> */
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
 #elif defined (__FreeBSD__)   || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
@@ -120,10 +122,7 @@
 #endif
 
 #include <net/if_arp.h>
-#include <netinet/in.h>
 #include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 
