@@ -2,7 +2,7 @@ Summary:   PepperSpot is a Next Generation Wireless LAN Access Point Controller
 Name:      pepperspot
 Version:   1.0
 Release:   1
-URL:       https://svnet.u-strasbg.fr/pepperspot
+URL:       http://www.pepperspot.info
 Source0:   %{name}-%{version}.tar.gz
 License:   GPL
 Group:     System Environment/Daemons
@@ -73,5 +73,5 @@ make clean
 
 
 %changelog
-* Thu Mar 25 2004  <support@pepperspot.org>
+* Thu Mar 25 2004  <support@pepperspot.info>
 - Initial release.

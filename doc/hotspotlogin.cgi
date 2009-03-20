@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# pepper - PepperSpot.org. A Wireless LAN Access Point Controller
+# pepper - PepperSpot.info. A Wireless LAN Access Point Controller
 # Copyright (C) 2003, 2004 Mondru AB.
 #
 # The contents of this file may be used under the terms of the GNU
