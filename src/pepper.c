@@ -16,8 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Contact: t.vancon@gmail.com
- *          vincent@lsiit.u-strasbg.fr
+ * Contact: thibault.vancon@pepperspot.info
+ *          sebastien.vincent@pepperspot.info
  */
 
 /*
@@ -5052,7 +5052,7 @@ int main(int argc, char **argv)
     printf("PepperSpot version %s started.\n", VERSION);
 
   syslog(LOG_INFO, "PepperSpot %s. Copyright 2002-2005 Mondru AB. Licensed under GPL.\n"
-      "Copyright 2008 Thibault Vancon <thibault.vancon@eturs.u-strasbg.fr> and Sebastien Vincent <vincent@lsiit.u-strasbg.fr>.\n Licensed under GPL.\n"
+      "Copyright 2008 Thibault Vancon <thibault.vancon@pepperspot.info> and Sebastien Vincent <sebastien.vincent@pepperspot.info>.\n Licensed under GPL.\n"
       "See http://www.pepperspot.org/ for credits.", VERSION);
 
   if(options.debug) printf("IPVERSION: %s\n", options.ipversion);
