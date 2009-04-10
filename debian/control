@@ -1,0 +1,17 @@
+Source: pepperspot
+Section: net
+Priority: optional
+Maintainer: Thibault Vançon <thibault.vancon@pepperspot.info>
+Build-Depends: debhelper (>> 3.0.0)
+Standards-Version: 3.5.2
+
+Package: pepperspot
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Next Generation Wireless LAN Access Point Controller (captive portal).
+ PepperSpot is an open source captive portal or wireless LAN access point
+ controller which support the next generation IPv6 protocol. It supports web 
+ based login which is today's standard for public HotSpots and 
+ it supports Wireless Protected Access (WPA) which is the standard of 
+ the future. Authentication, Authorization and Accounting (AAA) is handled by 
+ your favorite radius server (over IPv4/IPv6). Read more on http://www.pepperspot.info

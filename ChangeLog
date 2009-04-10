@@ -1,0 +1,11 @@
+2009-03-27  Sebastien Vincent <sebastien.vincent@pepperspot.info>
+
+  * Version 0.2   - Fix compilation issues for Ubuntu;
+                  - Typos;
+                  - Remove unused code;
+                  - Update e-mail addresses.
+
+2008-10-30  Sebastien Vincent <vincent@lsiit.u-strasbg.fr>
+
+  * Initial version.
+
