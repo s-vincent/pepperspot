@@ -1,0 +1,28 @@
+#
+# PepperSpot dictionary.
+#
+#               Enable by putting the line "$INCLUDE dictionary.pepperspot" 
+#               into the main dictionary file.
+#
+#
+
+VENDOR          PepperSpot                   14559
+
+#
+#       PepperSpot Vendor Specific Extensions
+#
+#
+ATTRIBUTE       PepperSpot-Max-Input-Octets        1       integer PepperSpot
+ATTRIBUTE       PepperSpot-Max-Output-Octets       2       integer PepperSpot
+ATTRIBUTE       PepperSpot-Max-Total-Octets        3       integer PepperSpot
+
+# Configuration management parameters
+ATTRIBUTE       PepperSpot-UAM-Allowed           100       string PepperSpot
+ATTRIBUTE       PepperSpot-MAC-Allowed           101       string PepperSpot
+ATTRIBUTE       PepperSpot-Interval              102       integer PepperSpot
+
+
+# Inline with RFC 2882 use of VSE-Authorize-Only for remote config
+# Note that 14559 = 0x38df is used as prefix for the VSE.
+# This is recognized as the best (but bad) way of doing VSEs.
+VALUE     Service-Type     PepperSpot-Authorize-Only	0x38df0001

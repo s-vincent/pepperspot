@@ -1,0 +1,86 @@
+#!/bin/sh
+#
+# pepper      This shell script takes care of starting and stopping
+#             pepper.
+#
+# chkconfig: - 65 35
+# description: PepperSpot
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+if [ -f /etc/sysconfig/pepper ]; then
+        . /etc/sysconfig/pepper
+fi
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 0
+
+[ -f /usr/sbin/pepper ] || exit 0
+[ -f /etc/pepper.conf ] || exit 0
+
+RETVAL=0
+prog="pepper"
+
+start() {
+	# Start daemons.
+	echo -n $"Starting $prog: "
+
+	# Load tun module
+	/sbin/modprobe tun >/dev/null 2>&1
+
+	# Enable routing of packets: WARNING!!!
+	# Users should enable this explicitly
+	# echo 1 > /proc/sys/net/ipv4/ip_forward
+
+	daemon /usr/sbin/pepper 
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/pepper
+	return $RETVAL
+}
+
+stop() {
+	# Stop daemons.
+	echo -n $"Shutting down $prog: "
+	killproc pepper
+	RETVAL=$?
+	echo
+	[ $RETVAL = 0 ] && rm -f /var/lock/subsys/pepper /var/run/pepper.pid
+	return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart|reload)
+	stop
+	start
+	RETVAL=$?
+	;;
+  condrestart)
+	if [ -f /var/lock/subsys/pepper ] ; then
+	    stop
+	    start
+	    RETVAL=$?
+	fi
+	;;
+  status)
+	status pepper
+	RETVAL=$?
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+	exit 1
+esac
+
+exit $RETVAL
+
