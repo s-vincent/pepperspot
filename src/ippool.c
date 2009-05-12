@@ -80,7 +80,6 @@ int ippool_printaddr(struct ippool_t *this) {
   int n = 0;
   char buf[INET_ADDRSTRLEN];
 
-  printf("ippool_printaddr\n");
   printf("Firstdyn %d\n", this->firstdyn - this->member);
   printf("Lastdyn %d\n",  this->lastdyn - this->member);
   printf("Firststat %d\n", this->firststat - this->member);

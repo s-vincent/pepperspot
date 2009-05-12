@@ -469,12 +469,10 @@ For IPv4 configuration of FreeRadius, replace the ipv6addr field with ipaddr, an
 4.3) Accounts
 -------------
 
-Finally, we need to create system accounts, and to add them in /etc/freeradius/users.
+Finally, we need to create accounts in /etc/freeradius/users:
 
-example:
-
-toto    Auth-Type :=Local, User-Password == "totoilsaitpas"
-ping6   Auth-Type := Local, User-Password == "pong6"
+toto    Cleartext-Password == "totoilsaitpas"
+ping6   Cleartext-Password == "pong6"
 
 Restart FreeRadius:
 # /etc/init.d/raddb restart

@@ -532,6 +532,9 @@ struct dhcp_t {
   int (*cb_connect) (struct dhcp_conn_t *conn);
   int (*cb_disconnect) (struct dhcp_conn_t *conn);
 
+  /* [SG] */
+  int (*cb_unauth_dnat) (struct dhcp_conn_t *conn);
+
   /* [SV] */
   /**
    * \brief Inform the application about the IPv6 for this peer.
@@ -619,6 +622,10 @@ int dhcp_set_cb_connectv6(struct dhcp_t *this,  int (*cb_connect) (struct dhcp_c
 
 int dhcp_set_cb_disconnectv6(struct dhcp_t *this,  int (*cb_disconnect) (struct dhcp_conn_t *conn));
 
+/* [SG] */
+int dhcp_set_cb_unauth_dnat(struct dhcp_t *this,
+    int (*cb_unauth_dnat) (struct dhcp_conn_t *conn));
+
 int dhcp_set_cb_data_ind(struct dhcp_t *this, 
     int (*cb_data_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
 
@@ -635,6 +642,9 @@ int dhcp_set_cb_eap_ind(struct dhcp_t *this,
     int (*cb_eap_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
 
 int dhcp_hashget(struct dhcp_t *this, struct dhcp_conn_t **conn,
+    uint8_t *hwaddr);
+
+int dhcp_hashgetv6(struct dhcp_t *this, struct dhcp_conn_t **conn,
     uint8_t *hwaddr);
 
 int dhcp_getmac(const char *ifname, unsigned char *macaddr);
