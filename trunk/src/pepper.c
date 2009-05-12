@@ -2245,7 +2245,6 @@ static int radius_access_challenge(struct app_conn_t *conn) {
 
   /* Include EAP */
   do {
-    printf("laaaaaaa\n");
     if ((conn->challen - offset) > RADIUS_ATTR_VLEN)
       eaplen = RADIUS_ATTR_VLEN;
     else
@@ -2802,7 +2801,10 @@ int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
 
   memcpy(&dst, ip6h->dst_addr, sizeof(ip6h->dst_addr));
 
-  printf("will send to %s\n", inet_ntop(AF_INET6, &dst, buf, sizeof(buf)));
+  if(options.debug)
+  {
+    printf("will send to %s\n", inet_ntop(AF_INET6, &dst, buf, sizeof(buf)));
+  }
 
   if (ippool_getip6(ippool, &ipm, &dst)) {
     if (options.debug) printf("Received packet with no destination!!!\n");
@@ -2861,7 +2863,11 @@ int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len) {
     printf("cb_tun_ind. Packet received: Forwarding to link layer\n");
 
   dst.s_addr = iph->dst;
-  printf("will send to %s\n", inet_ntop(AF_INET, &dst, buf, sizeof(buf)));
+
+  if(options.debug)
+  {
+    printf("will send to %s\n", inet_ntop(AF_INET, &dst, buf, sizeof(buf)));
+  }
 
   if (ippool_getip(ippool, &ipm, &dst)) {
     if (options.debug) printf("Received packet with no destination!!!\n");
@@ -3010,7 +3016,7 @@ int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr, struct
   if(options.debug)
   {
     char buf[INET6_ADDRSTRLEN];
-    printf("!!!!!!!!!!!!!!!!!!!%s\n", inet_ntop(AF_INET6, &appconn->ouripv6, buf, sizeof(buf)));
+    printf("getstatev6 our IPv6 address: %s\n", inet_ntop(AF_INET6, &appconn->ouripv6, buf, sizeof(buf)));
   }
   memcpy(&conn->ouripv6, &appconn->ouripv6, sizeof(struct in6_addr));
   memcpy(&conn->hisipv6, &appconn->hisipv6, sizeof(struct in6_addr));
@@ -3018,7 +3024,7 @@ int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr, struct
   /*strncpy(conn->userurl, appconn->userurl, REDIR_MAXCHAR);*/
   /*conn->userurl[REDIR_MAXCHAR-1] = 0;*/
 
-  conn->ipv6=1;
+  conn->ipv6 = 1;
 
   /* Stuff needed for status */
   conn->input_octets    = appconn->input_octets;
@@ -4362,6 +4368,88 @@ int cb_radius_coa_ind(struct radius_t *radius_obj, struct radius_packet_t *pack,
  *
  ***********************************************************/
 
+/* Declare function to use it in cb_dhcp_unauth_dnat. */
+static int uam_msg(struct redir_msg_t *msg);
+
+/**
+ * \brief Callback function to log in a client already logged in another IP version.
+ * \param conn  Connection which we try to log in.
+ * \return      0 if success, -1 otherwise.
+ * \author      Simon Geissler
+ */
+int cb_dhcp_unauth_dnat(struct dhcp_conn_t *conn)
+{
+  int result;
+  struct redir_msg_t msg;
+  struct app_conn_t *appconn;
+  struct dhcp_conn_t *dhcpconn;
+
+  /* We search if an other dhcp connection exists. */
+  result = (conn->ipv6) ? dhcp_hashget(dhcp, &dhcpconn, conn->hismac) :
+    dhcp_hashgetv6(dhcp, &dhcpconn, conn->hismac);
+
+  if (result == 0)
+  {
+    /* Look if the other connection is already logged. */
+    if (dhcpconn->authstate == DHCP_AUTH_PASS && dhcpconn->peer != NULL)
+    {
+      appconn = (struct app_conn_t *) dhcpconn->peer;
+
+      if (appconn->authenticated && conn->peer)
+      {
+        result = dnprot_accept((struct app_conn_t *) conn->peer);
+      }
+      else
+      {
+        /* We fill a redir message. */
+        memset(&msg, 0, sizeof(msg));
+
+        msg.type = REDIR_LOGIN;
+        msg.interim_interval = appconn->interim_interval;
+        msg.sessiontimeout = appconn->sessiontimeout;
+        msg.idletimeout = appconn->idletimeout;
+
+        strncpy(msg.username, appconn->user, REDIR_USERNAMESIZE);
+        msg.username[REDIR_USERNAMESIZE - 1] = '\0';
+        strncpy(msg.userurl, appconn->userurl, REDIR_USERURLSIZE);
+        msg.userurl[REDIR_USERURLSIZE - 1] = '\0';
+
+        msg.ipv6 = conn->ipv6;
+        if (conn->ipv6)
+        {
+          memcpy(&msg.addrv6, &conn->hisipv6, sizeof(struct in6_addr));
+        }
+        else
+        {
+          memcpy(&msg.addr, &conn->hisip, sizeof(struct in_addr));
+        }
+
+        memcpy(msg.uamchal, appconn->uamchal, REDIR_MD5LEN);
+
+        memcpy(msg.statebuf, appconn->statebuf, appconn->statelen);
+        msg.statelen = appconn->statelen;
+        memcpy(msg.classbuf, appconn->classbuf, appconn->classlen);
+        msg.classlen = appconn->classlen;
+
+        msg.bandwidthmaxup = appconn->bandwidthmaxup;
+        msg.bandwidthmaxdown = appconn->bandwidthmaxdown;
+        msg.maxinputoctets = appconn->maxinputoctets;
+        msg.maxoutputoctets = appconn->maxoutputoctets;
+        msg.maxtotaloctets = appconn->maxtotaloctets;
+        msg.sessionterminatetime = appconn->sessionterminatetime;
+
+        strncpy(msg.filteridbuf, appconn->filteridbuf, sizeof(msg.filteridbuf));
+        msg.filteridlen = appconn->filteridlen;
+
+        /* Finally we send the redir message. */
+        result = uam_msg(&msg);
+      }
+    }
+  }
+
+  return result;
+}
+
 /**
  * \brief Callback function after client has autoconfigured his address.
  * \param conn the dhcp_conn_t instance
@@ -4987,6 +5075,27 @@ static int uam_msg(struct redir_msg_t *msg) {
       (void) acct_req(appconn, RADIUS_STATUS_TYPE_STOP);
       set_sessionid(appconn);
     }
+    
+    /* [SG] Log out other client connection, if exists. */
+    if (((msg->ipv6) ?
+          dhcp_hashget(dhcp, &dhcpconn, dhcpconn->hismac) :
+          dhcp_hashgetv6(dhcp, &dhcpconn, dhcpconn->hismac)
+        ) == 0)
+    {
+      appconn = (struct app_conn_t*) dhcpconn->peer;
+
+      memcpy(appconn->uamchal, msg->uamchal, REDIR_MD5LEN);
+      appconn->uamtime = time(NULL);
+      appconn->uamabort = 0;
+      dhcpconn->authstate = DHCP_AUTH_DNAT;
+
+      if (appconn->authenticated == 1) {
+        appconn->authenticated = 0;
+        appconn->terminate_cause = RADIUS_TERMINATE_CAUSE_USER_REQUEST;
+        (void) acct_req(appconn, RADIUS_STATUS_TYPE_STOP);
+        set_sessionid(appconn);
+      }
+    }
 
     return 0;
   }
@@ -5100,7 +5209,7 @@ int main(int argc, char **argv)
     if (icmp6_init()==-1)
     {
       /* error */
-      printf("[SV] : ICMPv6 socket creation error\n");
+      printf("ICMPv6 socket creation error\n");
       if(tun) tun_free(tun);
       if (ippool) (void) ippool_free(ippool);
       exit(1);
@@ -5142,6 +5251,10 @@ int main(int argc, char **argv)
     if (dhcp->eapol_fd > maxfd)
       maxfd = dhcp->eapol_fd;
     (void) dhcp_set_cb_eap_ind(dhcp, cb_dhcp_eap_ind);
+
+    /* [SG] */
+    if(dual)
+        dhcp_set_cb_unauth_dnat(dhcp, cb_dhcp_unauth_dnat);
 
     if(ipv4 || dual) {  
       if (dhcp->fd > maxfd)

@@ -1738,6 +1738,8 @@ dhcp_new(struct dhcp_t **dhcp, int numconn, char *interface,
     (*dhcp)->cb_disconnectv6=0;
     (*dhcp)->cb_connectv6=0;
   }
+  /* [SG] */
+  (*dhcp)->cb_unauth_dnat = 0;
 
   return 0;
 }
@@ -2000,8 +2002,6 @@ int dhcp_doDNATv6(struct dhcp_conn_t* conn, struct dhcp_ipv6packet_t* pack, int 
     int n = 0;
     int pos=-1;
 
-    printf("DNATOR\n");
-
     for(n=0;n<DHCP_DNATV6_MAX;n++)
     {
       if(IN6_ARE_ADDR_EQUAL(&conn->dnatipv6[n], (struct in6_addr*) &pack->ip6h.dst_addr) && conn->dnatportv6[n] == tcph->src)
@@ -2137,8 +2137,6 @@ int dhcp_undoDNATv6(struct dhcp_conn_t *conn, struct dhcp_ipv6packet_t *pack, in
   if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.src_addr, &this->ouripv6) && pack->ip6h.next_header==DHCP_IPV6_TCP && tcph->src==htons(this->uamport))
   {
     int n=0;
-
-    printf("UndoDNATOR!\n");
 
     for(n=0;n<DHCP_DNATV6_MAX;n++)
     {
@@ -2918,8 +2916,6 @@ int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack, int l
   struct dhcp_conn_t* conn=NULL;
   struct in6_addr ouripv6;
 
-  printf("IPv6 packet received!!!!\n");
-
   /* Check to see if we know MAC address. */
   if (!dhcp_hashgetv6(this, &conn, pack->ethh.src)) 
   {
@@ -3002,6 +2998,12 @@ int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack, int l
     }
   }
 
+  /* [SG] If user is alerady logged in IPv4, we log him in IPv6. */
+  if (conn->authstate == DHCP_AUTH_DNAT && this->cb_unauth_dnat)
+  {
+    this->cb_unauth_dnat(conn);
+  }
+
   switch (conn->authstate) {
     case DHCP_AUTH_PASS:
       /* Pass packets unmodified */
@@ -3030,10 +3032,8 @@ int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack, int l
       return 0;
   }
 
-  printf("will forward\n");
   if(!IN6_IS_ADDR_UNSPECIFIED(&conn->hisipv6) && (this->cb_ipv6_ind)) 
   {
-    printf("ipv6 callback forward\n");
     this->cb_ipv6_ind(conn, &pack->ip6h, len-DHCP_ETH_HLEN);
   }
 
@@ -3098,6 +3098,12 @@ int dhcp_receive_ip(struct dhcp_t *this, struct dhcp_ippacket_t *pack,
   /* Return if we do not know peer */
   if (!conn) 
     return 0;
+
+  /* [SG] If user is alerady logged in IPv6, we log him in IPv4. */
+  if (conn->authstate == DHCP_AUTH_DNAT && this->cb_unauth_dnat)
+  {
+    this->cb_unauth_dnat(conn);
+  }
 
   gettimeofday(&conn->lasttime, NULL);
 
@@ -3579,6 +3585,14 @@ int dhcp_set_cb_ipv6_ind(struct dhcp_t *this, int (*cb_ipv6_ind) (struct dhcp_co
 {
   this->cb_ipv6_ind=cb_ipv6_ind;
   return 0;
+}
+
+/* [SG] */
+int dhcp_set_cb_unauth_dnat(struct dhcp_t *this,
+    int (*cb_unauth_dnat) (struct dhcp_conn_t *conn))
+{
+    this->cb_unauth_dnat = cb_unauth_dnat;
+    return 0;
 }
 
 /**
