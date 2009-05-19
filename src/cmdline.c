@@ -152,7 +152,7 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->staticipv6_orig = NULL;
   args_info->ipv6prefix_arg = gengetopt_strdup("2001:db8:1::/64");
   args_info->ipv6prefix_orig = NULL;
-  args_info->domain_arg = gengetopt_strdup ("key.pepperspot.org");
+  args_info->domain_arg = gengetopt_strdup ("key.pepperspot.info");
   args_info->domain_orig = NULL;
   args_info->ipup_arg = NULL;
   args_info->ipup_orig = NULL;
@@ -245,7 +245,7 @@ void
 cmdline_parser_print_help (void)
 {
   cmdline_parser_print_version ();
-  printf("\n%s\n", "Copyright 2002-2005 Mondru AB\nPepperSpot is an Open Source captive portal or wireless LAN access point\ncontroller developed by the community at pepperspot.org and licensed under\nthe GPL. PepperSpot acknowledges all community members, especially\nthose mentioned at http://www.pepperspot.org/credits.html.");
+  printf("\n%s\n", "Copyright 2002-2005 Mondru AB\nPepperSpot is an Open Source captive portal or wireless LAN access point\ncontroller developed by the community at pepperspot.info and licensed under\nthe GPL. PepperSpot acknowledges all community members, especially\nthose mentioned at http://www.pepperspot.info/credits.html.");
   printf("\nUsage: %s [OPTIONS]...\n\n", CMDLINE_PARSER_PACKAGE);
   printf("%s\n","  -h, --help                    Print help and exit");
   printf("%s\n","  -V, --version                 Print version and exit");
@@ -264,7 +264,7 @@ cmdline_parser_print_help (void)
   printf("%s\n","      --dns2=STRING             Secondary DNS server IP address");
   printf("%s\n","      --staticipv6=STRING       IPv6 adress to listen to	(default='2001:db8:1::1234')");
   printf("%s\n","	     --ipv6prefix=STRING		   IPv6 prefix		(default='2001:db8:1::/64')");
-  printf("%s\n","      --domain=STRING           Domain to use for DNS lookups  \n                                  (default=`key.pepperspot.org')");
+  printf("%s\n","      --domain=STRING           Domain to use for DNS lookups  \n                                  (default=`key.pepperspot.info')");
   printf("%s\n","      --ipup=STRING             Script to run after link-up");
   printf("%s\n","      --ipdown=STRING           Script to run after link-down");
   printf("%s\n","      --conup=STRING            Script to run after user logon");

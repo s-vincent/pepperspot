@@ -105,10 +105,10 @@ char credits[] =
 "<H1>PepperSpot " VERSION "</H1><p>Copyright 2008 ULP</p><p> "
 "PepperSpot is an Open Source captive portal or wireless LAN access point "
 "controller developed by the community at "
-"<a href=\"http://www.pepperspot.org\">www.pepperspot.org</a> and licensed "
+"<a href=\"http://www.pepperspot.info\">www.pepperspot.info</a> and licensed "
 "under the GPL.</p><p>PepperSpot acknowledges all community members, "
 "especially those mentioned at "
-"<a href=\"http://www.pepperspot.org/credits.html\">http://www.pepperspot.org/credits.html</a>.";
+"<a href=\"http://www.pepperspot.info/credits.html\">http://www.pepperspot.info/credits.html</a>.";
 
 
 /* redir signal handler */

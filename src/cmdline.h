@@ -50,7 +50,7 @@ struct gengetopt_args_info
   char * staticipv6_orig; /**< IPv6 address of the TUN interface */
   char * ipv6prefix_arg; /* IPv6 prefix (default='2001:db8::/64'). */
   char * ipv6prefix_orig; /* IPv6 prefix original value given at command line.  */
-  char * domain_arg;	/* Domain to use for DNS lookups (default='key.pepperspot.org').  */
+  char * domain_arg;	/* Domain to use for DNS lookups (default='key.pepperspot.info').  */
   char * domain_orig;	/* Domain to use for DNS lookups original value given at command line.  */
   char * ipup_arg;	/* Script to run after link-up.  */
   char * ipup_orig;	/* Script to run after link-up original value given at command line.  */
