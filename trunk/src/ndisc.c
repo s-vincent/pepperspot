@@ -165,34 +165,6 @@ static int nd_get_l2addr(int ifindex, uint8_t *addr)
   return res;
 }
 
-/* Adapted from RFC 1071 "C" Implementation Example */
-static uint16_t csum(const void *phdr, const void *data, socklen_t datalen)
-{
-  register unsigned long sum = 0;
-  socklen_t count = 0;
-  uint16_t *addr = NULL;
-  int i = 0;
-
-  /* caller must make sure datalen is even */
-
-  addr = (uint16_t *)phdr;
-  for (i = 0; i < 20; i++)
-    sum += *addr++;
-
-  count = datalen;
-  addr = (uint16_t *)data;
-
-  while (count > 1) {
-    sum += *(addr++);
-    count -= 2;
-  }
-
-  while (sum >> 16)
-    sum = (sum & 0xffff) + (sum >> 16);
-
-  return (uint16_t)~sum;
-}
-
 int ndisc_send_na(int ifindex, const struct in6_addr *src, 
     const struct in6_addr *dst,
     const struct in6_addr *target, uint32_t flags)
