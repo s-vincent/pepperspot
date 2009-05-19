@@ -5131,10 +5131,8 @@ static int uam_msg(struct redir_msg_t *msg) {
   return 0;
 }
 
-
 int main(int argc, char **argv)
 {
-
   int maxfd = 0;	                /* For select() */
   fd_set fds;			/* For select() */
   struct timeval idleTime;	/* How long to select() */
@@ -5162,7 +5160,7 @@ int main(int argc, char **argv)
 
   syslog(LOG_INFO, "PepperSpot %s. Copyright 2002-2005 Mondru AB. Licensed under GPL.\n"
       "Copyright 2008 Thibault Vancon <thibault.vancon@pepperspot.info> and Sebastien Vincent <sebastien.vincent@pepperspot.info>.\n Licensed under GPL.\n"
-      "See http://www.pepperspot.org/ for credits.", VERSION);
+      "See http://www.pepperspot.info/ for credits.", VERSION);
 
   if(options.debug) printf("IPVERSION: %s\n", options.ipversion);
 
