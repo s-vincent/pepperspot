@@ -64,17 +64,26 @@
  */
 
 /**
- * lookup()
- * Generates a 32 bit hash.
+ * \file lookup.h
+ * \brief Hash lookup.
+ */
+
+#ifndef _LOOKUP_H
+#define _LOOKUP_H
+
+/**
+ * \brief Generates a 32 bit hash.
+ *
  * Based on public domain code by Bob Jenkins
  * It should be one of the best hash functions around in terms of both
  * statistical properties and speed. It is NOT recommended for cryptographic
  * purposes.
- **/
-
-#ifndef _LOOKUP_H
-#define _LOOKUP_H
-unsigned long int lookup( unsigned char *k, unsigned long int length, unsigned long int level);
+ * \param k value to hash
+ * \param length length of value to hash
+ * \param level last hash value
+ * \return resulting hash
+ */
+unsigned long int lookup(register unsigned char *k, register unsigned long int length, register unsigned long int level);
 
 #endif	/* !_LOOKUP_H */
 

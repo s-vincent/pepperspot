@@ -20,6 +20,11 @@
  *          sebastien.vincent@pepperspot.info
  */
 
+/**
+ * \file md5.h
+ * \brief MD5 algorithm.
+ */
+
 #ifndef MD5_H
 #define MD5_H
 

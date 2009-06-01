@@ -31,6 +31,11 @@
  *
  */
 
+/**
+ * \file redir.h
+ * \brief HTTP redirection module.
+ */
+
 #ifndef _REDIR_H
 #define _REDIR_H
 

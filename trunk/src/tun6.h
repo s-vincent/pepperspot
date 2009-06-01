@@ -25,6 +25,11 @@
  * $Id: tun6.h 1552 2006-07-04 15:38:38Z remi $
  */
 
+/**
+ * \file tun6.h
+ * \brief IPv6 tunnel interface (tun).
+ */
+
 /***********************************************************************
  *  Copyright © 2004-2006 Rémi Denis-Courmont.                         *
  *  This program is free software; you can redistribute and/or modify  *
@@ -95,24 +100,24 @@ typedef struct tun6 tun6;
 
 /**
  * \struct tun6_packet_t
- * \brief Destribe a IPv6 packet.
+ * \brief Describe an IPv6 packet.
  * \author Sebastien Vincent
  */
 struct tun6_packet_t
 {
-  uint32_t version:4;
-  uint32_t class:8;
-  uint32_t flow_label:20;
-  uint16_t payload_length;
-  uint8_t next_header;
-  uint8_t hop_limit;
-  uint8_t src_addr[16];
-  uint8_t dst_addr[16];
+  uint32_t version:4; /**< Version of IPv6 (always 6). */
+  uint32_t class:8; /**< Class field. */
+  uint32_t flow_label:20; /**< Flow label for QoS. */
+  uint16_t payload_length; /**< Payload length. */
+  uint8_t next_header; /**< Next header (protocol or header extension). */
+  uint8_t hop_limit; /**< Hop limit (i.e. TTL). */
+  uint8_t src_addr[16]; /**< IPv6 source address. */
+  uint8_t dst_addr[16]; /**< IPv6 destination source address. */
 };
 
 /**
  * \struct tun6_t 
- * \brief tun6_t interface information.
+ * \brief IPv6 tunnel interface information.
  * \author Sebastien Vincent
  */
 typedef struct tun6_t
@@ -160,8 +165,7 @@ int tun6_decaps(struct tun6_t *this);
  * \return number of bytes written or -1 if error
  * \author Sebastien Vincent
  */
-int tun6_encaps(struct tun6_t *tun, void *pack, unsigned len);
-
+int tun6_encaps(struct tun6_t *tun, void *pack, unsigned int len);
 
 /**
  * \brief Set an IPv6 address on the interface.

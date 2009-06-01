@@ -20,6 +20,11 @@
  *          sebastien.vincent@pepperspot.info
  */
 
+/**
+ * \file compat.c
+ * \brief Compatibility functions.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -39,6 +44,12 @@
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
 #else
+/**
+ * \brief environ variable which contains
+ * environment variable.
+ * 
+ * This variable is "extern" of this software.
+ */
 extern char** environ;
 #endif
 

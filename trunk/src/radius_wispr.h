@@ -63,6 +63,11 @@
  *
  */
 
+/**
+ * \file radius_wispr.h
+ * \brief RADIUS Wireless Internet Service Provider Roaming.
+ */
+
 #ifndef _RADIUS_WISPR_H
 #define _RADIUS_WISPR_H
 

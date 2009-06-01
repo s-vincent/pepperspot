@@ -24,6 +24,11 @@
  * $Id: tun6.c 1894 2006-12-31 11:15:54Z remi $
  */
 
+/**
+ * \file tun6.c
+ * \brief IPv6 tunnel interface (tun).
+ */
+
 /***********************************************************************
  *  Copyright © 2004-2006 Rémi Denis-Courmont.                         *
  *  This program is free software; you can redistribute and/or modify  *
@@ -143,7 +148,7 @@ const char os_driver[] = "Generic";
 #include "tun6.h"
 #include "syserr.h"
 
-#define PACKET_MAX      8196 
+#define PACKET_MAX      8196 /**< Maximum packet size */
 
 /* XXX [SV] originally there was strlcpy but it lacks in Linux libc... replace this latter!
  * for the moment cross the finger... this function is not safe...
@@ -152,11 +157,17 @@ const char os_driver[] = "Generic";
   (strncpy(tgt, src, sizeof(tgt)))
 /*	((strncpy (tgt, src, sizeof (tgt)) >= sizeof (tgt)) ? -1 : 0) */
 
+/**
+ * \struct tun6
+ * \brief tun6 descriptor.
+ */
 struct tun6
 {
-  int  id, fd, reqfd;
+  int  id; /**< Interface index */
+  int fd; /**< File descriptor to tun interface */ 
+  int reqfd; /**< File descriptor for ioctl() */
 #if defined (USE_BSD)
-  char orig_name[IFNAMSIZ];
+  char orig_name[IFNAMSIZ]; /**< Name of interface */
 #endif
 };
 
@@ -370,6 +381,7 @@ error:
  *
  * The kernel will destroy the tunnel interface once all processes called
  * tun6_destroy and/or were terminated.
+ * \param t tun6 descriptor to destroy
  */
 void tun6_destroy (tun6* t)
 {
@@ -450,10 +462,11 @@ proc_write_zero (const char *path)
 /**
  * Brings a tunnel interface up or down.
  *
+ * \param t tun6 descriptor
+ * \param up if 1 bring this interface UP, DOWN otherwise
  * @return 0 on success, -1 on error (see errno).
  */
-  int
-tun6_setState (tun6 *t, int up)
+int tun6_setState (tun6 *t, int up)
 {
   assert (t != NULL);
   assert (t-> id != 0);
@@ -768,6 +781,9 @@ tun6_delAddress (tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
  * Inserts a route through a tunnel into the IPv6 routing table.
  * Requires CAP_NET_ADMIN or root privileges.
  *
+ * @param t tun6 instance
+ * @param addr destination address for the route
+ * @param prefix_len prefix length
  * @param rel_metric difference between the system's default metric
  * for route with the speficied prefix length (positive = higher priority,
  * negative = lower priority).
@@ -830,6 +846,7 @@ tun6_setMTU (tun6 *t, unsigned mtu)
  * If any of the file descriptors is out of range (>= FD_SETSIZE), it
  * will not be registered.
  *
+ * @param t tun6 instance
  * @param readset a fd_set (with FD_SETSIZE no smaller than the default
  * libc value libtun6 was compiled with).
  *
@@ -852,6 +869,7 @@ tun6_registerReadSet (const tun6 *t, fd_set *readset)
 
 /**
  * Receives a packet from a tunnel device.
+ * @param fd socket descriptor
  * @param buffer address to store packet
  * @param maxlen buffer length in bytes (should be 65535)
  *
@@ -881,6 +899,8 @@ tun6_recv_inner (int fd, void *buffer, size_t maxlen)
 
 /**
  * Checks an fd_set, and receives a packet if available.
+ * @param t tun6 instance
+ * @param readset select()'s fd_set
  * @param buffer address to store packet
  * @param maxlen buffer length in bytes (should be 65535)
  *
@@ -906,6 +926,7 @@ tun6_recv (tun6 *t, const fd_set *readset, void *buffer, size_t maxlen)
 
 /**
  * Waits for a packet, and receives it.
+ * @param t tun6 instance
  * @param buffer address to store packet
  * @param maxlen buffer length in bytes (should be 65535)
  *
@@ -919,9 +940,9 @@ tun6_wait_recv (tun6 *t, void *buffer, size_t maxlen)
   return tun6_recv_inner (t->fd, buffer, maxlen);
 }
 
-
 /**
  * Sends an IPv6 packet.
+ * @param t tun6 instance
  * @param packet pointer to packet
  * @param len packet length (bytes)
  *
