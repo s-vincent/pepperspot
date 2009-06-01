@@ -47,6 +47,11 @@
  * 02111-1307 USA.
  */
 
+/**
+ * \file icmp6.c
+ * \brief ICMPv6 related function (send/receive).
+ */
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -67,26 +72,19 @@
 #include "conf.h"
 */
 
-struct sock icmp6_sock;
-
 /**
- * if_mc_group - join or leave multicast group
- * @sock: socket
- * @ifindex: interface to join/leave
- * @mc_addr: multicast address
- * @cmd: join/leave command
- *
- * Join/leave multicast group on interface.  cmd must be either
- * IPV6_JOIN_GROUP or IPV6_LEAVE_GROUP.  Also turns off local
- * multicast loopback. 
- **/
+ * \var icmp6_sock
+ * \brief ICMPv6 socket descriptor.
+ */
+struct icmpv6_socket icmp6_sock;
+
 int if_mc_group(int sock, int ifindex, const struct in6_addr *mc_addr, int cmd)
 {
   unsigned int val = 0;
   struct ipv6_mreq mreq;
   int ret = 0;
 
-  if (sock == ICMP6_MAIN_SOCK)
+  if (sock == -1)
     sock = icmp6_sock.fd;
 
   memset(&mreq, 0, sizeof(mreq));

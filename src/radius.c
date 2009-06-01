@@ -63,6 +63,11 @@
  *
  */
 
+/**
+ * \file radius.c
+ * \brief RADIUS client.
+ */
+
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>

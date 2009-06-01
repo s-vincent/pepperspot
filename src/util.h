@@ -22,6 +22,11 @@
 
 /* $Id: util.h 1.54 06/02/22 16:21:55+02:00 anttit@tcs.hut.fi $ */
 
+/**
+ * \file util.h
+ * \brief "Util" functions.
+ */
+
 #ifndef __UTIL_H__
 #define __UTIL_H__ 1
 
@@ -199,13 +204,13 @@ static inline int in6_is_addr_routable_unicast(const struct in6_addr *a)
 }
 
 /**
- * free_iov_data - free vector data
- * @iov: vector array
- * @count: number of elements in array
+ * \brief Free vector data.
  *
- * Frees an array of iovec data, specified by @iov with @count
+ * Frees an array of iovec data, specified by "iov" with "count"
  * elements.  Does not free actual array, only iov_base.
- **/
+ * \param iov vector array
+ * \param count number of elements in array
+ */
 static inline void free_iov_data(struct iovec *iov, int count)
 {
   int len = count;

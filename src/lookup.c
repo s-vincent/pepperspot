@@ -64,16 +64,19 @@
  */
 
 /**
- * lookup()
- * Generates a 32 bit hash.
- * Based on public domain code by Bob Jenkins
- * It should be one of the best hash functions around in terms of both
- * statistical properties and speed. It is NOT recommended for cryptographic
- * purposes.
- **/
-unsigned long int lookup(register unsigned char* k,register unsigned long int length, register unsigned long int level)
-{
+ * \file lookup.c
+ * \brief Hash lookup.
+ */
 
+#include "lookup.h"
+
+/**
+ * \def mix
+ * \brief Mix three variable according to algorithm of Bob Jenkins.
+ * \param a first value
+ * \param b second value
+ * \param c third value
+ */
 #define mix(a,b,c) \
   { \
     a -= b; a -= c; a ^= (c>>13); \
@@ -87,6 +90,8 @@ unsigned long int lookup(register unsigned char* k,register unsigned long int le
     c -= a; c -= b; c ^= (b>>15); \
   }
 
+unsigned long int lookup(register unsigned char* k,register unsigned long int length, register unsigned long int level)
+{
   typedef  unsigned long  int  ub4;   /* unsigned 4-byte quantities */
   typedef  unsigned       char ub1;   /* unsigned 1-byte quantities */
   register unsigned long int a,b,c,len;

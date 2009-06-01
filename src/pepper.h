@@ -66,6 +66,10 @@
  *
  */
 
+/**
+ * \file pepper.h
+ * \brief PepperSpot: next generation captive portal.
+ */
 
 #ifndef _PEPPER_H
 #define _PEPPER_H
@@ -76,30 +80,30 @@
 /* #define COUNT_DOWNLINK_DROP 1 */
 /* #define COUNT_UPLINK_DROP 1 */
 
-#define APP_NUM_CONN 1024
+#define APP_NUM_CONN 1024 /**< Maximum number of hight-level connections */
 #define EAP_LEN 2048            /* TODO: Rather large */
 
-#define MACOK_MAX 16
+#define MACOK_MAX 16 /**< Authorized MAC table size */
 
-#define MACSTRLEN 17
+#define MACSTRLEN 17 /**< Length of MAC address in string format */
 
-#define MS2SUCCSIZE 40	/* MS-CHAPv2 authenticator response as ASCII */
+#define MS2SUCCSIZE 40	/**< MS-CHAPv2 authenticator response as ASCII */
 
-#define DATA_LEN 1500    /* Max we allow */
+#define DATA_LEN 1500    /**< Max we allow */
 
-#define USERNAMESIZE 256 /* Max length of username */
-#define CHALLENGESIZE 24 /* From chap.h MAX_CHALLENGE_LENGTH */
-#define USERURLSIZE 256  /* Max length of URL requested by user */
+#define USERNAMESIZE 256 /**< Max length of username */
+#define CHALLENGESIZE 24 /**< From chap.h MAX_CHALLENGE_LENGTH */
+#define USERURLSIZE 256  /**< Max length of URL requested by user */
 
-#define BUCKET_SIZE  300000 /* Size of leaky bucket (~200 packets) */
+#define BUCKET_SIZE  300000 /**< Size of leaky bucket (~200 packets) */
 
 /* Time length of leaky bucket in milliseconds */
 /* Bucket size = BUCKET_TIME * Bandwidth-Max radius attribute */
 /* Not used if BUCKET_SIZE is defined */
-#define BUCKET_TIME  5000  /* 5 seconds */
-#define BUCKET_SIZE_MIN  15000 /* Minimum size of leaky bucket (~10 packets) */
+#define BUCKET_TIME  5000  /**< 5 seconds */
+#define BUCKET_SIZE_MIN  15000 /**< Minimum size of leaky bucket (~10 packets) */
 
-#define CHECK_INTERVAL 3   /* Time between checking connections */
+#define CHECK_INTERVAL 3   /**< Time between checking connections */
 
 
 /* Authtype defs */
@@ -125,26 +129,29 @@
 #define DEBUG_REDIR       8
 #define DEBUG_CONF       16
 
-/* Struct information for each connection */
-struct app_conn_t {
-
+/**
+ * \struct app_conn_t
+ * \brief Struct information for each connection.
+ */
+struct app_conn_t
+{
   /* Management of connections */
-  int inuse;
-  int unit;
-  int ipv6;
-  struct app_conn_t *next;    /* Next in linked list. 0: Last */
-  struct app_conn_t *prev;    /* Previous in linked list. 0: First */
+  int inuse; /**< If the connection is in use */
+  int unit; 
+  int ipv6; /**< If IPv6 is used */
+  struct app_conn_t *next;    /**< Next in linked list. 0: Last */
+  struct app_conn_t *prev;    /**< Previous in linked list. 0: First */
 
   /* Pointers to protocol handlers */
-  void *uplink;                  /* Uplink network interface (Internet) */
-  void *dnlink;                  /* Downlink network interface (Wireless) */
-  int dnprot;                    /* Downlink protocol */
+  void *uplink;                  /**< Uplink network interface (Internet) */
+  void *dnlink;                  /**< Downlink network interface (Wireless) */
+  int dnprot;                    /**< Downlink protocol */
 
   /* Radius authentication stuff */
   /* Parameters are initialised whenever a reply to an access request
      is received. */
-  uint8_t chal[EAP_LEN];         /* EAP challenge */
-  int challen;                   /* Length of EAP challenge */
+  uint8_t chal[EAP_LEN];         /**< EAP challenge */
+  int challen;                   /**< Length of EAP challenge */
   uint8_t sendkey[RADIUS_ATTR_VLEN];
   uint8_t recvkey[RADIUS_ATTR_VLEN];
   uint8_t lmntkeys[RADIUS_MPPEKEYSSIZE];
@@ -155,7 +162,7 @@ struct app_conn_t {
   uint32_t types;
   uint8_t ms2succ[MS2SUCCSIZE];
   int ms2succlen;
-  char sessionid[REDIR_SESSIONID_LEN]; /* Accounting session ID */
+  char sessionid[REDIR_SESSIONID_LEN]; /**< Accounting session ID */
   long int sessiontimeout;
   long int idletimeout;
   uint8_t statebuf[RADIUS_ATTR_VLEN+1];
@@ -164,7 +171,7 @@ struct app_conn_t {
   int classlen;
   int bandwidthmaxup;
   int bandwidthmaxdown;
-  uint64_t maxinputoctets;
+  uint64_t maxinputoctets; 
   uint64_t maxoutputoctets;
   uint64_t maxtotaloctets;
   time_t sessionterminatetime;
@@ -174,39 +181,39 @@ struct app_conn_t {
   /* Radius proxy stuff */
   /* Parameters are initialised whenever a radius proxy request is received */
   /* Only one outstanding request allowed at a time */
-  int radiuswait;                /* Radius request in progres */
-  struct sockaddr_storage radiuspeer; /* Where to send reply */
-  uint8_t radiusid;              /* ID to reply with */
+  int radiuswait;                /**< Radius request in progres */
+  struct sockaddr_storage radiuspeer; /**< Where to send reply */
+  uint8_t radiusid;              /**< ID to reply with */
   uint8_t authenticator[RADIUS_AUTHLEN];
   int authtype; /* TODO */
-  char proxyuser[USERNAMESIZE];     /* Unauthenticated user: */
-  uint8_t proxyuserlen;             /* Length of unauthenticated user */
-  uint32_t proxynasip;              /* Set by access request */
-  uint32_t proxynasport;            /* Set by access request */
-  uint8_t proxyhismac[DHCP_ETH_ALEN];    /* His MAC address */
-  uint8_t proxyourmac[DHCP_ETH_ALEN];    /* Our MAC address */
+  char proxyuser[USERNAMESIZE];     /**< Unauthenticated user: */
+  uint8_t proxyuserlen;             /**< Length of unauthenticated user */
+  uint32_t proxynasip;              /**< Set by access request */
+  uint32_t proxynasport;            /**< Set by access request */
+  uint8_t proxyhismac[DHCP_ETH_ALEN];    /**< His MAC address */
+  uint8_t proxyourmac[DHCP_ETH_ALEN];    /**< Our MAC address */
 
   /* Parameters for radius accounting */
   /* These parameters are set when an access accept is sent back to the
      NAS */
-  int authenticated;           /* 1 if user was authenticated */  
-  char user[USERNAMESIZE];     /* User: */
-  uint8_t userlen;             /* Length of user */
-  struct sockaddr_storage nasip;              /* Set by access request */
-  uint32_t nasport;            /* Set by access request */
-  uint8_t hismac[DHCP_ETH_ALEN];    /* His MAC address */
-  uint8_t ourmac[DHCP_ETH_ALEN];    /* Our MAC address */
-  struct in_addr ourip;        /* IP address to listen to */
+  int authenticated;           /**< 1 if user was authenticated */  
+  char user[USERNAMESIZE];     /**< User: */
+  uint8_t userlen;             /**< Length of user */
+  struct sockaddr_storage nasip; /**< Set by access request */
+  uint32_t nasport;            /**< Set by access request */
+  uint8_t hismac[DHCP_ETH_ALEN];    /**< His MAC address */
+  uint8_t ourmac[DHCP_ETH_ALEN];    /**< Our MAC address */
+  struct in_addr ourip;        /**< IP address to listen to */
   struct in6_addr ouripv6; /**< IPv6 address to listen to */
-  struct in_addr hisip;        /* Client IP address */
+  struct in_addr hisip;        /**< Client IP address */
   struct in6_addr hisipv6; /**< Client IPv6 address */
-  struct in_addr reqip;        /* IP requested by client */
+  struct in_addr reqip;        /**< IP requested by client */
   uint16_t mtu;
 
   /* Accounting */
   struct timeval start_time;
   struct timeval interim_time;
-  long int interim_interval;   /* Seconds. 0 = No interim accounting */
+  long int interim_interval;   /**< Seconds. 0 = No interim accounting */
   uint32_t input_packets;
   uint32_t output_packets;
   uint64_t input_octets;
@@ -219,7 +226,7 @@ struct app_conn_t {
   struct in_addr mask;
   struct in_addr dns1;
   struct in_addr dns2;
-  struct timeval last_time; /* Last time a packet was received or sent */
+  struct timeval last_time; /**< Last time a packet was received or sent */
 
   /* Leaky bucket */
   uint32_t bucketup;
@@ -236,132 +243,125 @@ struct app_conn_t {
 
 
 #define IPADDRLEN 256
-#define IDLETIME  10  /* Idletime between each select */
+#define IDLETIME  10  /**< Idletime between each select */
 
-#define UAMOKIP_MAX 256 /* Max number of allowed UAM IP addresses */
-#define UAMOKNET_MAX 10 /* Max number of allowed UAM networks */
+#define UAMOKIP_MAX 256 /**< Max number of allowed UAM IP addresses */
+#define UAMOKNET_MAX 10 /**< Max number of allowed UAM networks */
 
-#define UAMSERVER_MAX 8
+#define UAMSERVER_MAX 8 /**< Maximum UAM servers */
 
-/* Struct with local versions of gengetopt options */
-struct options_t {
+/**
+ * \struct options_t
+ * \brief Struct with local versions of gengetopt options.
+ */
+struct options_t 
+{
   /* fg */
-  int debug;
+  int debug;                     /**< If debug message is enabled */
   /* conf */
   int interval;
-  char* pidfile;                 /* Process ID file */
+  char* pidfile;                 /**< Process ID file */
   /* statedir */
-  char *ipversion;
+  char *ipversion;               /**< IP version used ("ipv4", "ipv6" or "dual") */
 
   /* TUN parameters */
-  struct in_addr net;            /* Network IP address */
+  struct in_addr net;            /**< Network IP address */
   char netc[IPADDRLEN];
-  struct in_addr mask;           /* Network mask */
+  struct in_addr mask;           /**< Network mask */
   char maskc[IPADDRLEN];
-  int prefixlen;
-  int ipv6mask;
-  char *dynip;                   /* Dynamic IP address pool */
-  char *statip;                  /* Static IP address pool */
-  int allowdyn;                  /* Allow dynamic address allocation */
-  int allowstat;                 /* Allow static address allocation */
-  struct in_addr dns1;           /* Primary DNS server IP address */
-  struct in6_addr dns1ip6;
-  struct in_addr dns2;           /* Secondary DNS server IP address */
-  struct in6_addr dns2ip6;
-  char *domain;                  /* Domain to use for DNS lookups */
-  char* ipup;                    /* Script to run after link-up */
-  char* ipdown;                  /* Script to run after link-down */
-  char* conup;                    /* Script to run after user logon */
-  char* condown;                  /* Script to run after user logoff */
+  int prefixlen;                 /**< IPv6 prefix length */
+  int ipv6mask;                  /**< IPv6 mask */
+  char *dynip;                   /**< Dynamic IP address pool */
+  char *statip;                  /**< Static IP address pool */
+  int allowdyn;                  /**< Allow dynamic address allocation */
+  int allowstat;                 /**< Allow static address allocation */
+  struct in_addr dns1;           /**< Primary DNS server IP address */
+  struct in6_addr dns1ip6;       /**< Primary DNS server IPv6 address */
+  struct in_addr dns2;           /**< Secondary DNS server IP address */
+  struct in6_addr dns2ip6;       /**< Secondary DNS server IPv6 address */
+  char *domain;                  /**< Domain to use for DNS lookups */
+  char* ipup;                    /**< Script to run after link-up */
+  char* ipdown;                  /**< Script to run after link-down */
+  char* conup;                    /**< Script to run after user logon */
+  char* condown;                  /**< Script to run after user logoff */
 
   /* Radius parameters */
-  struct sockaddr_storage radiuslisten;   /* IP address to listen to */
-  struct sockaddr_storage radiusserver1;  /* IP address of radius server 1 */
-  struct sockaddr_storage radiusserver2;  /* IP address of radius server 2 */
-  uint16_t radiusauthport;       /* Authentication UDP port */
-  uint16_t radiusacctport;       /* Accounting UDP port */
-  char* radiussecret;            /* Radius shared secret */
-  char* radiusnasid;             /* Radius NAS-Identifier */
-  char* radiuscalled;            /* Radius Called-Station-ID */
-  struct sockaddr_storage radiusnasip;    /* Radius NAS-IP-Address */
-  char* radiuslocationid;        /* WISPr location ID */
-  char* radiuslocationname;      /* WISPr location name */
-  int radiusnasporttype;         /* NAS-Port-Type */
-  uint16_t coaport;              /* UDP port to listen to */
-  int coanoipcheck;              /* Allow disconnect from any IP */
+  struct sockaddr_storage radiuslisten;   /**< IP address to listen to */
+  struct sockaddr_storage radiusserver1;  /**< IP address of radius server 1 */
+  struct sockaddr_storage radiusserver2;  /**< IP address of radius server 2 */
+  uint16_t radiusauthport;       /**< Authentication UDP port */
+  uint16_t radiusacctport;       /**< Accounting UDP port */
+  char* radiussecret;            /**< Radius shared secret */
+  char* radiusnasid;             /**< Radius NAS-Identifier */
+  char* radiuscalled;            /**< Radius Called-Station-ID */
+  struct sockaddr_storage radiusnasip;    /**< Radius NAS-IP-Address */
+  char* radiuslocationid;        /**< WISPr location ID */
+  char* radiuslocationname;      /**< WISPr location name */
+  int radiusnasporttype;         /**< NAS-Port-Type */
+  uint16_t coaport;              /**< UDP port to listen to */
+  int coanoipcheck;              /**< Allow disconnect from any IP */
 
   /* Radius proxy parameters */
-  struct sockaddr_storage proxylisten;    /* IP address to listen to */
-  int proxyport;                 /* UDP port to listen to */
-  struct sockaddr_storage proxyaddr;      /* IP address of proxy client(s) */
-  struct sockaddr_storage proxymask;      /* IP mask of proxy client(s) */
-  char* proxysecret;             /* Proxy shared secret */
+  struct sockaddr_storage proxylisten;    /**< IP address to listen to */
+  int proxyport;                 /**< UDP port to listen to */
+  struct sockaddr_storage proxyaddr;      /**< IP address of proxy client(s) */
+  struct sockaddr_storage proxymask;      /**< IP mask of proxy client(s) */
+  char* proxysecret;             /**< Proxy shared secret */
 
   /* Radius configuration management parameters */
-  char* confusername;            /* Username for remote config */
-  char* confpassword;            /* Password for remote config */
+  char* confusername;            /**< Username for remote config */
+  char* confpassword;            /**< Password for remote config */
 
   /* DHCP parameters */
-  int nodhcp;                    /* Do not use DHCP */
-  char* dhcpif;                 /* Interface: eth0 */
-  unsigned char dhcpmac[DHCP_ETH_ALEN]; /* Interface MAC address */
-  int dhcpusemac;               /* Use given MAC or interface default */
-  struct in_addr dhcplisten;     /* IP address to listen to */
-  int lease;                     /* DHCP lease time */
+  int nodhcp;                    /**< Do not use DHCP */
+  char* dhcpif;                 /**< Interface: eth0 */
+  unsigned char dhcpmac[DHCP_ETH_ALEN]; /**< Interface MAC address */
+  int dhcpusemac;               /**< Use given MAC or interface default */
+  struct in_addr dhcplisten;     /**< IP address to listen to */
+  int lease;                     /**< DHCP lease time */
 
   /* IPv6 parameters */
   struct in6_addr ip6listen; /**< IPv6 address to listen to */
-  struct in6_addr prefix;
+  struct in6_addr prefix; /**< IPv6 prefix */
 
   /* EAPOL parameters */
-  int eapolenable;               /* Use eapol */
+  int eapolenable;               /**< Use eapol */
 
   /* UAM parameters */
-  struct in_addr uamserver[UAMSERVER_MAX]; /* IP address of UAM server */
-  struct in6_addr uamserver6[UAMSERVER_MAX]; /* IPv6 address of UAM server */
-  int uamserverlen;              /* Number of IPv4 UAM servers */
-  int uamserverlen6;              /* Number of IPv6 UAM servers */
-  int uamserverport;             /* Port of IPv4 UAM server */
-  int uamserverport6;             /* Port of IPv6 UAM server */
-  char* uamsecret;               /* Shared secret */
-  char* uamurl;                  /* URL of authentication server */
-  char* uamurl6; /**< URL of authentication IPv6 server */
-  char* uamhomepage;             /* URL of redirection homepage */
-  int uamhomepageport;		 /* Port of redirection homepage */
+  struct in_addr uamserver[UAMSERVER_MAX]; /**< IP address of UAM server */
+  struct in6_addr uamserver6[UAMSERVER_MAX]; /**< IPv6 address of UAM server */
+  int uamserverlen;              /**< Number of IPv4 UAM servers */
+  int uamserverlen6;              /**< Number of IPv6 UAM servers */
+  int uamserverport;             /**< Port of IPv4 UAM server */
+  int uamserverport6;             /**< Port of IPv6 UAM server */
+  char* uamsecret;               /**< Shared secret */
+  char* uamurl;                  /**< URL of authentication server */
+  char* uamurl6;                 /**< URL of authentication IPv6 server */
+  char* uamhomepage;             /**< URL of redirection homepage */
+  int uamhomepageport;		       /**< Port of redirection homepage */
 
-  struct in_addr uamlisten;      /* IP address of local authentication */
-  struct in6_addr uamlisten6;      /* IPv6 address of local authentication */
-  int uamport;                   /* TCP port to listen to */
-  struct in6_addr uamokip6[UAMOKIP_MAX]; /* List of allowed IP addresses */
-  struct in_addr uamokip[UAMOKIP_MAX]; /* List of allowed IP addresses */
-  int uamokiplen;                /* Number of allowed IP addresses */
-  int uamokiplen6;                /* Number of allowed IP addresses */
-  struct in6_addr uamokaddr6[UAMOKNET_MAX]; /* List of allowed network IP */
-  struct in6_addr uamokmask6[UAMOKNET_MAX]; /* List of allowed network mask */
-  struct in_addr uamokaddr[UAMOKNET_MAX]; /* List of allowed network IP */
-  struct in_addr uamokmask[UAMOKNET_MAX]; /* List of allowed network mask */
-  int uamoknetlen;               /* Number of networks */
-  int uamoknetlen6;               /* Number of networks */
-  int uamanydns;                 /* Allow client to use any DNS server */
+  struct in_addr uamlisten;      /**< IP address of local authentication */
+  struct in6_addr uamlisten6;    /**< IPv6 address of local authentication */
+  int uamport;                   /**< TCP port to listen to */
+  struct in6_addr uamokip6[UAMOKIP_MAX]; /**< List of allowed IP addresses */
+  struct in_addr uamokip[UAMOKIP_MAX]; /**< List of allowed IP addresses */
+  int uamokiplen;                /**< Number of allowed IP addresses */
+  int uamokiplen6;                /**< Number of allowed IP addresses */
+  struct in6_addr uamokaddr6[UAMOKNET_MAX]; /**< List of allowed network IP */
+  struct in6_addr uamokmask6[UAMOKNET_MAX]; /**< List of allowed network mask */
+  struct in_addr uamokaddr[UAMOKNET_MAX]; /**< List of allowed network IP */
+  struct in_addr uamokmask[UAMOKNET_MAX]; /**< List of allowed network mask */
+  int uamoknetlen;               /**< Number of networks */
+  int uamoknetlen6;               /**< Number of networks */
+  int uamanydns;                 /**< Allow client to use any DNS server */
 
   /* MAC Authentication */
-  int macauth;                   /* Use MAC authentication */
-  unsigned char macok[MACOK_MAX][DHCP_ETH_ALEN]; /* Allowed MACs */
-  int macoklen;                   /* Number of MAC addresses */
-  char* macsuffix;               /* Suffix to add to MAC address */
-  char* macpasswd;               /* Password to use for MAC authentication */  
+  int macauth;                   /**< Use MAC authentication */
+  unsigned char macok[MACOK_MAX][DHCP_ETH_ALEN]; /**< Allowed MACs */
+  int macoklen;                   /**< Number of MAC addresses */
+  char* macsuffix;               /**< Suffix to add to MAC address */
+  char* macpasswd;               /**< Password to use for MAC authentication */  
 };
-
-extern struct app_conn_t connection[2*APP_NUM_CONN];
-extern struct options_t options;
-
-extern struct app_conn_t *firstfreeconn; /* First free in linked list */
-extern struct app_conn_t *lastfreeconn;  /* Last free in linked list */
-extern struct app_conn_t *firstusedconn; /* First used in linked list */
-extern struct app_conn_t *lastusedconn;  /* Last used in linked list */
-
-extern struct radius_t *radius;          /* Radius client instance */
-extern struct dhcp_t *dhcp;              /* DHCP instance */
 
 #endif /*_PEPPER_H */
 

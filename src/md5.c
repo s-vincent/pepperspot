@@ -37,6 +37,10 @@
  * will fill a supplied 16-byte array with the digest.
  */
 
+/**
+ * \file md5.c
+ * \brief MD5 algorithm.
+ */
 
 #include <string.h>		/* for memcpy() */
 #include "md5.h"

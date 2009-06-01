@@ -20,6 +20,11 @@
  *          sebastien.vincent@pepperspot.info
  */
 
+/**
+ * \file compat.h
+ * \brief Compatibility functions.
+ */
+
 #ifndef COMPAT_H
 #define COMPAT_H
 

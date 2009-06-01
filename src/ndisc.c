@@ -47,6 +47,11 @@
  * 02111-1307 USA.
  */
 
+/**
+ * \file ndisc.c
+ * \brief IPv6 neighbor discovery.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -82,9 +87,26 @@
 /* #include <linux/if.h> */
 #endif
 
+/**
+ * \var in6addr_all_nodes_mc
+ * \brief Multicast address for all nodes (FF02::3).
+ */
 static const struct in6_addr in6addr_all_nodes_mc = IN6ADDR_ALL_NODES_MC_INIT;
+
+/**
+ * \var in6addr_all_routers_mc
+ * \brief Multicast address for all routers (FF02::2).
+ */
 static const struct in6_addr in6addr_all_routers_mc = IN6ADDR_ALL_ROUTERS_MC_INIT;
 
+/**
+ * \brief Create an ICMPv6 option.
+ * \param iov vector
+ * \param type ICMPv6 type
+ * \param len length
+ * \param value data
+ * \return header or NULL if failure
+ */
 static struct nd_opt_hdr *nd_opt_create(struct iovec *iov, uint8_t type,
     uint16_t len, uint8_t *value)
 {
@@ -105,6 +127,12 @@ static struct nd_opt_hdr *nd_opt_create(struct iovec *iov, uint8_t type,
   return opt;
 }
 
+/**
+ * \brief Get L2 address of an interface.
+ * \param ifindex interface index
+ * \param addr resulting address will be filled in
+ * \return 0 if success, -1 otherwise
+ */
 static int nd_get_l2addr(int ifindex, uint8_t *addr)
 {
   int res = 0;

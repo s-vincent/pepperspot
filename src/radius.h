@@ -63,6 +63,11 @@
  *
  */
 
+/**
+ * \file radius.h
+ * \brief RADIUS client.
+ */
+
 #ifndef _RADIUS_H
 #define _RADIUS_H
 

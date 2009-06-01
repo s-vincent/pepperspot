@@ -22,17 +22,25 @@
 
 /* $Id: ndisc.h 1.13 04/09/20 12:47:39+03:00 vnuorval@tcs.hut.fi $ */
 
+/**
+ * \file ndisc.h
+ * \brief IPv6 neighbor discovery.
+ */
+
 #ifndef __NDISC_H__
-#define __NDISC_H__ 1
+#define __NDISC_H__
 
 #include <net/if_arp.h>
 
-#define DAD_TIMEOUT 1 /* one second */
-
 #ifndef ARPHRD_IEEE80211
-#define ARPHRD_IEEE80211 801 
+#define ARPHRD_IEEE80211 801 /**< 802.11 type */
 #endif
 
+/**
+ * \brief Get L2 address (MAC address) length of an address type.
+ * \param iface_type type of an address
+ * \return length of L2 address
+ */
 static inline short nd_get_l2addr_len(unsigned short iface_type)
 {
   switch (iface_type) {
@@ -59,16 +67,18 @@ static inline short nd_get_l2addr_len(unsigned short iface_type)
   }
 }
 
-int ndisc_send_rs(int ifindex, const struct in6_addr *src,
-    const struct in6_addr *dst);
-
-int ndisc_send_ns(int ifindex, const struct in6_addr *src, 
-    const struct in6_addr *dst,
-    const struct in6_addr *target);
-
+/**
+ * \brief Send Neighbor Advertisement.
+ * \param ifindex output interface index
+ * \param src source address
+ * \param dst destination address
+ * \param target target IPv6 address
+ * \param flags NA flags
+ * \return 0 if success, -1 otherwise
+ */
 int ndisc_send_na(int ifindex, const struct in6_addr *src, 
     const struct in6_addr *dst,
     const struct in6_addr *target, uint32_t flags);
 
-#endif
+#endif /* __NDISC_H__ */
 

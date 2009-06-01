@@ -63,6 +63,11 @@
  *
  */
 
+/**
+ * \file iphash.c
+ * \brief Hash function for IPv4 and IPv6 addresses.
+ */
+
 #include <sys/types.h>
 #include <netinet/in.h> /* in_addr */
 #include <stdlib.h>     /* calloc */
@@ -98,7 +103,7 @@ int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
     return -1;
   }
 
-  for (i = 0; i<listsize; i++) {
+  for (i = 0; i < listsize; i++) {
 
     (*this)->member[i].inuse = 1; /* TODO */
     ippool_hashadd(*this, &(*this)->member[i]);
@@ -135,7 +140,7 @@ int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
     return -1;
   }
 
-  for (i = 0; i<listsize; i++) {
+  for (i = 0; i < listsize; i++) {
 
     (*this)->member[i].inuse = 1; /* TODO */
     ippool_hashadd6(*this, &(*this)->member[i]);

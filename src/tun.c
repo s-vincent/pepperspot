@@ -70,6 +70,11 @@
  *
  */
 
+/**
+ * \file tun.c
+ * \brief IPv4 tunnel interface (tun).
+ */
+
 #include <syslog.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,7 +128,7 @@
 
 #if defined(__linux__)
 
-int tun_nlattr(struct nlmsghdr *n, int nsize, int type, void *d, int dlen)
+static int tun_nlattr(struct nlmsghdr *n, int nsize, int type, void *d, int dlen)
 {
   int len = RTA_LENGTH(dlen);
   int alen = NLMSG_ALIGN(n->nlmsg_len);
@@ -137,7 +142,7 @@ int tun_nlattr(struct nlmsghdr *n, int nsize, int type, void *d, int dlen)
   return 0;
 }
 
-int tun_gifindex(struct tun_t *this, unsigned int *ifindex)
+static int tun_gifindex(struct tun_t *this, unsigned int *ifindex)
 {
   struct ifreq ifr;
   int fd = -1;
@@ -167,7 +172,13 @@ int tun_gifindex(struct tun_t *this, unsigned int *ifindex)
 
 #endif
 
-int tun_sifflags(struct tun_t *this, int flags)
+/**
+ * \brief Set flags on tun interface.
+ * \param this tun_t instance
+ * \param flags flags to set
+ * \return 0 if success, -1 otherwise
+ */
+static int tun_sifflags(struct tun_t *this, int flags)
 {
   struct ifreq ifr;
   int fd = -1;
@@ -191,103 +202,6 @@ int tun_sifflags(struct tun_t *this, int flags)
   close(fd);
   return 0;
 }
-
-
-/* Currently unused
-   int tun_addroute2(struct tun_t *this,
-   struct in_addr *dst,
-   struct in_addr *gateway,
-   struct in_addr *mask) {
-
-   struct {
-   struct nlmsghdr 	n;
-   struct rtmsg 	r;
-   char buf[TUN_NLBUFSIZE];
-   } req;
-
-   struct sockaddr_nl local;
-   int addr_len = 0;
-   int fd = -1;
-   int status;
-   struct sockaddr_nl nladdr;
-   struct iovec iov;
-   struct msghdr msg;
-
-   memset(&req, 0, sizeof(req));
-   req.n.nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
-   req.n.nlmsg_flags = NLM_F_REQUEST | NLM_F_CREATE;
-   req.n.nlmsg_type = RTM_NEWROUTE;
-   req.r.rtm_family = AF_INET;
-   req.r.rtm_table  = RT_TABLE_MAIN;
-   req.r.rtm_protocol = RTPROT_BOOT;
-   req.r.rtm_scope  = RT_SCOPE_UNIVERSE;
-   req.r.rtm_type  = RTN_UNICAST;
-   tun_nlattr(&req.n, sizeof(req), RTA_DST, dst, 4);
-   tun_nlattr(&req.n, sizeof(req), RTA_GATEWAY, gateway, 4);
-
-   if ((fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE)) < 0) {
-   sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-   "socket() failed");
-   return -1;
-   }
-
-   memset(&local, 0, sizeof(local));
-   local.nl_family = AF_NETLINK;
-   local.nl_groups = 0;
-
-   if (bind(fd, (struct sockaddr*)&local, sizeof(local)) < 0) {
-   sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-   "bind() failed");
-   close(fd);
-   return -1;
-   }
-
-   addr_len = sizeof(local);
-   if (getsockname(fd, (struct sockaddr*)&local, &addr_len) < 0) {
-   sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-   "getsockname() failed");
-   close(fd);
-   return -1;
-   }
-
-   if (addr_len != sizeof(local)) {
-   sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-   "Wrong address length %d", addr_len);
-   close(fd);
-   return -1;
-   }
-
-   if (local.nl_family != AF_NETLINK) {
-   sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-   "Wrong address family %d", local.nl_family);
-   close(fd);
-   return -1;
-   }
-
-iov.iov_base = (void*)&req.n;
-iov.iov_len = req.n.nlmsg_len;
-
-msg.msg_name = (void*)&nladdr;
-msg.msg_namelen = sizeof(nladdr),
-  msg.msg_iov = &iov;
-msg.msg_iovlen = 1;
-msg.msg_control = NULL;
-msg.msg_controllen = 0;
-msg.msg_flags = 0;
-
-memset(&nladdr, 0, sizeof(nladdr));
-nladdr.nl_family = AF_NETLINK;
-nladdr.nl_pid = 0;
-nladdr.nl_groups = 0;
-
-req.n.nlmsg_seq = 0;
-req.n.nlmsg_flags |= NLM_F_ACK;
-
-status = sendmsg(fd, &msg, 0);  * TODO: Error check *
-close(fd);
-return 0;
-}
-*/
 
 int tun_addaddr(struct tun_t *this,
     struct in_addr *addr,
@@ -935,7 +849,6 @@ int tun_set_cb_ind(struct tun_t *this,
 
 int tun_decaps(struct tun_t *this)
 {
-  printf("tun_decaps\n");
 #if defined(__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
 
   unsigned char buffer[PACKET_MAX];
@@ -1010,7 +923,6 @@ int tun_encaps(struct tun_t *tun, void *pack, unsigned len)
 
 int tun_runscript(struct tun_t *tun, char* script)
 {
-
   char saddr[TUN_ADDRSIZE];
   char snet[TUN_ADDRSIZE];
   char smask[TUN_ADDRSIZE];

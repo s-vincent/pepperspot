@@ -31,7 +31,7 @@
  * are met:
  *
  *   Redistributions of source code must retain the above copyright notice,
- *   this list of conditions and the following disclaimer.
+ *   this ist of conditions and the following disclaimer.
  *
  *   Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
@@ -61,6 +61,11 @@
  * notice and this permission notice is included in all copies or
  * substantial portions of the software.
  *
+ */
+
+/**
+ * \file pepper.c
+ * \brief PepperSpot: next generation captive portal.
  */
 
 #include <syslog.h>
@@ -136,35 +141,81 @@
 #define DEBUG_REDIR 1
 #endif
 
+/**
+ * \var options
+ * \brief Describes options.
+ */
 struct options_t options;
 
 extern struct sock icmp6_sock;
 
-struct tun_t *tun = NULL; 			/* TUN instance            */
-struct tun6_t* tunv6 = NULL; 		/**< TUN6 instance */
-struct ippool_t *ippool = NULL; /* Pool of IP addresses */
-struct radius_t *radius = NULL;	/* Radius client instance */
-struct dhcp_t *dhcp = NULL;			/* DHCP instance */
-struct redir_t *redir = NULL;		/* Redir instance */
+static struct tun_t *tun = NULL; 			  /**< TUN instance */
+static struct tun6_t* tunv6 = NULL; 		/**< TUN6 instance */
+static struct ippool_t *ippool = NULL;  /**< Pool of IP addresses */
+static struct radius_t *radius = NULL;	/**< Radius client instance */
+static struct dhcp_t *dhcp = NULL;			/**< DHCP instance */
+static struct redir_t *redir = NULL;		/**< Redir instance */
 
-struct app_conn_t connection[APP_NUM_CONN*2];
-struct app_conn_t *firstfreeconn = NULL; /* First free in linked list */
-struct app_conn_t *lastfreeconn = NULL;  /* Last free in linked list */
-struct app_conn_t *firstusedconn = NULL; /* First used in linked list */
-struct app_conn_t *lastusedconn = NULL;  /* Last used in linked list */
+/**
+ * \var g_connection
+ * \brief Array of "high level" connection.
+ */
+struct app_conn_t g_connection[APP_NUM_CONN * 2];
+
+/**
+ * \var g_firstfreeconn
+ * \brief pointer to the first free connection.
+ */
+struct app_conn_t *g_firstfreeconn = NULL; /* First free in linked list */
+
+/**
+ * \var g_lastfreeconn
+ * \brief pointer to the last free connection.
+ */
+struct app_conn_t *g_lastfreeconn = NULL;  /* Last free in linked list */
+
+/**
+ * \var g_firstusedconn
+ * \brief pointer to the first used connection.
+ */
+struct app_conn_t *g_firstusedconn = NULL; /* First used in linked list */
+
+/**
+ * \var g_lastusedconn
+ * \brief pointer to the last used connection.
+ */
+struct app_conn_t *g_lastusedconn = NULL;  /* Last used in linked list */
 
 struct timeval checktime;
 struct timeval rereadtime;
 
-static volatile sig_atomic_t keep_going = 1;
-static volatile sig_atomic_t do_timeouts = 1;
-static volatile sig_atomic_t do_sighup = 0;
+/**
+ * \var g_keep_going
+ * \brief When set to 0, program stops.
+ */
+static volatile sig_atomic_t g_keep_going = 1;
+
+/**
+ * \var g_do_timeouts
+ * \brief When set to 1, it will check timeout for
+ * RADIUS, DHCP instance...
+ */
+static volatile sig_atomic_t g_do_timeouts = 1;
+
+/**
+ * \var g_do_sighup
+ * \brief When SIGHUP signal is received.
+ */
+static volatile sig_atomic_t g_do_sighup = 0;
 
 /* Forward declarations */
 static int acct_req(struct app_conn_t *conn, int status_type);
 static int config_radius(void);
 
-/* Signal handler for sigaction */
+/**
+ * \brief Signal handler for sigaction.
+ * \param signum signal number received
+ */
 static void sig_handler(int signum)
 {
   switch(signum) {
@@ -173,35 +224,41 @@ static void sig_handler(int signum)
       break;
     case SIGTERM:  /* Termination handler for clean shutdown */
       if (options.debug) printf("SIGTERM received!\n");
-      keep_going = 0;
+      g_keep_going = 0;
       break;
     case SIGINT:   /* Termination handler for clean shutdown */
       if (options.debug) printf("SIGTERM received!\n");
-      keep_going = 0;
+      g_keep_going = 0;
       break;
     case SIGALRM:  /* Alarm handler for general house keeping */
       /* if (options.debug) printf("SIGALRM received!\n"); */
-      do_timeouts = 1;
+      g_do_timeouts = 1;
       break;
     case SIGHUP:   /* Sighup handler for rereading configuration file */
       if (options.debug) printf("SIGHUP received!\n");
-      do_sighup = 1;
+      g_do_sighup = 1;
       break;
   }
-
-
 }
 
-
-static void set_sessionid(struct app_conn_t *appconn) {
+/**
+ * \brief Set the session ID of an "high level" connection.
+ * \param appconn connection
+ */
+static void set_sessionid(struct app_conn_t *appconn) 
+{
   struct timeval timenow;
   gettimeofday(&timenow, NULL);
   (void) snprintf(appconn->sessionid, REDIR_SESSIONID_LEN, "%.8x%.8x",
       (int) timenow.tv_sec, appconn->unit);
 }
 
-/* Used to write process ID to file. Assume someone else will delete */
-static void log_pid(char *pidfile) {
+/**
+ * \brief Used to write process ID to file. Assume someone else will delete.
+ * \param pidfile file used to write PID.
+ */
+static void log_pid(char *pidfile) 
+{
   FILE *file = NULL;
   mode_t oldmask;
 
@@ -215,9 +272,15 @@ static void log_pid(char *pidfile) {
 }
 
 #ifndef NO_LEAKY_BUCKET
-/* Perform leaky bucket on up- and downlink traffic */
-static int leaky_bucket(struct app_conn_t *conn, int octetsup, int octetsdown) {
-
+/** 
+ * \brief Perform leaky bucket on up- and downlink traffic.
+ * \param conn connection
+ * \param octetsup bytes sent
+ * \param octetsdown bytes received
+ * \return 0 if connection does not reach limits, -1 otherwise
+ */
+static int leaky_bucket(struct app_conn_t *conn, int octetsup, int octetsdown) 
+{
   struct timeval timenow;
   uint64_t timediff = 0; /* In microseconds */
   int result = 0;
@@ -273,10 +336,23 @@ static int leaky_bucket(struct app_conn_t *conn, int octetsup, int octetsdown) {
 }
 #endif /* ifndef NO_LEAKY_BUCKET */
 
-/* Run external script */
-
+/**
+ * \brief Set some environment variables in order to run
+ * external script.
+ * 
+ * Only one parameter MUST be non-NULL among "value" (and "len"), "addr", 
+ * "mac" and "integer".
+ * \param name name of the environment variable
+ * \param value value (len parameter determine its length)
+ * \param len length
+ * \param addr IPv4 address
+ * \param mac MAC address
+ * \param integer integer value
+ * \return 0
+ */
 int set_env(char *name, char *value, unsigned int len, struct in_addr *addr,
-    uint8_t *mac, long int *integer) {
+    uint8_t *mac, long int *integer)
+{
   char s[1024];
   char buf[INET_ADDRSTRLEN];
 
@@ -313,8 +389,23 @@ int set_env(char *name, char *value, unsigned int len, struct in_addr *addr,
   return 0;
 }
 
+/**
+ * \brief Set some environment variables in order to run
+ * external script.
+ * 
+ * Only one parameter MUST be non-NULL among "value" (and "len"), "addr", 
+ * "mac" and "integer".
+ * \param name name of the environment variable
+ * \param value value (len parameter determine its length)
+ * \param len length
+ * \param addr IPv6 address
+ * \param mac MAC address
+ * \param integer integer value
+ * \return 0
+ */
 int set_envv6(char *name, char *value, unsigned int len, struct in6_addr *addr,
-    uint8_t *mac, long int *integer) {
+    uint8_t *mac, long int *integer)
+{
   char s[1024];
   if (addr!=NULL) {
     inet_ntop(AF_INET6, addr, s, INET6_ADDRSTRLEN);
@@ -350,7 +441,14 @@ int set_envv6(char *name, char *value, unsigned int len, struct in6_addr *addr,
 }
 
 
-int runscript(struct app_conn_t *appconn, char* script) {  
+/**
+ * \brief Run external script for a client.
+ * \param appconn connection
+ * \param script script pathname
+ * \return 0 if script succeed, false otherwise (fork/exec error, ...)
+ */
+int runscript(struct app_conn_t *appconn, char* script)
+{
   long int l = 0;
   int status = 0;
 
@@ -450,9 +548,16 @@ int runscript(struct app_conn_t *appconn, char* script) {
   exit(0);
 }
 
-
-/* Extract domain name and port from URL */
-static int get_namepart(char *src, char *host, int hostsize, int *port) {
+/**
+ * \brief Extract domain name and port from IPv4 URL.
+ * \param src source URL (http or https)
+ * \param host FQDN (will be filled if function succeed)
+ * \param hostsize length of host
+ * \param port port
+ * \return 0 if success, -1 otherwise
+ */
+static int get_namepart(char *src, char *host, int hostsize, int *port)
+{
   char *slashslash = NULL;
   char *slash = NULL;
   char *colon = NULL;
@@ -478,7 +583,7 @@ static int get_namepart(char *src, char *host, int hostsize, int *port) {
         "// not found in url: %s!", src);
     return -1;
   }
-  slashslash+=2;
+  slashslash += 2;
 
   slash = strstr(slashslash, "/");
   colon = strstr(slashslash, ":");
@@ -514,12 +619,19 @@ static int get_namepart(char *src, char *host, int hostsize, int *port) {
   return 0;
 }
 
-static int get_namepart6(char *src, char *host, int *port) {
-
+/**
+ * \brief Extract domain name and port from IPv6 URL.
+ * \param src source URL (http or https)
+ * \param host FQDN (will be filled if function succeed)
+ * \param port port
+ * \return 0 if success, -1 otherwise
+ */
+static int get_namepart6(char *src, char *host, int *port)
+{
   char *croch = NULL;
   char *croch2 = NULL;
   char *colon = NULL;
-  unsigned int pos=0;
+  unsigned int pos = 0;
 
   if (!strncmp(src, "http://", 7)) {
     *port = DHCP_HTTP;
@@ -533,9 +645,9 @@ static int get_namepart6(char *src, char *host, int *port) {
   }
 
   croch = strstr(src, "[");
-  croch+=1;
+  croch += 1;
   croch2 = strstr(src, "]");
-  croch2+=1;
+  croch2 += 1;
   colon = strstr(croch2, ":");
 
   while(croch[pos] != ']' && pos < strlen(croch)) {
@@ -547,18 +659,26 @@ static int get_namepart6(char *src, char *host, int *port) {
   host[pos] = '\0';
 
   if(colon != NULL)
-    sscanf(colon+1, "%d", port);
+    sscanf(colon + 1, "%d", port);
   return 0;
 }
 
-static int set_uamallowed(char *uamallowed, int len) {
+/**
+ * \brief Allow a FQDN, address to be accessed without 
+ * restrictions.
+ * \param uamallowed FQDN or address
+ * \param len length of uamallowed paramter
+ * \return 0 if success, -1 otherwise
+ */
+static int set_uamallowed(char *uamallowed, int len)
+{
   char *p1 = NULL;
   char *p2 = NULL;
   char *p3 = NULL;
   int sfd = 0;
   int err = 0;
   char buf[INET6_ADDRSTRLEN];
-  int mask6=0;
+  int mask6 = 0;
   struct addrinfo hints;
   struct addrinfo *res = NULL;
   struct addrinfo *rp = NULL;
@@ -586,7 +706,7 @@ static int set_uamallowed(char *uamallowed, int len) {
   }
   while (p1) {
     if (strchr(p1, '/') && !strchr(p1, ':')) {
-      if (options.uamoknetlen>=UAMOKNET_MAX) {
+      if (options.uamoknetlen >= UAMOKNET_MAX) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Too many network segments in uamallowed %s!",
             p3);
@@ -605,7 +725,7 @@ static int set_uamallowed(char *uamallowed, int len) {
       options.uamoknetlen++;
     }
     else if (strchr(p1, '/') && strchr(p1, ':')) {
-      if (options.uamoknetlen6>=UAMOKNET_MAX) {
+      if (options.uamoknetlen6 >= UAMOKNET_MAX) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Too many network segments in uamallowed %s!",
             p3);
@@ -646,7 +766,7 @@ static int set_uamallowed(char *uamallowed, int len) {
                     options.uamokiplen,
                     inet_ntop(AF_INET, &addr->sin_addr, buf, INET_ADDRSTRLEN));
               }
-              if (options.uamokiplen>=UAMOKIP_MAX) {
+              if (options.uamokiplen >= UAMOKIP_MAX) {
                 sys_err(LOG_ERR, __FILE__, __LINE__, 0,
                     "Too many domains or IPs in uamallowed %s!",
                     p3);
@@ -666,7 +786,7 @@ static int set_uamallowed(char *uamallowed, int len) {
                     options.uamokiplen,
                     inet_ntop(AF_INET6, &addrv6->sin6_addr, buf, INET6_ADDRSTRLEN));
               }
-              if (options.uamokiplen>=UAMOKIP_MAX) {
+              if (options.uamokiplen >= UAMOKIP_MAX) {
                 sys_err(LOG_ERR, __FILE__, __LINE__, 0,
                     "Too many domains or IPv6s in uamallowed %s!",
                     p3);
@@ -704,6 +824,12 @@ static int set_uamallowed(char *uamallowed, int len) {
   return 0;
 }
 
+/**
+ * \brief Allow a MAC address to pass.
+ * \param macallowed MAC address
+ * \param len length of MAC address
+ * \return 0 if success, -1 otherwise
+ */
 static int set_macallowed(char *macallowed, int len) {
   char *p1 = NULL;
   char *p2 = NULL;
@@ -723,7 +849,7 @@ static int set_macallowed(char *macallowed, int len) {
     *p2 = '\0';
   }
   while (p1) {
-    if (options.macoklen>=MACOK_MAX) {
+    if (options.macoklen >= MACOK_MAX) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Too many addresses in macallowed %s!",
           p3);
@@ -731,7 +857,7 @@ static int set_macallowed(char *macallowed, int len) {
       return -1;
     }
     /* Replace anything but hex and comma with space */
-    for (i=0; i<strlen(p1); i++) 
+    for (i = 0; i < strlen(p1); i++) 
       if (!isxdigit(p1[i])) p1[i] = 0x20;
 
     if (sscanf (p1, "%2x %2x %2x %2x %2x %2x",
@@ -773,7 +899,15 @@ static int set_macallowed(char *macallowed, int len) {
   return 0;
 }
 
-static int process_options(int argc, char **argv, int firsttime) {
+/**
+ * \brief Process the command-line option.
+ * \param argc number of command-line arguments
+ * \param argv array of command-line arguments
+ * \param firsttime if it is the first time the options is processed
+ * \return 0 if success, -1 otherwise
+ */
+static int process_options(int argc, char **argv, int firsttime)
+{
   struct gengetopt_args_info args_info;
   char hostname[USERURLSIZE];
   unsigned int numargs = 0;
@@ -784,7 +918,7 @@ static int process_options(int argc, char **argv, int firsttime) {
   struct addrinfo *res = NULL;
   struct addrinfo *rp = NULL;
   int err = 0;
-  int sfd =0;
+  int sfd = 0;
   char buf[INET6_ADDRSTRLEN];
 
   if (cmdline_parser (argc, argv, &args_info) != 0) {
@@ -860,7 +994,7 @@ static int process_options(int argc, char **argv, int firsttime) {
     macstr[macstrlen] = 0;
 
     /* Replace anything but hex with space */
-    for (i=0; i<macstrlen; i++) 
+    for (i = 0; i < macstrlen; i++) 
       if (!isxdigit(macstr[i])) macstr[i] = 0x20;
 
     if (sscanf (macstr, "%2x %2x %2x %2x %2x %2x", 
@@ -974,7 +1108,7 @@ static int process_options(int argc, char **argv, int firsttime) {
           printf("Uamserver IP address #%d: %s\n", j, uamserveraddr);
         }
       }
-      if (options.uamserverlen>=UAMSERVER_MAX) {
+      if (options.uamserverlen >= UAMSERVER_MAX) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Too many IPs in uamserver %s!",
             args_info.uamserver_arg);
@@ -1420,7 +1554,6 @@ static int process_options(int argc, char **argv, int firsttime) {
   }
   options.radiussecret = args_info.radiussecret_arg;
 
-
   /* radiusnasid */
   options.radiusnasid = args_info.radiusnasid_arg;
 
@@ -1625,7 +1758,6 @@ static int process_options(int argc, char **argv, int firsttime) {
       return -1;
   }
 
-
   /* foreground                                                   */
   /* If flag not given run as a daemon                            */
   if ((!args_info.fg_flag) && (firsttime))
@@ -1651,7 +1783,13 @@ static int process_options(int argc, char **argv, int firsttime) {
   return 0;
 }
 
-static void reprocess_options(int argc, char **argv) {
+/**
+ * \brief Process again options.
+ * \param argc number of command-line arguments
+ * \param argv array of command-line arguments
+ */
+static void reprocess_options(int argc, char **argv)
+{
   struct options_t options2;
   sys_err(LOG_INFO, __FILE__, __LINE__, 0,
       "Rereading configuration file and doing DNS lookup");
@@ -1739,86 +1877,102 @@ static void reprocess_options(int argc, char **argv) {
   (void) config_radius();
 }
 
+/**
+ * \brief Release options.
+ */
 static void free_options(void)
 {
   if(options.radiuscalled) free(options.radiuscalled);           
 }
 
-/* 
- * A few functions to manage connections 
+
+/* A few functions to manage connections */
+
+/**
+ * \brief Initialize "high level" connection (i.e. client).
+ * 
+ * In fact it initialize and zeroed list of connections.
  */
 static int initconn(void)
 {
   int n = 0;
-  firstusedconn = NULL; /* Redundant */
-  lastusedconn  = NULL; /* Redundant */
+  g_firstusedconn = NULL; /* Redundant */
+  g_lastusedconn  = NULL; /* Redundant */
 
   gettimeofday(&checktime, NULL);
   gettimeofday(&rereadtime, NULL);
 
 
-  for (n=0; n<(2*APP_NUM_CONN); n++) {
-    connection[n].inuse = 0; /* Redundant */
+  for (n = 0; n < (2*APP_NUM_CONN); n++) {
+    g_connection[n].inuse = 0; /* Redundant */
     if (n == 0) {
-      connection[n].prev = NULL; /* Redundant */
-      firstfreeconn = &connection[n];
+      g_connection[n].prev = NULL; /* Redundant */
+      g_firstfreeconn = &g_connection[n];
 
     }
     else {
-      connection[n].prev = &connection[n-1];
-      connection[n-1].next = &connection[n];
+      g_connection[n].prev = &g_connection[n-1];
+      g_connection[n-1].next = &g_connection[n];
     }
     if (n == ((2*APP_NUM_CONN)-1)) {
-      connection[n].next = NULL; /* Redundant */
-      lastfreeconn  = &connection[n];
+      g_connection[n].next = NULL; /* Redundant */
+      g_lastfreeconn  = &g_connection[n];
     }
   }
 
   return 0;
 }
 
+/**
+ * \brief Get a a free pointer of connection to be used.
+ * \param conn a valid connection pointer will be filled in
+ * \return 0 if success, -1 otherwise
+ */
 static int newconn(struct app_conn_t **conn)
 {
-
-  if (!firstfreeconn) {
+  if (!g_firstfreeconn) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Out of free connection");
     return -1;
   }
 
-  *conn = firstfreeconn;
+  *conn = g_firstfreeconn;
 
   /* Remove from link of free */
-  if (firstfreeconn->next) {
-    firstfreeconn->next->prev = NULL;
-    firstfreeconn = firstfreeconn->next;
+  if (g_firstfreeconn->next) {
+    g_firstfreeconn->next->prev = NULL;
+    g_firstfreeconn = g_firstfreeconn->next;
   }
   else { /* Took the last one */
-    firstfreeconn = NULL; 
-    lastfreeconn = NULL;
+    g_firstfreeconn = NULL; 
+    g_lastfreeconn = NULL;
   }
 
   /* Initialise structures */
   memset(*conn, 0, sizeof(**conn));
 
   /* Insert into link of used */
-  if (firstusedconn) {
-    firstusedconn->prev = *conn;
-    (*conn)->next = firstusedconn;
+  if (g_firstusedconn) {
+    g_firstusedconn->prev = *conn;
+    (*conn)->next = g_firstusedconn;
   }
   else { /* First insert */
-    lastusedconn = *conn;
+    g_lastusedconn = *conn;
   }
 
-  firstusedconn = *conn;
+  g_firstusedconn = *conn;
 
   (*conn)->inuse = 1;
-  (*conn)->unit = (*conn) - connection;
+  (*conn)->unit = (*conn) - g_connection;
 
   return 0; /* Success */
 }
 
-
+/**
+ * \brief Restore a connection.
+ * \param conn connection to be deleted
+ * \return 0 if success, -1 otherwise
+ */
 static int freeconn(struct app_conn_t *conn)
 {
   /* Remove from link of used */
@@ -1828,40 +1982,47 @@ static int freeconn(struct app_conn_t *conn)
   }
   else if (conn->next) { /* && prev == 0 */
     conn->next->prev = NULL;
-    firstusedconn = conn->next;
+    g_firstusedconn = conn->next;
   }
   else if (conn->prev) { /* && next == 0 */
     conn->prev->next = NULL;
-    lastusedconn = conn->prev;
+    g_lastusedconn = conn->prev;
   }
   else { /* if ((next == 0) && (prev == 0)) */
-    firstusedconn = NULL;
-    lastusedconn = NULL;
+    g_firstusedconn = NULL;
+    g_lastusedconn = NULL;
   }
 
   /* Initialise structures */
   memset(conn, 0, sizeof(*conn));
 
   /* Insert into link of free */
-  if (firstfreeconn) {
-    firstfreeconn->prev = conn;
+  if (g_firstfreeconn) {
+    g_firstfreeconn->prev = conn;
   }
   else { /* First insert */
-    lastfreeconn = conn;
+    g_lastfreeconn = conn;
   }
 
-  conn->next = firstfreeconn;
-  firstfreeconn = conn;
+  conn->next = g_firstfreeconn;
+  g_firstfreeconn = conn;
 
   return 0;
 }
 
+/**
+ * \brief Get an existing connection by looking for its NAS.
+ * \param conn valid pointer of connection will be filled if function succeed
+ * \param nasip NAS IP address
+ * \param nasport NAS port
+ * \return 0 if success, -1 otherwise
+ */
 static int getconn(struct app_conn_t **conn, struct sockaddr_storage nasip, uint32_t nasport) 
 {
   struct app_conn_t *appconn = NULL;
 
   /* Count the number of used connections */
-  appconn = firstusedconn;
+  appconn = g_firstusedconn;
   while (appconn) {
     if (!appconn->inuse) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1876,13 +2037,20 @@ static int getconn(struct app_conn_t **conn, struct sockaddr_storage nasip, uint
   return -1; /* Not found */
 }
 
+/**
+ * \brief Get an existing connection by looking for its username.
+ * \param conn valid pointer of connection will be filled if function succeed
+ * \param username username
+ * \param usernamelen username length
+ * \return 0 if success, -1 otherwise
+ */
 static int getconn_username(struct app_conn_t **conn, char *username, 
     int usernamelen)
 {
   struct app_conn_t *appconn = NULL;
   username[usernamelen] = 0; printf("username: %s\n", username);
 
-  appconn = firstusedconn;
+  appconn = g_firstusedconn;
   while (appconn) {
     if (!appconn->inuse) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1901,7 +2069,13 @@ static int getconn_username(struct app_conn_t **conn, char *username,
   return -1; /* Not found */
 }
 
-static int dnprot_terminate(struct app_conn_t *appconn) {
+/**
+ * \brief TODO
+ * \param appconn connection
+ * \return 0 if success, -1 otherwise
+ */
+static int dnprot_terminate(struct app_conn_t *appconn)
+{
   appconn->authenticated = 0;
   switch (appconn->dnprot) {
     case DNPROT_WPA:
@@ -1928,13 +2102,16 @@ static int dnprot_terminate(struct app_conn_t *appconn) {
   }
 }
 
-/* Check for:
- * - Session-Timeout
- * - Idle-Timeout
- * - Interim-Interim accounting
- * - Reread configuration file and DNS entries
+/**
+ * \brief Check connection for various paramters.
+ * 
+ * It checks for:\n
+ * - Session-Timeout\n
+ * - Idle-Timeout\n
+ * - Interim-Interim accounting\n
+ * - Reread configuration file and DNS entries\n
+ * \return 0 if success, -1 otherwise
  */
-
 static int checkconn(void)
 {
   int n = 0;
@@ -1957,8 +2134,8 @@ static int checkconn(void)
 
   checktime = timenow;
 
-  for (n=0; n<(2*APP_NUM_CONN); n++) {
-    conn = &connection[n];
+  for (n = 0; n < (2*APP_NUM_CONN); n++) {
+    conn = &g_connection[n];
     if ((conn->inuse != 0) && (conn->authenticated == 1)) {
       if (!(dhcpconn = (struct dhcp_conn_t*) conn->dnlink)) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0, "No downlink protocol");
@@ -2027,22 +2204,25 @@ static int checkconn(void)
     rereaddiff += (timenow.tv_usec - rereadtime.tv_usec) / 1000000;
     if (rereaddiff >= options.interval) {
       rereadtime = timenow;
-      do_sighup = 1;
+      g_do_sighup = 1;
     }
   }
 
   return 0;
 }
 
-/* Kill all connections and send Radius Acct Stop */
+/**
+ * \brief Kill all connections and send Radius Acct Stop.
+ * \return 0 if success, -1 otherwise
+ */
 static int killconn(void)
 {
   int n = 0;
   struct app_conn_t *conn = NULL;
   struct dhcp_conn_t* dhcpconn = NULL;
 
-  for (n=0; n<(2*APP_NUM_CONN); n++) {
-    conn = &connection[n];
+  for (n = 0; n < (2*APP_NUM_CONN); n++) {
+    conn = &g_connection[n];
     if ((conn->inuse != 0) && (conn->authenticated == 1)) {
       if (!(dhcpconn = (struct dhcp_conn_t*) conn->dnlink)) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0, "No downlink protocol");
@@ -2057,10 +2237,14 @@ static int killconn(void)
   return 0;
 }
 
-/* Compare a MAC address to the addresses given in the macallowed option */
+/**
+ * \brief Compare a MAC address to the addresses given in the macallowed option.
+ * \param mac MAC address to compare
+ * \return 0 if MAC address correspond, -1 otherwise
+ */
 static int maccmp(unsigned char *mac) {
   int i = 0;
-  for (i=0; i<options.macoklen; i++) {
+  for (i = 0; i < options.macoklen; i++) {
     if (!memcmp(mac, options.macok[i], DHCP_ETH_ALEN)) {
       return 0;
     }
@@ -2785,33 +2969,31 @@ static int dnprot_accept(struct app_conn_t *appconn) {
  */
 int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
 {
-  struct ippoolm_t* ipm=NULL;
+  struct ippoolm_t* ipm = NULL;
   struct in6_addr dst;
-  struct tun6_packet_t* ip6h=pack;
-  struct app_conn_t* appconn=NULL;
+  struct tun6_packet_t* ip6h = pack;
+  struct app_conn_t* appconn = NULL;
   char buf[INET6_ADDRSTRLEN];
 
   /* To avoid unused parameter warning */
   tun_obj = NULL;
 
+  memcpy(&dst, ip6h->dst_addr, sizeof(ip6h->dst_addr));
+
   if (options.debug)
   {
     printf("cb_tun6_ind. Packet received: Forwarding to link layer\n");
-  }
-
-  memcpy(&dst, ip6h->dst_addr, sizeof(ip6h->dst_addr));
-
-  if(options.debug)
-  {
     printf("will send to %s\n", inet_ntop(AF_INET6, &dst, buf, sizeof(buf)));
   }
 
-  if (ippool_getip6(ippool, &ipm, &dst)) {
+  if (ippool_getip6(ippool, &ipm, &dst))
+  {
     if (options.debug) printf("Received packet with no destination!!!\n");
     return 0; 
   }
 
-  if (!((ipm->peer) || ((struct app_conn_t*) ipm->peer)->dnlink)) {
+  if (!((ipm->peer) || ((struct app_conn_t*) ipm->peer)->dnlink))
+  {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "No peer protocol defined");
     return 0;
@@ -2819,7 +3001,8 @@ int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
 
   appconn = (struct app_conn_t*) ipm->peer;
 
-  if (appconn->authenticated == 1) {
+  if (appconn->authenticated == 1)
+  {
 #ifndef NO_LEAKY_BUCKET
 #ifndef COUNT_DOWNLINK_DROP
     if (leaky_bucket(appconn, 0, len)) return 0;
@@ -2834,7 +3017,8 @@ int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
 #endif /* ifndef NO_LEAKY_BUCKET */
   }
 
-  switch (appconn->dnprot) {
+  switch (appconn->dnprot)
+  {
     case DNPROT_UAM:
     case DNPROT_WPA:
     case DNPROT_MAC:
@@ -2848,8 +3032,15 @@ int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
   return 0;
 }
 
-/* Callback for receiving messages from tun */
-int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len) {
+/**
+ * \brief Callback for receiving messages from tun.
+ * \param tun_obj tun_t instance
+ * \param pack packet data
+ * \param len data length
+ * \return 0
+ */
+int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len)
+{
   struct ippoolm_t *ipm = NULL;
   struct in_addr dst;
   struct tun_packet_t *iph = (struct tun_packet_t*) pack;
@@ -2910,9 +3101,7 @@ int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len) {
   }
 
   return 0;
-
 }
-
 
 /*********************************************************
  *
@@ -2920,8 +3109,17 @@ int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len) {
  *
  *********************************************************/
 
+/**
+ * \brief Callback when there is a new connection to redir socket to
+ * get the state of the connection.
+ * \param redir_obj the redir_t instance
+ * \param addr IPv4 address of the client
+ * \param conn redir connection that we will filled up up-to-date value
+ * \return 0 if success, -1 otherwise
+ */
 int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
-    struct redir_conn_t *conn) {
+    struct redir_conn_t *conn)
+{
   struct ippoolm_t *ipm = NULL;
   struct app_conn_t *appconn = NULL;
   struct dhcp_conn_t *dhcpconn = NULL;
@@ -2957,7 +3155,7 @@ int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
   /*strncpy(conn->userurl, appconn->userurl, REDIR_MAXCHAR);
     conn->userurl[REDIR_MAXCHAR-1] = 0;*/
 
-  conn->ipv6=0;
+  conn->ipv6 = 0;
 
   /* Stuff needed for status */
   conn->input_octets    = appconn->input_octets;
@@ -2973,7 +3171,6 @@ int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
   else 
     return 0;
 }
-
 
 /**
  * \brief Callback when there is a new connection to redir socket to
@@ -3018,6 +3215,7 @@ int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr, struct
     char buf[INET6_ADDRSTRLEN];
     printf("getstatev6 our IPv6 address: %s\n", inet_ntop(AF_INET6, &appconn->ouripv6, buf, sizeof(buf)));
   }
+
   memcpy(&conn->ouripv6, &appconn->ouripv6, sizeof(struct in6_addr));
   memcpy(&conn->hisipv6, &appconn->hisipv6, sizeof(struct in6_addr));
   memcpy(conn->sessionid, appconn->sessionid, REDIR_SESSIONID_LEN);
@@ -3126,7 +3324,7 @@ int accounting_request(struct radius_packet_t *pack,
   if (!radius_getattr(pack, &hismacattr, RADIUS_ATTR_CALLING_STATION_ID, 0, 0, 0)) {
     if (options.debug) {
       printf("Calling Station ID is: ");
-      for (n=0; n<hismacattr->l-2; n++) printf("%c", hismacattr->v.t[n]);
+      for (n = 0; n < hismacattr->l-2; n++) printf("%c", hismacattr->v.t[n]);
       printf("\n");
     }
     if ((macstrlen = hismacattr->l-2) >= (RADIUS_ATTR_VLEN-1)) {
@@ -3138,7 +3336,7 @@ int accounting_request(struct radius_packet_t *pack,
     macstr[macstrlen] = 0;
 
     /* Replace anything but hex with space */
-    for (i=0; i<macstrlen; i++) 
+    for (i = 0; i < macstrlen; i++) 
       if (!isxdigit(macstr[i])) macstr[i] = 0x20;
 
     if (sscanf (macstr, "%2x %2x %2x %2x %2x %2x",
@@ -3266,7 +3464,7 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattr(pack, &hisipattr, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0, 0)) {
     if (options.debug) {
       printf("Framed IP address is: ");
-      for (n=0; n<hisipattr->l-2; n++) printf("%.2x", hisipattr->v.t[n]); 
+      for (n = 0; n < hisipattr->l-2; n++) printf("%.2x", hisipattr->v.t[n]); 
       printf("\n");
     }
     if ((hisipattr->l-2) != sizeof(hisip.s_addr)) {
@@ -3281,7 +3479,7 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattrv6(pack, &hisprefixattr, RADIUS_ATTR_FRAMED_IPV6_PREFIX, 0, 0, 0)) {
     if (options.debug) {
       printf("Framed IPv6 prefix is: ");
-      for (n=0; n<hisprefixattr->l-2; n++) printf("%.2x", hisprefixattr->v.t[n]); 
+      for (n = 0; n < hisprefixattr->l-2; n++) printf("%.2x", hisprefixattr->v.t[n]); 
       printf("\n");
     }
     if ((hisprefixattr->l-2) != sizeof(hisprefix)) {
@@ -3296,7 +3494,7 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattrv6(pack, &hisifaceidattr, RADIUS_ATTR_FRAMED_INTERFACE_ID, 0, 0, 0)) {
     if (options.debug) {
       printf("Framed Interface Id is: ");
-      for (n=0; n<hisifaceidattr->l-2; n++) printf("%.2x", hisifaceidattr->v.t[n]); 
+      for (n = 0; n < hisifaceidattr->l-2; n++) printf("%.2x", hisifaceidattr->v.t[n]); 
       printf("\n");
     }
     if ((hisifaceidattr->l-2) != sizeof(ifaceid)) {
@@ -3311,7 +3509,7 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattr(pack, &hismacattr, RADIUS_ATTR_CALLING_STATION_ID, 0, 0, 0)) {
     if (options.debug) {
       printf("Calling Station ID is: ");
-      for (n=0; n<hismacattr->l-2; n++) printf("%c", hismacattr->v.t[n]);
+      for (n = 0; n < hismacattr->l-2; n++) printf("%c", hismacattr->v.t[n]);
       printf("\n");
     }
     if ((macstrlen = hismacattr->l-2) >= (RADIUS_ATTR_VLEN-1)) {
@@ -3323,7 +3521,7 @@ int access_request(struct radius_packet_t *pack,
     macstr[macstrlen] = 0;
 
     /* Replace anything but hex with space */
-    for (i=0; i<macstrlen; i++) 
+    for (i = 0; i < macstrlen; i++) 
       if (!isxdigit(macstr[i])) macstr[i] = 0x20;
 
     if (sscanf (macstr, "%2x %2x %2x %2x %2x %2x",
@@ -3354,7 +3552,7 @@ int access_request(struct radius_packet_t *pack,
   else {
     if (options.debug) {
       printf("Username is: ");
-      for (n=0; n<uidattr->l-2; n++) printf("%c", uidattr->v.t[n]); 
+      for (n = 0; n < uidattr->l-2; n++) printf("%c", uidattr->v.t[n]); 
       printf("\n");
     }
   }
@@ -3411,7 +3609,7 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattr(pack, &pwdattr, RADIUS_ATTR_USER_PASSWORD, 0, 0, 0)) {
     if (options.debug) {
       printf("Password is: ");
-      for (n=0; n<pwdattr->l-2; n++) printf("%.2x", pwdattr->v.t[n]); 
+      for (n = 0; n < pwdattr->l-2; n++) printf("%.2x", pwdattr->v.t[n]); 
       printf("\n");
     }
     if (radius_pwdecode(radius, (uint8_t*) pwd, RADIUS_ATTR_VLEN, &pwdlen, 
@@ -3428,7 +3626,7 @@ int access_request(struct radius_packet_t *pack,
   /* Get EAP message */
   resplen = 0;
   do {
-    eapattr=NULL;
+    eapattr = NULL;
     if (!radius_getattr(pack, &eapattr, RADIUS_ATTR_EAP_MESSAGE, 0, 0, 
           instance++)) {
       if ((resplen + eapattr->l-2) > EAP_LEN) {
@@ -3482,7 +3680,7 @@ int access_request(struct radius_packet_t *pack,
   }
 
   /* Store parameters for later use */
-  if (uidattr->l-2<=USERNAMESIZE) {
+  if (uidattr->l-2 <= USERNAMESIZE) {
     memcpy(appconn->proxyuser, uidattr->v.t, uidattr->l-2);
     appconn->proxyuserlen = uidattr->l-2;
   }
@@ -3604,7 +3802,8 @@ int cb_radius_ind(struct radius_t *rp, struct radius_packet_t *pack,
  ***********************************************************/
 
 int upprot_getip(struct app_conn_t *appconn, 
-    struct in_addr *hisip, int statip) {
+    struct in_addr *hisip, int statip)
+{
   struct ippoolm_t *ipm = NULL;
 
   appconn->ipv6 = 0;
@@ -3648,10 +3847,10 @@ int upprot_getip(struct app_conn_t *appconn,
 
 }
 
-
 int upprot_getipv6(struct app_conn_t *appconn, 
-    struct in6_addr *hisip) {
-  struct ippoolm_t *ipm=NULL;
+    struct in6_addr *hisip)
+{
+  struct ippoolm_t *ipm = NULL;
 
   appconn->ipv6 = 1;
   /* If IP address is allready allocated: Fill it in */
@@ -3876,7 +4075,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     /* Get EAP message */
     appconn->challen = 0;
     do {
-      eapattr=NULL;
+      eapattr = NULL;
       if (!radius_getattr(pack, &eapattr, RADIUS_ATTR_EAP_MESSAGE, 0, 0, 
             instance++)) {
         if ((appconn->challen + eapattr->l-2) > EAP_LEN) {
@@ -3958,7 +4157,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     if (!radius_getattr(pack, &hisipattr, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0, 0)) {
       if (options.debug) {
         printf("Framed IPv6 address is: ");
-        for (n=0; n<hisipattr->l-2; n++) printf("%.2x", hisipattr->v.t[n]); 
+        for (n = 0; n < hisipattr->l-2; n++) printf("%.2x", hisipattr->v.t[n]); 
         printf("\n");
       }
       if ((hisipattr->l-2) != sizeof(struct in_addr)) {
@@ -3976,7 +4175,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     if (!radius_getattr(pack, &hisipattr, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0, 0)) {
       if (options.debug) {
         printf("Framed IP address is: ");
-        for (n=0; n<hisipattr->l-2; n++) printf("%.2x", hisipattr->v.t[n]); 
+        for (n = 0; n < hisipattr->l-2; n++) printf("%.2x", hisipattr->v.t[n]); 
         printf("\n");
       }
       if ((hisipattr->l-2) != sizeof(struct in_addr)) {
@@ -4172,7 +4371,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
   /* EAP Message */
   appconn->challen = 0;
   do {
-    eapattr=NULL;
+    eapattr = NULL;
     if (!radius_getattr(pack, &eapattr, RADIUS_ATTR_EAP_MESSAGE, 0, 0, 
           instance++)) {
       if ((appconn->challen + eapattr->l-2) > EAP_LEN) {
@@ -4521,7 +4720,7 @@ int cb_dhcp_requestv6(struct dhcp_conn_t *conn, struct in6_addr *addr)
  */
 int cb_dhcp_connectv6(struct dhcp_conn_t *conn)
 {
-  struct app_conn_t *appconn=NULL;
+  struct app_conn_t *appconn = NULL;
 
   sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
       "New IPv6 request from MAC=%.2X-%.2X-%.2X-%.2X-%.2X-%.2X" ,
@@ -4607,10 +4806,16 @@ int cb_dhcp_disconnectv6(struct dhcp_conn_t *conn)
   return 0;
 }
 
-/* DHCP callback for allocating new IP address */
-/* In the case of WPA it is allready allocated,
- * for UAM address is allocated before authentication */
-int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr) {
+/**
+ * \brief DHCP callback for allocating new IP address.
+ * In the case of WPA it is allready allocated,
+ * for UAM address is allocated before authentication.
+ * \param conn dhcp connection instance
+ * \param addr requested IPv4 address
+ * \return 0 if success, -1 otherwise
+ */
+int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr)
+{
   struct ippoolm_t *ipm = NULL;
   struct app_conn_t *appconn = conn->peer;
   char buf[INET_ADDRSTRLEN];
@@ -4683,8 +4888,13 @@ int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr) {
   return 0;
 }
 
-/* DHCP callback for establishing new connection */
-int cb_dhcp_connect(struct dhcp_conn_t *conn) {
+/**
+ * \brief DHCP callback for establishing new connection.
+ * \param conn dhcp_conn_t instance
+ * \return 0 if success, -1 otherwise
+ */
+int cb_dhcp_connect(struct dhcp_conn_t *conn)
+{
   struct app_conn_t *appconn = NULL;
 
   sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
@@ -4725,8 +4935,13 @@ int cb_dhcp_connect(struct dhcp_conn_t *conn) {
 }
 
 
-/* Callback when a dhcp connection is deleted */
-int cb_dhcp_disconnect(struct dhcp_conn_t *conn) {
+/**
+ * \brief Callback when a dhcp connection is deleted.
+ * \param conn dhcp_conn_t instance
+ * \return 0 if success, -1 otherwise
+ */
+int cb_dhcp_disconnect(struct dhcp_conn_t *conn)
+{
   struct app_conn_t *appconn = NULL;
   char buf[INET_ADDRSTRLEN];
 
@@ -4785,7 +5000,7 @@ int cb_dhcp_disconnect(struct dhcp_conn_t *conn) {
  */
 int cb_dhcp_ipv6_ind(struct dhcp_conn_t* conn, void* pack, unsigned int len)
 {
-  struct app_conn_t* appconn=conn->peer;
+  struct app_conn_t* appconn = conn->peer;
 
   printf("cb_dhcp_ipv6_ind!\n");
 
@@ -4795,7 +5010,7 @@ int cb_dhcp_ipv6_ind(struct dhcp_conn_t* conn, void* pack, unsigned int len)
     return -1;
   }
 
-  if(appconn->authenticated==1)
+  if(appconn->authenticated == 1)
   {
 #ifndef NO_LEAKY_BUCKET
 #ifndef COUNT_UPLINK_DROP
@@ -4813,7 +5028,13 @@ int cb_dhcp_ipv6_ind(struct dhcp_conn_t* conn, void* pack, unsigned int len)
   return tun6_encaps(tunv6, pack, len);  
 }
 
-/* Callback for receiving messages from dhcp */
+/**
+ * \brief Callback for receiving messages from dhcp.
+ * \param conn low-level connection
+ * \param pack packet received
+ * \param len packet length
+ * \return 0 if success, -1 otherwise
+ */
 int cb_dhcp_data_ind(struct dhcp_conn_t *conn, void *pack, unsigned len) {
   struct tun_packet_t *iph = (struct tun_packet_t*) pack;
   struct app_conn_t *appconn = conn->peer;
@@ -5131,6 +5352,12 @@ static int uam_msg(struct redir_msg_t *msg) {
   return 0;
 }
 
+/**
+ * \brief Entry point of the program.
+ * \param argc number of arguments
+ * \param argv array of arguments
+ * \return EXIT_SUCCESS or EXIT_FAILURE
+ */
 int main(int argc, char **argv)
 {
   int maxfd = 0;	                /* For select() */
@@ -5139,9 +5366,9 @@ int main(int argc, char **argv)
   int status = 0;
   int msgresult = 0;
   /* Stack mode of client connections */
-  int ipv4=0;
-  int ipv6=0;
-  int dual=0;
+  int ipv4 = 0;
+  int ipv6 = 0;
+  int dual = 0;
 
   struct redir_msg_t msg;
   struct sigaction act;
@@ -5389,7 +5616,7 @@ int main(int argc, char **argv)
     /* [SV] */
     if (redir->fdv6 > maxfd)
     {
-      maxfd=redir->fdv6;
+      maxfd = redir->fdv6;
     }
   }
 
@@ -5441,19 +5668,19 @@ int main(int argc, char **argv)
   /* Main select loop                                               */
   /******************************************************************/
 
-  while (keep_going) {
+  while (g_keep_going) {
 
-    if (do_timeouts) {
+    if (g_do_timeouts) {
       /*if (options.debug) printf("Do timeouts!\n");*/
       (void) radius_timeout(radius);
       if (dhcp) (void) dhcp_timeout(dhcp);
       (void) checkconn();
-      do_timeouts = 0;
+      g_do_timeouts = 0;
     }
 
-    if (do_sighup) {
+    if (g_do_sighup) {
       reprocess_options(argc, argv);
-      do_sighup = 0;
+      g_do_sighup = 0;
     }
 
     FD_ZERO(&fds);

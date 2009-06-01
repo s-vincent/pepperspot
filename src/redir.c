@@ -63,6 +63,11 @@
  *
  */
 
+/**
+ * \file redir.c
+ * \brief HTTP redirection module.
+ */
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>

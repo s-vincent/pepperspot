@@ -63,6 +63,11 @@
  *
  */
 
+/**
+ * \file iphash.h
+ * \brief Hash function for IPv4 and IPv6 addresses.
+ */
+
 #ifndef _IPHASH_H
 #define _IPHASH_H
 
@@ -72,14 +77,30 @@
    The functions build on ippool.c.
    ippool_getip() is used to check if an address is in the hash table. */
 
-/* Create new address pool */
-extern 
+/**
+ * \brief Create new IPv4 address pool.
+ * \param this pointer that will receive newly allocated pool.
+ * \param list linked-list of member
+ * \param listsize size of the list
+ * \return 0 if success, -1 otherwise
+ */
 int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize);
 
+/**
+ * \brief Create new IPv6 address pool.
+ * \param this pointer that will receive newly allocated pool.
+ * \param list linked-list of member
+ * \param listsize size of the list
+ * \return 0 if success, -1 otherwise
+ */
 int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize);
 
-/* Delete existing address pool */
-extern int iphash_free(struct ippool_t *this);
+/**
+ * \brief Delete existing address pool.
+ * \param this pointer to the ippol_t list.
+ * \return 0
+ */
+int iphash_free(struct ippool_t *this);
 
 #endif	/* !_IPHASH_H */
 

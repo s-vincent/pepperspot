@@ -63,6 +63,11 @@
  *
  */
 
+/**
+ * \file syserr.c
+ * \brief Logging via syslog.
+ */
+
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/socket.h>

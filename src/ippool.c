@@ -63,6 +63,11 @@
  *
  */
 
+/**
+ * \file ippool.c
+ * \brief IPv4 and IPv6 address pool 
+ */
+
 #include <sys/types.h>
 #include <netinet/in.h> /* in_addr */
 #include <stdlib.h>     /* calloc */
@@ -76,7 +81,12 @@
 #include "ippool.h"
 #include "lookup.h"
 
-int ippool_printaddr(struct ippool_t *this) {
+/**
+ * \brief Print all addresses from the pool.
+ * \param this ippool_t instance
+ * \return 0
+ */
+static int ippool_printaddr(struct ippool_t *this) {
   int n = 0;
   char buf[INET_ADDRSTRLEN];
 
@@ -86,7 +96,7 @@ int ippool_printaddr(struct ippool_t *this) {
   printf("Laststat %d\n",  this->laststat - this->member);
   printf("Listsize %d\n",  this->listsize);
 
-  for (n=0; n<this->listsize; n++) {
+  for (n = 0; n < this->listsize; n++) {
     printf("Unit %d inuse %d prev %d next %d addr %s %x\n", 
         n,
         this->member[n].inuse,
@@ -171,7 +181,6 @@ int ippool_hashdel6(struct ippool_t *this, struct ippoolm_t *member)
   return 0;
 }
 
-
 int ippool_hashdel(struct ippool_t *this, struct ippoolm_t *member) {
   uint32_t hash = 0;
   struct ippoolm_t *p = NULL;
@@ -237,7 +246,7 @@ void ippool_getv6suffix(struct in6_addr *suffix, struct in6_addr *addr, int mask
     val[3] = 0xffffffff >> (128 - mask);
   }
 
-  for(i=0;i<4;i++) 
+  for(i = 0; i < 4; i++) 
   {
     ((uint32_t*)suffix->s6_addr)[i] = ((uint32_t*)addr->s6_addr)[i] & ~val[i]; 
   }
@@ -279,8 +288,8 @@ int ippool_aton(struct in_addr *addr, struct in_addr *mask,
         return -1; /* Wrong mask format */
       }
       m = m1 * 0x1000000 + m2 * 0x10000 + m3 * 0x100 + m4;
-      for (masklog = 0; ((1 << masklog) < ((~m)+1)); masklog++);
-      if (((~m)+1) != (1 << masklog)) {
+      for (masklog = 0; ((1 << masklog) < ((~m) + 1)); masklog++);
+      if (((~m) + 1) != (1 << masklog)) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Invalid mask");
         return -1; /* Wrong mask format (not all ones followed by all zeros)*/
       }
@@ -344,7 +353,7 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
   int dynsize = 0;
   int statsize = 0;
   /* [SV] */
-  int ipv6size=32;
+  int ipv6size = 32;
 
   if (!allowdyn) {
     dynsize = 0;
@@ -362,7 +371,7 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
     }
 
     m = ntohl(mask.s_addr);
-    dynsize = ((~m)+1);
+    dynsize = ((~m) + 1);
     if (flags & IPPOOL_NONETWORK)   /* Exclude network address from pool */
       dynsize--;
     if (flags & IPPOOL_NOGATEWAY)   /* Exclude gateway address from pool */
@@ -384,7 +393,7 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
     }
 
     m = ntohl(statmask.s_addr);
-    statsize = ((~m)+1);
+    statsize = ((~m) + 1);
     if (statsize > IPPOOL_STATSIZE) statsize = IPPOOL_STATSIZE;
   }
 
@@ -457,7 +466,7 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
 
   (*this)->firststat = NULL;
   (*this)->laststat = NULL;
-  for (i = dynsize; i<(listsize-ipv6size); i++) {
+  for (i = dynsize; i < (listsize - ipv6size); i++) {
 
     (*this)->member[i].addr.s_addr = 0;
     (*this)->member[i].inuse = 0;
@@ -475,11 +484,11 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
     (*this)->member[i].next = NULL; /* Redundant */
   }
 
-  (*this)->firstipv6=NULL;
-  (*this)->lastipv6=NULL;
-  for(i=(statsize+dynsize);i<listsize;i++)
+  (*this)->firstipv6 = NULL;
+  (*this)->lastipv6 = NULL;
+  for(i = (statsize + dynsize); i < listsize; i++)
   {
-    (*this)->member[i].addr.s_addr=0;
+    (*this)->member[i].addr.s_addr = 0;
     (*this)->member[i].inuse = 0;
     memset(&(*this)->member[i].addrv6, 0x00, sizeof(struct in6_addr));
 
@@ -555,9 +564,9 @@ int ippool_getip(struct ippool_t *this, struct ippoolm_t **member,
 
 int ippool_newip6(struct ippool_t* this, struct ippoolm_t** member, struct in6_addr* addr)
 {
-  struct ippoolm_t* p=NULL;
-  struct ippoolm_t* p2=NULL;
-  uint32_t hash=0;
+  struct ippoolm_t* p = NULL;
+  struct ippoolm_t* p2 = NULL;
+  uint32_t hash = 0;
 
   /* Find in hash table */
   if(addr && !IN6_IS_ADDR_UNSPECIFIED(addr))
@@ -578,7 +587,7 @@ int ippool_newip6(struct ippool_t* this, struct ippoolm_t** member, struct in6_a
       return -1; /* address already owned by someone else */
     }
 
-    p2=this->firstipv6;
+    p2 = this->firstipv6;
 
     /* Remove from linked list of free static addresses */
     if (p2->prev)
@@ -604,13 +613,6 @@ int ippool_newip6(struct ippool_t* this, struct ippoolm_t** member, struct in6_a
   return -1;
 }
 
-/**
- * ippool_newip
- * Get an IP address. If addr = 0.0.0.0 get a dynamic IP address. Otherwise
- * check to see if the given address is available. If available within
- * dynamic address space allocate it there, otherwise allocate within static
- * address space.
- **/
 int ippool_newip(struct ippool_t *this, struct ippoolm_t **member,
     struct in_addr *addr, int statip) {
   struct ippoolm_t *p = NULL;
@@ -812,10 +814,4 @@ int ippool_freeip(struct ippool_t *this, struct ippoolm_t *member) {
       return -1;
   }
 }
-
-#ifndef IPPOOL_NOIP6
-extern unsigned long int ippool_hash6(struct in6_addr *addr);
-extern int ippool_getip6(struct ippool_t *this, struct in6_addr *addr);
-extern int ippool_returnip6(struct ippool_t *this, struct in6_addr *addr);
-#endif
 
