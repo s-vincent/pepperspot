@@ -74,11 +74,10 @@
 #include <sys/types.h>
 #include <net/if.h>
 #ifndef IFNAMSIZ
-#define IFNAMSIZ IF_NAMESIZE
+#define IFNAMSIZ IF_NAMESIZE /**< Interface name size */
 #endif
 
 #define PACKET_MAX      8196 /**< Maximum packet size we receive */
-#define TUN_SCRIPTSIZE   256 
 #define TUN_ADDRSIZE     128 /**< Maximum ascii address size */ 
 
 #ifdef __linux__

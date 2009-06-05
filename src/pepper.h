@@ -81,7 +81,7 @@
 /* #define COUNT_UPLINK_DROP 1 */
 
 #define APP_NUM_CONN 1024 /**< Maximum number of hight-level connections */
-#define EAP_LEN 2048            /* TODO: Rather large */
+#define EAP_LEN 2048            /**< EAP challenge length (rather large) */
 
 #define MACOK_MAX 16 /**< Authorized MAC table size */
 
@@ -97,14 +97,12 @@
 
 #define BUCKET_SIZE  300000 /**< Size of leaky bucket (~200 packets) */
 
-/* Time length of leaky bucket in milliseconds */
 /* Bucket size = BUCKET_TIME * Bandwidth-Max radius attribute */
 /* Not used if BUCKET_SIZE is defined */
-#define BUCKET_TIME  5000  /**< 5 seconds */
+#define BUCKET_TIME  5000  /**< Time length of leak bucket in milliseconds */
 #define BUCKET_SIZE_MIN  15000 /**< Minimum size of leaky bucket (~10 packets) */
 
 #define CHECK_INTERVAL 3   /**< Time between checking connections */
-
 
 /* Authtype defs */
 #define CHAP_DIGEST_MD5   0x05
@@ -163,15 +161,15 @@ struct app_conn_t
   uint8_t ms2succ[MS2SUCCSIZE];
   int ms2succlen;
   char sessionid[REDIR_SESSIONID_LEN]; /**< Accounting session ID */
-  long int sessiontimeout;
-  long int idletimeout;
+  long int sessiontimeout; /**< RADIUS session timeout */
+  long int idletimeout; /**< RADIUS idle timeout */
   uint8_t statebuf[RADIUS_ATTR_VLEN+1];
   int statelen;
   uint8_t classbuf[RADIUS_ATTR_VLEN+1];
   int classlen;
-  int bandwidthmaxup;
-  int bandwidthmaxdown;
-  uint64_t maxinputoctets; 
+  int bandwidthmaxup; /**< Maximum upload bandwith */
+  int bandwidthmaxdown; /**< Maximum download bandwidth */
+  uint64_t maxinputoctets;
   uint64_t maxoutputoctets;
   uint64_t maxtotaloctets;
   time_t sessionterminatetime;
@@ -203,12 +201,12 @@ struct app_conn_t
   uint32_t nasport;            /**< Set by access request */
   uint8_t hismac[DHCP_ETH_ALEN];    /**< His MAC address */
   uint8_t ourmac[DHCP_ETH_ALEN];    /**< Our MAC address */
-  struct in_addr ourip;        /**< IP address to listen to */
+  struct in_addr ourip;    /**< IP address to listen to */
   struct in6_addr ouripv6; /**< IPv6 address to listen to */
-  struct in_addr hisip;        /**< Client IP address */
+  struct in_addr hisip;    /**< Client IP address */
   struct in6_addr hisipv6; /**< Client IPv6 address */
-  struct in_addr reqip;        /**< IP requested by client */
-  uint16_t mtu;
+  struct in_addr reqip;    /**< IP requested by client */
+  uint16_t mtu;            /**< MTU of the link */
 
   /* Accounting */
   struct timeval start_time;
@@ -219,30 +217,30 @@ struct app_conn_t
   uint64_t input_octets;
   uint64_t output_octets;
   uint32_t terminate_cause;
-  uint32_t session_id;
+  uint32_t session_id; /**< Accounting session ID */
 
   /* Information for each connection */
-  struct in_addr net;
-  struct in_addr mask;
-  struct in_addr dns1;
-  struct in_addr dns2;
+  struct in_addr net; /**< Network address */
+  struct in_addr mask; /**< IPv4 mask */
+  struct in_addr dns1; /**< Primary DNS address */
+  struct in_addr dns2; /**< Secondary DNS address */
   struct timeval last_time; /**< Last time a packet was received or sent */
 
   /* Leaky bucket */
-  uint32_t bucketup;
-  uint32_t bucketdown;
-  uint32_t bucketupsize;
-  uint32_t bucketdownsize;
+  uint32_t bucketup; /**< Current leaky bucket upload size */
+  uint32_t bucketdown; /**< Current leaky bucket download size */
+  uint32_t bucketupsize; /**< Leaky bucket maximum upload size */
+  uint32_t bucketdownsize; /**< Leaky bucket maximum download size */
 
   /* UAM information */
-  uint8_t uamchal[REDIR_MD5LEN];
-  int uamtime;
+  uint8_t uamchal[REDIR_MD5LEN]; /**< UAM challenge number */
+  int uamtime; /**< UAM time */
   char userurl[USERURLSIZE];
   int uamabort;
 };
 
 
-#define IPADDRLEN 256
+/* #define IPADDRLEN 256 */
 #define IDLETIME  10  /**< Idletime between each select */
 
 #define UAMOKIP_MAX 256 /**< Max number of allowed UAM IP addresses */
@@ -258,17 +256,20 @@ struct options_t
 {
   /* fg */
   int debug;                     /**< If debug message is enabled */
+
   /* conf */
-  int interval;
+  int interval;                  /**< Time between checking connections */
   char* pidfile;                 /**< Process ID file */
   /* statedir */
   char *ipversion;               /**< IP version used ("ipv4", "ipv6" or "dual") */
 
   /* TUN parameters */
-  struct in_addr net;            /**< Network IP address */
+/* 
   char netc[IPADDRLEN];
-  struct in_addr mask;           /**< Network mask */
   char maskc[IPADDRLEN];
+*/
+  struct in_addr net;            /**< Network IP address */
+  struct in_addr mask;           /**< Network mask */
   int prefixlen;                 /**< IPv6 prefix length */
   int ipv6mask;                  /**< IPv6 mask */
   char *dynip;                   /**< Dynamic IP address pool */
@@ -303,7 +304,7 @@ struct options_t
 
   /* Radius proxy parameters */
   struct sockaddr_storage proxylisten;    /**< IP address to listen to */
-  int proxyport;                 /**< UDP port to listen to */
+  int proxyport;                          /**< UDP port to listen to */
   struct sockaddr_storage proxyaddr;      /**< IP address of proxy client(s) */
   struct sockaddr_storage proxymask;      /**< IP mask of proxy client(s) */
   char* proxysecret;             /**< Proxy shared secret */
@@ -317,12 +318,12 @@ struct options_t
   char* dhcpif;                 /**< Interface: eth0 */
   unsigned char dhcpmac[DHCP_ETH_ALEN]; /**< Interface MAC address */
   int dhcpusemac;               /**< Use given MAC or interface default */
-  struct in_addr dhcplisten;     /**< IP address to listen to */
-  int lease;                     /**< DHCP lease time */
+  struct in_addr dhcplisten;    /**< IP address to listen to */
+  int lease;                    /**< DHCP lease time */
 
   /* IPv6 parameters */
   struct in6_addr ip6listen; /**< IPv6 address to listen to */
-  struct in6_addr prefix; /**< IPv6 prefix */
+  struct in6_addr prefix;    /**< IPv6 prefix */
 
   /* EAPOL parameters */
   int eapolenable;               /**< Use eapol */
