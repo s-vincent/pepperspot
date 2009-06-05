@@ -142,6 +142,12 @@ static int tun_nlattr(struct nlmsghdr *n, int nsize, int type, void *d, int dlen
   return 0;
 }
 
+/**
+ * \brief Get interface index for tun_t instance
+ * \param this tun_t instance
+ * \param ifindex interface index will be filled in this variable
+ * \return 0
+ */
 static int tun_gifindex(struct tun_t *this, unsigned int *ifindex)
 {
   struct ifreq ifr;
@@ -380,7 +386,6 @@ int tun_addaddr(struct tun_t *this,
 
 }
 
-
 int tun_setaddr(struct tun_t *this,
     struct in_addr *addr,
     struct in_addr *dstaddr,
@@ -494,7 +499,16 @@ int tun_setaddr(struct tun_t *this,
   return 0;
 }
 
-int tun_route(struct tun_t *this,
+/**
+ * \brief Add/remove route.
+ * \param this tun_t instance
+ * \param dst destination address
+ * \param gateway gateway address
+ * \param mask IPv4 mask
+ * \param delete 1 = delete route, 0 = add route
+ * \return 0 if success, -1 otherwise
+ */
+static int tun_route(struct tun_t *this,
     struct in_addr *dst,
     struct in_addr *gateway,
     struct in_addr *mask,
@@ -631,7 +645,15 @@ int tun_addroute(struct tun_t *this,
   return tun_route(this, dst, gateway, mask, 0);
 }
 
-int tun_delroute(struct tun_t *this,
+/**
+ * \brief Remove a route.
+ * \param this tun_t instance
+ * \param dst destination address
+ * \param gateway for destination address
+ * \param mask IPv4 mask
+ * \return 0 if success, -1 otherwise
+ */
+static int tun_delroute(struct tun_t *this,
     struct in_addr *dst,
     struct in_addr *gateway,
     struct in_addr *mask)
@@ -846,7 +868,6 @@ int tun_set_cb_ind(struct tun_t *this,
   return 0;
 }
 
-
 int tun_decaps(struct tun_t *this)
 {
 #if defined(__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
@@ -892,7 +913,6 @@ int tun_decaps(struct tun_t *this)
 #endif
 
 }
-
 
 int tun_encaps(struct tun_t *tun, void *pack, unsigned len)
 {

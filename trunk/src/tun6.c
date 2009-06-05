@@ -80,14 +80,16 @@ const char os_driver[] = "Linux";
 # define USE_LINUX 1
 /* #include <linux/if.h> */
 # include <linux/if_tun.h> /* TUNSETIFF - Linux tunnel driver */
-/*
- * <linux/ipv6.h> conflicts with <netinet/in.h> and <arpa/inet.h>,
+
+/**
+ * \struct in6_ifreq
+ * \brief <linux/ipv6.h> conflicts with <netinet/in.h> and <arpa/inet.h>,
  * so we've got to declare this structure by hand.
  */
 struct in6_ifreq {
-  struct in6_addr ifr6_addr;
-  uint32_t ifr6_prefixlen;
-  int ifr6_ifindex;
+  struct in6_addr ifr6_addr; /**< IPv6 address */
+  uint32_t ifr6_prefixlen; /**< Prefix length */
+  int ifr6_ifindex; /**< Interface index */
 };
 
 # include <net/route.h> /* struct in6_rtmsg */
@@ -150,12 +152,14 @@ const char os_driver[] = "Generic";
 
 #define PACKET_MAX      8196 /**< Maximum packet size */
 
-/* XXX [SV] originally there was strlcpy but it lacks in Linux libc... replace this latter!
+/**
+ * Originally there was strlcpy but it lacks in Linux libc... replace this latter!
  * for the moment cross the finger... this function is not safe...
  */
 #define safe_strcpy( tgt, src ) \
   (strncpy(tgt, src, sizeof(tgt)))
 /*	((strncpy (tgt, src, sizeof (tgt)) >= sizeof (tgt)) ? -1 : 0) */
+
 
 /**
  * \struct tun6
@@ -720,15 +724,15 @@ _iface_route (int reqfd, int id, int add, const struct in6_addr *addr,
   return retval;
 }
 
-
 /**
  * Adds an address with a netmask to a tunnel.
  * Requires CAP_NET_ADMIN or root privileges.
- *
+ * @param t tun6 instance
+ * @param addr address to add
+ * @param prefixlen length of IPv6 prefix
  * @return 0 on success, -1 in case error.
  */
-  int
-tun6_addAddress (tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
+int tun6_addAddress (tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
 {
   assert (t != NULL);
 
@@ -819,11 +823,11 @@ tun6_delRoute (tun6 *t, const struct in6_addr *addr, unsigned prefix_len,
 
 /**
  * Defines the tunnel interface Max Transmission Unit (bytes).
- *
+ * @param t tun6 instance
+ * @param mtu MTU to set
  * @return 0 on success, -1 in case of error.
  */
-  int
-tun6_setMTU (tun6 *t, unsigned mtu)
+int tun6_setMTU (tun6 *t, unsigned mtu)
 {
   assert (t != NULL);
 

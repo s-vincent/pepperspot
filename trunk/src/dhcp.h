@@ -100,33 +100,33 @@ struct dhcp_tag_t {
 }__attribute__((packed));
 
 /* Option constants */
-#define DHCP_OPTION_MAGIC          0x63825363
-#define DHCP_OPTION_MAGIC_LEN       4
+#define DHCP_OPTION_MAGIC          0x63825363 /**< DHCP magic number */
+#define DHCP_OPTION_MAGIC_LEN       4 /**< DHCP magic number length */
 
-#define DHCP_OPTION_PAD             0
-#define DHCP_OPTION_SUBNET_MASK     1
-#define DHCP_OPTION_ROUTER_OPTION   3
-#define DHCP_OPTION_DNS             6
-#define DHCP_OPTION_DOMAIN_NAME    15
-#define DHCP_OPTION_INTERFACE_MTU  26
-#define DHCP_OPTION_REQUESTED_IP   50
-#define DHCP_OPTION_LEASE_TIME     51
-#define DHCP_OPTION_MESSAGE_TYPE   53
-#define DHCP_OPTION_SERVER_ID      54
-#define DHCP_OPTION_END           255
+#define DHCP_OPTION_PAD             0 /**< Padding option */
+#define DHCP_OPTION_SUBNET_MASK     1 /**< IPv4 mask option */
+#define DHCP_OPTION_ROUTER_OPTION   3 /**< Router option */
+#define DHCP_OPTION_DNS             6 /**< DNS information option */
+#define DHCP_OPTION_DOMAIN_NAME    15 /**< Domain name information option */
+#define DHCP_OPTION_INTERFACE_MTU  26 /**< MTU option */
+#define DHCP_OPTION_REQUESTED_IP   50 /**< Requested IPv4 option */
+#define DHCP_OPTION_LEASE_TIME     51 /**< DHCP lease time option */
+#define DHCP_OPTION_MESSAGE_TYPE   53 /**< Message type option */
+#define DHCP_OPTION_SERVER_ID      54 /**< DHCP server ID */
+#define DHCP_OPTION_END           255 /**< End of options */
 
 /* BOOTP Message Types */
 #define DHCP_BOOTREQUEST  1 /**< BOOTP request code */
 #define DHCP_BOOTREPLY    2 /**< BOOTP reply code */
 
 /* DHCP Message Types */
-#define DHCPDISCOVER      1
-#define DHCPOFFER         2
-#define DHCPREQUEST       3
-#define DHCPDECLINE       4
-#define DHCPACK           5
-#define DHCPNAK           6
-#define DHCPRELEASE       7
+#define DHCPDISCOVER      1 /**< DISCOVER message type */
+#define DHCPOFFER         2 /**< OFFER message type */
+#define DHCPREQUEST       3 /**< REQUEST message type */
+#define DHCPDECLINE       4 /**< DECLINE message type */
+#define DHCPACK           5 /**< ACK message type */
+#define DHCPNAK           6 /**< NAK message type */
+#define DHCPRELEASE       7 /**< RELEASE message type */
 
 /* UDP Ports */
 #define DHCP_BOOTPS 67 /**< BOOTPS protocol number */
@@ -138,8 +138,8 @@ struct dhcp_tag_t {
 #define DHCP_HTTPS 443 /**< HTTPS protocol number */
 
 /* Length constants for Ethernet packet */
-#define DHCP_ETH_ALEN  6
-#define DHCP_ETH_HLEN 14
+#define DHCP_ETH_ALEN  6 /**< Ethernet address length */
+#define DHCP_ETH_HLEN 14 /**< Ethernet header length */
 
 /**
  * \struct dhcp_ethhdr_t
@@ -153,8 +153,8 @@ struct dhcp_ethhdr_t
 };
 
 /* Constants for IP packet */
-#define DHCP_IP_ALEN   4
-#define DHCP_IP_HLEN  20
+#define DHCP_IP_ALEN   4 /**< IPv4 address length */
+#define DHCP_IP_HLEN  20 /**< IPv4 header length */
 #define DHCP_IP_ICMP   1 /**< ICMP Protocol number */
 #define DHCP_IP_TCP    6 /**< TCP Protocol number */
 #define DHCP_IP_UDP   17 /**< UDP Protocol number */
@@ -169,17 +169,17 @@ struct dhcp_ethhdr_t
  * \brief IPv4 header.
  */
 struct dhcp_iphdr_t {
-  uint32_t  ihl : 4; /**< Internet header length (number of 32 bits words in header). */
-  uint32_t  version : 4; /**< Version (always 4). */
-  uint32_t  tos : 8; /**< ... */
-  uint32_t tot_len : 16; /**< Total length. */
-  uint16_t id; /**< ID number. */
-  uint16_t frag_off; /**< Fragmentation offset. */
-  uint8_t  ttl; /**< Time to live. */
-  uint8_t  protocol; /**< Protocol. */
-  uint16_t check; /**< Checksum. */
-  uint32_t saddr; /**< Source IPv4 address. */
-  uint32_t daddr; /**< Destination IPv4 address. */
+  uint32_t  ihl : 4; /**< Internet header length (number of 32 bits words in header) */
+  uint32_t  version : 4; /**< Version (always 4) */
+  uint32_t  tos : 8; /**< Type of service */
+  uint32_t tot_len : 16; /**< Total length */
+  uint16_t id; /**< ID number */
+  uint16_t frag_off; /**< Fragmentation offset */
+  uint8_t  ttl; /**< Time to live */
+  uint8_t  protocol; /**< Protocol */
+  uint16_t check; /**< Checksum */
+  uint32_t saddr; /**< Source IPv4 address */
+  uint32_t daddr; /**< Destination IPv4 address */
 }__attribute__((packed));
 
 /* [SV] */
@@ -189,22 +189,17 @@ struct dhcp_iphdr_t {
  */
 struct dhcp_ipv6hdr_t 
 {
-  uint32_t version:4; /**< Version (always 6). */
-  uint32_t class:8; /**< Class field. */
-  uint32_t flow_label:20; /**< Flow label field. */
-  uint16_t payload_length; /**< Payload length. */
-  uint8_t next_header; /**< Next header number (protocol or IPv6 extension). */
-  uint8_t hop_limit; /**< Hop limit (i.e TTL). */
-  uint8_t src_addr[16]; /**< IPv6 source address. */
-  uint8_t dst_addr[16]; /**< IPv6 destination address. */
+  uint32_t version:4; /**< Version (always 6) */
+  uint32_t class:8; /**< Class field */
+  uint32_t flow_label:20; /**< Flow label field */
+  uint16_t payload_length; /**< Payload length */
+  uint8_t next_header; /**< Next header number (protocol or IPv6 extension) */
+  uint8_t hop_limit; /**< Hop limit (i.e TTL) */
+  uint8_t src_addr[16]; /**< IPv6 source address */
+  uint8_t dst_addr[16]; /**< IPv6 destination address */
 } __attribute__((packed));
 
-
-/**
- * \def DHCP_IP_PLEN
- * \brief IPv4 payload length.
- */
-#define DHCP_IP_PLEN 1500 
+#define DHCP_IP_PLEN 1500 /**< IPv4 payload length */
 
 /**
  * \struct dhcp_ippacket_t
@@ -284,12 +279,12 @@ struct dhcp_tcphdr_t {
 #define DHCP_SNAME_LEN     64    /**< Length of server host name */
 #define DHCP_FILE_LEN     128    /**< Length of boot file name*/
 #define DHCP_OPTIONS_LEN  312    /**< Length of optional parameters field */
-#define DHCP_MIN_LEN 28 + 16 +64 + 128 /**< Length of packet excluding options */
-#define DHCP_LEN DHCP_MIN_LEN + DHCP_OPTIONS_LEN
+#define DHCP_MIN_LEN 28 + 16 + 64 + 128 /**< Length of packet excluding options */
+#define DHCP_LEN DHCP_MIN_LEN + DHCP_OPTIONS_LEN /**< Total length of DHCP packet */
 
 /* Value Constants */
 
-#define DHCP_HTYPE_ETH 1
+#define DHCP_HTYPE_ETH 1 /**< DHCP hardware type for ethernet network */
 
 /**
  * \struct dhcp_packet_t
@@ -387,10 +382,10 @@ struct dhcp_arp_fullpacket_t {
 
 #ifdef DHCP_CHECKDNS
 
-#define DHCP_DNS_HLEN  12
+#define DHCP_DNS_HLEN  12 /**< DNS header length */
 
 /**
- * \struct dhcp_dns_packe_t
+ * \struct dhcp_dns_packet_t
  * \brief DNS packet.
  */
 struct dhcp_dns_packet_t { /* From RFC 1035 */
@@ -435,14 +430,14 @@ int dhcp_checkDNS(struct dhcp_conn_t *conn,
 struct dhcp_t; /* Forward declaration */
 
 /* Authentication states */
-#define DHCP_AUTH_NONE        0
-#define DHCP_AUTH_DROP        1
-#define DHCP_AUTH_PASS        2
-#define DHCP_AUTH_UNAUTH_TOS  3
-#define DHCP_AUTH_AUTH_TOS    4
-#define DHCP_AUTH_DNAT        5
+#define DHCP_AUTH_NONE        0 /**< None state */
+#define DHCP_AUTH_DROP        1 /**< Drop all packet */
+#define DHCP_AUTH_PASS        2 /**< Authorized, packet pass */
+#define DHCP_AUTH_UNAUTH_TOS  3 /**< ??? */
+#define DHCP_AUTH_AUTH_TOS    4 /**< ??? */
+#define DHCP_AUTH_DNAT        5 /**< Packet are redirected to UAM server */
 
-#define DHCP_DOMAIN_LEN      30
+#define DHCP_DOMAIN_LEN      30 /**< DNS domain name length */
 
 #define DHCP_DNAT_MAX 10 /**< Maximum IPv4 DNAT table size */
 
@@ -489,15 +484,19 @@ struct dhcp_conn_t {
 
 #define DHCP_EAPOL_TAG_VLEN 255        /**< Tag value always shorter than this */
 
+/**
+ * \struct dhcp_eapol_tag_t
+ * \brief EAPOL tag element.
+ */
 struct dhcp_eapol_tag_t {
-  uint8_t t;
-  uint8_t l;
-  uint8_t v[DHCP_EAPOL_TAG_VLEN];
+  uint8_t t; /**< EAPOL tag type */
+  uint8_t l; /**< Length of attribute */
+  uint8_t v[DHCP_EAPOL_TAG_VLEN]; /**< Payload */
 }__attribute__((packed));
 
 /**
  * \struct dhcp_dot1xhdr_t
- * \brief DOT1x packet header.
+ * \brief 802.1x packet header.
  */
 struct dhcp_dot1xhdr_t {
   uint8_t  ver; /**< Version */
@@ -520,14 +519,15 @@ struct dhcp_eap_t {
 } __attribute__((packed));
 
 
+/**
+ * \struct dhcp_dot1xpacket_t
+ * \brief Complete 802.1X packet.
+ */
 struct dhcp_dot1xpacket_t {
-  struct dhcp_ethhdr_t ethh;
-  struct dhcp_dot1xhdr_t dot1x;
-  struct dhcp_eap_t eap;
+  struct dhcp_ethhdr_t ethh; /**< Ethernet header */
+  struct dhcp_dot1xhdr_t dot1x; /**< 802.1X header */
+  struct dhcp_eap_t eap; /**< EAPOL header */
 } __attribute__((packed));
-
-
-
 
 /**
  * \struct dhcp_t
@@ -985,11 +985,29 @@ int dhcp_freeconnv6(struct dhcp_conn_t *conn);
  */
 int dhcp_arp_ind(struct dhcp_t *this);  /* ARP Indication */
 
-
+/**
+ * \brief Send EAP frame.
+ * \param conn low-level connection
+ * \param pack packet to send
+ * \param len length of packet
+ * \return 0 if success, -1 otherwise
+ */
 int dhcp_sendEAP(struct dhcp_conn_t *conn, void *pack, int len);
 
+/**
+ * \brief Send EAP reject frame.
+ * \param conn low-level connection
+ * \param pack packet to send
+ * \param len length of packet
+ * \return 0 if success, -1 otherwise
+ */
 int dhcp_sendEAPreject(struct dhcp_conn_t *conn, void *pack, int len);
 
+/**
+ * \brief Call this functino when a new EAPOL packet has arrived
+ * \param this dhcp_t instance
+ * \return 0 if success, -1 otherwise
+ */
 int dhcp_eapol_ind(struct dhcp_t *this);
 
 /* [SV] */

@@ -28,13 +28,7 @@
  */
 
 #ifndef __UTIL_H__
-#define __UTIL_H__ 1
-
-#define MAX_PKT_LEN 1540
-
-#define TIME_SEC_MSEC	1000
-#define TIME_SEC_NSEC 	1000000000
-#define TIME_MSEC_NSEC	1000000
+#define __UTIL_H__
 
 #include <stdlib.h>
 #include <string.h>
@@ -43,134 +37,37 @@
 
 /* For emission and reception distinction */
 #ifndef IPV6_RECVHOPLIMIT
-#define IPV6_RECVHOPLIMIT IPV6_HOPLIMIT
-#endif
-#ifndef IPV6_RECVPKTINFO
-#define IPV6_RECVPKTINFO IPV6_PKTINFO
+#define IPV6_RECVHOPLIMIT IPV6_HOPLIMIT /**< IPv6 socket option to get/set hop limit value */
 #endif
 
-#define tstomsec(tv) \
-  ((tv).tv_sec * TIME_SEC_MSEC + (tv).tv_nsec / TIME_MSEC_NSEC)
+#ifndef IPV6_RECVPKTINFO 
+#define IPV6_RECVPKTINFO IPV6_PKTINFO /**< IPv6 socket option to receive packet information */
+#endif
 
-#define tstodsec(tv) \
-  ((double)(tv).tv_sec + (double)(tv).tv_nsec / TIME_SEC_NSEC)
-
-#define tsisset(tv)	((tv).tv_sec || (tv).tv_nsec)
-#define tsclear(tv)	((tv).tv_sec = (tv).tv_nsec = 0)
-
-#define tscmp(a, b, CMP) \
-  (((a).tv_sec == (b).tv_sec) ? \
-   ((a).tv_nsec CMP (b).tv_nsec) : \
-   ((a).tv_sec CMP (b).tv_sec))
-
-#define tsadd(a, b, result) \
-  do { \
-    (result).tv_sec = (a).tv_sec + (b).tv_sec; \
-    (result).tv_nsec = (a).tv_nsec + (b).tv_nsec; \
-    if ((result).tv_nsec >= TIME_SEC_NSEC) { \
-      ++(result).tv_sec; \
-      (result).tv_nsec -= TIME_SEC_NSEC; \
-    } \
-  } while (0)
-
-#define tssub(a, b, result) \
-  do { \
-    (result).tv_sec = (a).tv_sec - (b).tv_sec; \
-    (result).tv_nsec = (a).tv_nsec - (b).tv_nsec; \
-    if ((result).tv_nsec < 0) { \
-      --(result).tv_sec; \
-      (result).tv_nsec += TIME_SEC_NSEC; \
-    } \
-  } while (0)
-
-#define tsafter(a, b) tscmp(a,b,<)
-#define tsbefore(a, b) tscmp(a,b,>)
-
-#define tscpy(to, from) \
-  do { \
-    (to).tv_sec = (from).tv_sec; \
-    (to).tv_nsec = (from).tv_nsec; \
-  } while (0)
-
-#define tsset(tv, sec, nsec) \
-  do { \
-    (tv).tv_sec = (sec); \
-    (tv).tv_nsec = (nsec); \
-  } while (0)
-
-#define tssetsec(tv, sec) \
-  do { \
-    (tv).tv_sec = (sec); \
-    (tv).tv_nsec = 0; \
-  } while (0)
-
-#define tssetmsec(tv, msec) \
-  do { \
-    (tv).tv_sec = (msec) / TIME_SEC_MSEC; \
-    (tv).tv_nsec = ((msec) % TIME_SEC_MSEC) * TIME_MSEC_NSEC; \
-  } while (0)
-
-#define tssetdsec(tv, sec) \
-  do { \
-    (tv).tv_sec = (long)(sec); \
-    (tv).tv_nsec = (long)(((sec)-(tv).tv_sec) * TIME_SEC_NSEC); \
-  } while (0)
-
-
-#define tsinc(tv, sec, nsec) \
-  do { \
-    (tv).tv_sec += (sec); \
-    (tv).tv_nsec += (nsec); \
-    if ((tv).tv_nsec >= TIME_SEC_NSEC) { \
-      ++(tv).tv_sec; \
-      (tv).tv_nsec -= TIME_SEC_NSEC; \
-    } \
-  } while (0)
-
-#define tsincmsec(tv, msec) \
-  do { \
-    (tv).tv_sec += (msec) / TIME_SEC_MSEC; \
-    (tv).tv_nsec += ((msec) % TIME_SEC_MSEC) * TIME_MSEC_NSEC; \
-    if ((tv).tv_nsec >= TIME_SEC_NSEC) { \
-      ++(tv).tv_sec; \
-      (tv).tv_nsec -= TIME_SEC_NSEC; \
-    } \
-  } while (0)
-
-#define tsdec(tv, sec, nsec) \
-  do { \
-    (tv).tv_sec -= sec; \
-    (tv).tv_nsec -= nsec; \
-    if ((tv).tv_nsec < 0) { \
-      --(tv).tv_sec; \
-      (tv).tv_nsec += TIME_SEC_NSEC; \
-    } \
-  } while (0)
-
-#define tsdecmsec(tv, msec) \
-  do { \
-    (tv).tv_sec -= (msec) / TIME_SEC_MSEC; \
-    (tv).tv_nsec -= ((msec) % TIME_SEC_MSEC) * TIME_MSEC_NSEC; \
-    if ((tv).tv_nsec < 0) { \
-      --(tv).tv_sec; \
-      (tv).tv_nsec += TIME_SEC_NSEC; \
-    } \
-  } while (0)
-
-#define tsmin(a, b) tsbefore((a), (b)) ? (b) : (a)
-
-#define tsmax(a, b) tsafter((a), (b)) ? (b) : (a)
-
-extern const char loopback_dev_name[];
-
+/**
+ * \def IN6ADDR_ALL_NODES_MC_INIT
+ * \brief All nodes multicast address (FF02::1).
+ */
 #define IN6ADDR_ALL_NODES_MC_INIT \
 { { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x1 } } }
+
+/**
+ * \def IN6ADDR_ALL_ROUTERS_MC_INIT
+ * \brief All routers multicast address (FF02::2).
+ */
 #define IN6ADDR_ALL_ROUTERS_MC_INIT \
 { { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x2 } } }
 
-
 /* Following 4 routines are taken from include/net/ipv6.h */
 
+/**
+ * \brief Set an IPv6 address.
+ * \param addr address will be build with four other parameters
+ * \param w1 first 32 bit of IPv6 address
+ * \param w2 second 32 bit of IPv6 address
+ * \param w3 third 32 bit of IPv6 address
+ * \param w4 last 32 bit of IPv6 address
+ */
 static inline void ipv6_addr_set(struct in6_addr *addr, 
     uint32_t w1, uint32_t w2,
     uint32_t w3, uint32_t w4)
@@ -181,6 +78,11 @@ static inline void ipv6_addr_set(struct in6_addr *addr,
   ((uint32_t*)addr->s6_addr)[3] = w4;
 }
 
+/**
+ * \brief Build a IPv6 multicast solicited address.
+ * \param addr IPv6 address
+ * \param solicited Resulting solicited address built from addr
+ */
 static inline void ipv6_addr_solict_mult(const struct in6_addr *addr,
     struct in6_addr *solicited)
 {
@@ -188,19 +90,16 @@ static inline void ipv6_addr_solict_mult(const struct in6_addr *addr,
       htonl(0xFF000000) | ((uint32_t*)addr->s6_addr)[3]);
 }
 
+/**
+ * \brief Build a link-local address from global address.
+ * \param addr Global IPv6 address.
+ * \param llocal result link-local address built from addr
+ */
 static inline void ipv6_addr_llocal(const struct in6_addr *addr,
     struct in6_addr *llocal)
 {
   ipv6_addr_set(llocal, htonl(0xFE800000), 0,
       ((uint32_t*)addr->s6_addr)[2], ((uint32_t*)addr->s6_addr)[3]);
-}
-
-static inline int in6_is_addr_routable_unicast(const struct in6_addr *a)
-{
-  return ((!IN6_IS_ADDR_UNSPECIFIED(a) &&
-        !IN6_IS_ADDR_LOOPBACK(a) &&
-        !IN6_IS_ADDR_MULTICAST(a) &&
-        !IN6_IS_ADDR_LINKLOCAL(a)));
 }
 
 /**
@@ -221,29 +120,6 @@ static inline void free_iov_data(struct iovec *iov, int count)
       free(iov[len].iov_base);
   }
 }
-
-static inline unsigned long umin(unsigned long a, unsigned long b)
-{
-  return (a < b) ? a : b;
-}
-
-static inline long min(long a, long b)
-{
-  return (a < b) ? a : b;
-}
-
-static inline long max(long a, long b)
-{
-  return (a > b) ? a : b;
-}
-
-/*
- * XXX: These may be missing on kernel header because either kernel is not
- * ready or should be removed since kernel will never support it.
- */
-#ifndef RTPROT_MIP
-#define RTPROT_MIP	16
-#endif
 
 #endif /* __UTIL_H__ */
 

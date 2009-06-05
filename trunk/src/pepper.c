@@ -156,6 +156,9 @@ static struct radius_t *radius = NULL;	/**< Radius client instance */
 static struct dhcp_t *dhcp = NULL;			/**< DHCP instance */
 static struct redir_t *redir = NULL;		/**< Redir instance */
 
+static struct timeval checktime; /**< Last time of connection checks */
+static struct timeval rereadtime; /**< Time to reread configuration */
+
 /**
  * \var g_connection
  * \brief Array of "high level" connection.
@@ -185,9 +188,6 @@ struct app_conn_t *g_firstusedconn = NULL; /* First used in linked list */
  * \brief pointer to the last used connection.
  */
 struct app_conn_t *g_lastusedconn = NULL;  /* Last used in linked list */
-
-struct timeval checktime;
-struct timeval rereadtime;
 
 /**
  * \var g_keep_going
@@ -350,7 +350,7 @@ static int leaky_bucket(struct app_conn_t *conn, int octetsup, int octetsdown)
  * \param integer integer value
  * \return 0
  */
-int set_env(char *name, char *value, unsigned int len, struct in_addr *addr,
+static int set_env(char *name, char *value, unsigned int len, struct in_addr *addr,
     uint8_t *mac, long int *integer)
 {
   char s[1024];
@@ -403,7 +403,7 @@ int set_env(char *name, char *value, unsigned int len, struct in_addr *addr,
  * \param integer integer value
  * \return 0
  */
-int set_envv6(char *name, char *value, unsigned int len, struct in6_addr *addr,
+static int set_envv6(char *name, char *value, unsigned int len, struct in6_addr *addr,
     uint8_t *mac, long int *integer)
 {
   char s[1024];
@@ -447,7 +447,7 @@ int set_envv6(char *name, char *value, unsigned int len, struct in6_addr *addr,
  * \param script script pathname
  * \return 0 if script succeed, false otherwise (fork/exec error, ...)
  */
-int runscript(struct app_conn_t *appconn, char* script)
+static int runscript(struct app_conn_t *appconn, char* script)
 {
   long int l = 0;
   int status = 0;
@@ -2967,7 +2967,7 @@ static int dnprot_accept(struct app_conn_t *appconn) {
  * \return 0
  * \author Sebastien Vincent
  */
-int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
+static int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
 {
   struct ippoolm_t* ipm = NULL;
   struct in6_addr dst;
@@ -3117,7 +3117,7 @@ int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len)
  * \param conn redir connection that we will filled up up-to-date value
  * \return 0 if success, -1 otherwise
  */
-int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
+static int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
     struct redir_conn_t *conn)
 {
   struct ippoolm_t *ipm = NULL;
@@ -3180,7 +3180,7 @@ int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
  * \param conn redir connection that we will filled up up-to-date value
  * \return 0 if success, -1 otherwise
  */
-int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr, struct redir_conn_t* conn)
+static int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr, struct redir_conn_t* conn)
 {
   struct ippoolm_t *ipm = NULL;
   struct app_conn_t *appconn = NULL;
@@ -3397,7 +3397,14 @@ int accounting_request(struct radius_packet_t *pack,
         return 0;
       }
       /* Connection is simply deleted */
-      dhcp_freeconn(dhcpconn);
+      if(dhcpconn->ipv6)
+      {
+        dhcp_freeconnv6(dhcpconn);
+      }
+      else /* IPv4 */
+      {
+        dhcp_freeconn(dhcpconn);
+      }
       break;
     default:
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,"Unknown downlink protocol");
@@ -4576,7 +4583,7 @@ static int uam_msg(struct redir_msg_t *msg);
  * \return      0 if success, -1 otherwise.
  * \author      Simon Geissler
  */
-int cb_dhcp_unauth_dnat(struct dhcp_conn_t *conn)
+static int cb_dhcp_unauth_dnat(struct dhcp_conn_t *conn)
 {
   int result;
   struct redir_msg_t msg;
@@ -4656,7 +4663,7 @@ int cb_dhcp_unauth_dnat(struct dhcp_conn_t *conn)
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int cb_dhcp_requestv6(struct dhcp_conn_t *conn, struct in6_addr *addr)
+static int cb_dhcp_requestv6(struct dhcp_conn_t *conn, struct in6_addr *addr)
 {
   struct ippoolm_t *ipm = NULL;
   struct app_conn_t *appconn = conn->peer;
@@ -4718,7 +4725,7 @@ int cb_dhcp_requestv6(struct dhcp_conn_t *conn, struct in6_addr *addr)
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int cb_dhcp_connectv6(struct dhcp_conn_t *conn)
+static int cb_dhcp_connectv6(struct dhcp_conn_t *conn)
 {
   struct app_conn_t *appconn = NULL;
 
@@ -4759,7 +4766,7 @@ int cb_dhcp_connectv6(struct dhcp_conn_t *conn)
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int cb_dhcp_disconnectv6(struct dhcp_conn_t *conn)
+static int cb_dhcp_disconnectv6(struct dhcp_conn_t *conn)
 {
   struct app_conn_t *appconn = NULL;
   char buf[INET6_ADDRSTRLEN];
@@ -4814,7 +4821,7 @@ int cb_dhcp_disconnectv6(struct dhcp_conn_t *conn)
  * \param addr requested IPv4 address
  * \return 0 if success, -1 otherwise
  */
-int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr)
+static int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr)
 {
   struct ippoolm_t *ipm = NULL;
   struct app_conn_t *appconn = conn->peer;
@@ -4893,7 +4900,7 @@ int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr)
  * \param conn dhcp_conn_t instance
  * \return 0 if success, -1 otherwise
  */
-int cb_dhcp_connect(struct dhcp_conn_t *conn)
+static int cb_dhcp_connect(struct dhcp_conn_t *conn)
 {
   struct app_conn_t *appconn = NULL;
 
@@ -4940,7 +4947,7 @@ int cb_dhcp_connect(struct dhcp_conn_t *conn)
  * \param conn dhcp_conn_t instance
  * \return 0 if success, -1 otherwise
  */
-int cb_dhcp_disconnect(struct dhcp_conn_t *conn)
+static int cb_dhcp_disconnect(struct dhcp_conn_t *conn)
 {
   struct app_conn_t *appconn = NULL;
   char buf[INET_ADDRSTRLEN];
@@ -4998,7 +5005,7 @@ int cb_dhcp_disconnect(struct dhcp_conn_t *conn)
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int cb_dhcp_ipv6_ind(struct dhcp_conn_t* conn, void* pack, unsigned int len)
+static int cb_dhcp_ipv6_ind(struct dhcp_conn_t* conn, void* pack, unsigned int len)
 {
   struct app_conn_t* appconn = conn->peer;
 
@@ -5035,7 +5042,7 @@ int cb_dhcp_ipv6_ind(struct dhcp_conn_t* conn, void* pack, unsigned int len)
  * \param len packet length
  * \return 0 if success, -1 otherwise
  */
-int cb_dhcp_data_ind(struct dhcp_conn_t *conn, void *pack, unsigned len) {
+static int cb_dhcp_data_ind(struct dhcp_conn_t *conn, void *pack, unsigned len) {
   struct tun_packet_t *iph = (struct tun_packet_t*) pack;
   struct app_conn_t *appconn = conn->peer;
 
@@ -5073,8 +5080,14 @@ int cb_dhcp_data_ind(struct dhcp_conn_t *conn, void *pack, unsigned len) {
   return tun_encaps(tun, pack, len);
 }
 
-/* Callback for receiving messages from eapol */
-int cb_dhcp_eap_ind(struct dhcp_conn_t *conn, void *pack, unsigned int len) {
+/**
+ * \brief Callback for receiving messages from eapol.
+ * \param conn DHCP connection
+ * \param pack packet
+ * \param len length of packet
+ * \return 0
+ */
+static int cb_dhcp_eap_ind(struct dhcp_conn_t *conn, void *pack, unsigned int len) {
   struct dhcp_eap_t *eap = (struct dhcp_eap_t*) pack;
   struct app_conn_t *appconn = conn->peer;
   struct radius_packet_t radius_pack;

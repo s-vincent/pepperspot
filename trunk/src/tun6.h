@@ -56,7 +56,7 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #ifndef IFNAMSIZ
-#define IFNAMSIZ IF_NAMESIZE
+#define IFNAMSIZ IF_NAMESIZE /**< Maximum interface name size */
 #endif
 
 # define LIBTUN6_ERRBUF_SIZE 4096
@@ -207,6 +207,12 @@ int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void
  */ 
 int tun6_runscript(struct tun6_t *tun, char* script);
 
+/**
+ * \brief Set interface flags.
+ * \param this tun6_t instance
+ * \param flags flags to set
+ * \return 0 if success, -1 otherwise
+ */
 int tun6_sifflags(struct tun6_t *this, int flags);
 
 # ifdef __cplusplus

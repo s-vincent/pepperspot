@@ -100,11 +100,11 @@
 #include "ippool.h"
 #include "../config.h"
 
-static int optionsdebug = 1; /* TODO: Should be changed to instance */
+static int optionsdebug = 1; /**< Print debug information while running */
 
-static int keep_going = 1;   /* OK as global variable for child process */
+static int keep_going = 1;   /**< OK as global variable for child process */
 
-static int termstate = REDIR_TERM_INIT;    /* When we were terminated */
+static int termstate = REDIR_TERM_INIT;    /**< When we were terminated */
 
 char credits[] =
 "<H1>PepperSpot " VERSION "</H1><p>Copyright 2008 ULP</p><p> "
@@ -113,10 +113,13 @@ char credits[] =
 "<a href=\"http://www.pepperspot.info\">www.pepperspot.info</a> and licensed "
 "under the GPL.</p><p>PepperSpot acknowledges all community members, "
 "especially those mentioned at "
-"<a href=\"http://www.pepperspot.info/credits.html\">http://www.pepperspot.info/credits.html</a>.";
+"<a href=\"http://www.pepperspot.info/credits.html\">http://www.pepperspot.info/credits.html</a>."; /**< Credits for PepperSpot */
 
 
-/* redir signal handler */
+/**
+ * \brief Redir signal handler.
+ * \param signum Signal code
+ */
 static void redir_sig_handler(int signum) {
   switch(signum) {
     case SIGTERM:
@@ -135,7 +138,11 @@ static void redir_sig_handler(int signum) {
   }
 }
 
-/* Generate a 16 octet random challenge */
+/**
+ * \brief Generate a 16 bytes random challenge.
+ * \param dst 2 bytes array to store random challenge
+ * \return 0 if success, -1 otherwise
+ */
 static int redir_challenge(unsigned char *dst) {
   FILE *file = NULL;
 
@@ -157,16 +164,21 @@ static int redir_challenge(unsigned char *dst) {
 }
 
 
-/* Convert 32+1 octet ASCII hex string to 16 octet unsigned char */
+/**
+ * \brief Convert 32+1 bytes ASCII hex string to 16 octet unsigned char.
+ * \param src hex string to convert
+ * \param dst destination to store result
+ * \return 0 if success, -1 otherwise
+ */
 static int redir_hextochar(char *src, unsigned char * dst) {
 
   char x[3];
   int n = 0;
   int y = 0;
 
-  for (n=0; n< REDIR_MD5LEN; n++) {
-    x[0] = src[n*2+0];
-    x[1] = src[n*2+1];
+  for (n = 0; n < REDIR_MD5LEN; n++) {
+    x[0] = src[n * 2 + 0];
+    x[1] = src[n * 2 + 1];
     x[2] = 0;
     if (sscanf (x, "%2x", &y) != 1) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, "HEX conversion failed!");
@@ -178,30 +190,41 @@ static int redir_hextochar(char *src, unsigned char * dst) {
   return 0;
 }
 
-/* Convert 16 octet unsigned char to 32+1 octet ASCII hex string */
+/**
+ * \brief Convert 16 bytes unsigned char to 32+1 octet ASCII hex string.
+ * \param src source to convert
+ * \param dst destination to store result
+ * \return 0
+ */
 static int redir_chartohex(unsigned char *src, char *dst) {
 
   char x[3];
   int n = 0;
 
-  for (n=0; n<REDIR_MD5LEN; n++) {
+  for (n = 0; n < REDIR_MD5LEN; n++) {
     snprintf(x, 3, "%.2x", src[n]);
-    dst[n*2+0] = x[0];
-    dst[n*2+1] = x[1];
+    dst[n * 2 + 0] = x[0];
+    dst[n * 2 + 1] = x[1];
   }
-  dst[REDIR_MD5LEN*2] = 0;
+  dst[REDIR_MD5LEN * 2] = 0;
   return 0;
 }
 
-
-/* Encode src as urlencoded and place null terminated result in dst */
+/**
+ * \brief Encode src as urlencoded and place null terminated result in dst.
+ * \param src string to convert
+ * \param srclen length of src
+ * \param dst destination to store result
+ * \param dstsize size of dst
+ * \return 0 if success, -1 otherwise
+ */
 static int redir_urlencode( char *src, int srclen, char *dst, int dstsize) {
 
   char x[3];
   int n = 0;
   int i = 0;
 
-  for (n=0; n<srclen; n++) {
+  for (n = 0; n < srclen; n++) {
     if ((('A' <= src[n]) && (src[n] <= 'Z')) ||
         (('a' <= src[n]) && (src[n] <= 'z')) ||
         (('0' <= src[n]) && (src[n] <= '9')) ||
@@ -214,13 +237,13 @@ static int redir_urlencode( char *src, int srclen, char *dst, int dstsize) {
         ('\'' == src[n]) ||
         ('(' == src[n]) ||
         (')' == src[n])) {
-      if (i<dstsize-1) {
+      if (i < dstsize - 1) {
         dst[i++] = src[n];
       }
     }
     else {
       snprintf(x, 3, "%.2x", src[n]);
-      if (i<dstsize-3) {
+      if (i < dstsize - 3) {
         dst[i++] = '%';
         dst[i++] = x[0];
         dst[i++] = x[1];
@@ -231,7 +254,14 @@ static int redir_urlencode( char *src, int srclen, char *dst, int dstsize) {
   return 0;
 }
 
-/* Decode urlencoded src and place null terminated result in dst */
+/**
+ * \brief Decode urlencoded src and place null terminated result in dst.
+ * \param src URL to decode
+ * \param srclen length of src
+ * \param dst destination to store result (undecoded URL)
+ * \param dstsize siz of dst
+ * \return 0
+ */
 static int redir_urldecode(  char *src, int srclen, char *dst, unsigned int dstsize) {
 
   char x[3];
@@ -239,7 +269,7 @@ static int redir_urldecode(  char *src, int srclen, char *dst, unsigned int dsts
   unsigned int i = 0;
   unsigned int c = 0;
 
-  while (n<srclen) {
+  while (n < srclen) {
     if (src[n] == '%') {
       if ((n+2) < srclen) {
         x[0] = src[n+1];
@@ -247,12 +277,12 @@ static int redir_urldecode(  char *src, int srclen, char *dst, unsigned int dsts
         x[2] = 0;
         c = '_';
         sscanf(x, "%x", &c);
-        if (i<(dstsize-1)) dst[i++] = c; 
+        if (i < (dstsize - 1)) dst[i++] = c; 
       }
       n += 3;
     }
     else {
-      if (i<(dstsize-1)) dst[i++] = src[n];
+      if (i < (dstsize - 1)) dst[i++] = src[n];
       n++;
     }
   }
@@ -260,7 +290,14 @@ static int redir_urldecode(  char *src, int srclen, char *dst, unsigned int dsts
   return 0;
 }
 
-/* Concatenate src to dst and place result dst */
+/**
+ * \brief Concatenate src to dst and place result dst.
+ * \param dst destination 
+ * \param dstsize size of dst
+ * \param fmt format
+ * \param ... argument to concatenate with dst
+ * \return 0
+ */
 static int redir_stradd(char *dst, unsigned int dstsize, char *fmt, ...) {
   va_list args;
   char buf[REDIR_MAXBUFFER];
@@ -268,9 +305,9 @@ static int redir_stradd(char *dst, unsigned int dstsize, char *fmt, ...) {
   va_start(args, fmt);
   vsnprintf(buf, REDIR_MAXBUFFER, fmt, args);
   va_end(args);
-  buf[REDIR_MAXBUFFER-1] = 0; /* Make sure it is null terminated */
+  buf[REDIR_MAXBUFFER - 1] = 0; /* Make sure it is null terminated */
 
-  if ((strlen(dst) + strlen(buf)) > dstsize-1) {
+  if ((strlen(dst) + strlen(buf)) > dstsize - 1) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0, "redir_stradd() failed");
     return -1;
   }
@@ -279,8 +316,19 @@ static int redir_stradd(char *dst, unsigned int dstsize, char *fmt, ...) {
   return 0;
 }
 
-
-/* Make an XML Reply */
+/**
+ * \brief Make an XML Reply.
+ * \param redir redit_t instance
+ * \param conn redir connection
+ * \param res state of XML reply (reject, ...)
+ * \param timeleft session time left
+ * \param hexchal challenge number
+ * \param reply reply message
+ * \param redirurl redirection URL
+ * \param dst destination which will store XML reply
+ * \param dstsize size of dst
+ * \return 0
+ */
 static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn, 
     int res, long int timeleft, char* hexchal, 
     char* reply, char* redirurl,
@@ -294,7 +342,7 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
       "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n"
       "  xsi:noNamespaceSchemaLocation=\"http://www.acmewisp.com/WISPAccessGatewayParam.xsd\""
       ">\r\n");
-  dst[dstsize-1] = 0;
+  dst[dstsize - 1] = 0;
 
   switch (res) {
     case REDIR_ALREADY:
@@ -371,10 +419,10 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
       if(conn->ipv6)
       {
         redir_stradd(dst, dstsize,
-            "<LoginURL>%s?res=smartclient&uamip=[%s]&uamport=%d&challenge=%s</LoginURL>\r\n",
+            "<LoginURL>%s?res = smartclient&uamip=[%s]&uamport=%d&challenge=%s</LoginURL>\r\n",
             redir->url6, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port, hexchal);
 
-        printf("<LoginURL>%s?res=smartclient&uamip=[%s]&uamport=%d&challenge=%s</LoginURL>\r\n",
+        printf("<LoginURL>%s?res = smartclient&uamip=[%s]&uamport=%d&challenge=%s</LoginURL>\r\n",
             redir->url6, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port, hexchal);
         redir_stradd(dst, dstsize, 
             "<AbortLoginURL>http://[%s]:%d/abort</AbortLoginURL>\r\n", 
@@ -383,7 +431,7 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
       else
       {
         redir_stradd(dst, dstsize, 
-            "<LoginURL>%s?res=smartclient&uamip=%s&uamport=%d&challenge=%s</LoginURL>\r\n",
+            "<LoginURL>%s?res = smartclient&uamip=%s&uamport=%d&challenge=%s</LoginURL>\r\n",
             redir->url, inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port, hexchal);
         redir_stradd(dst, dstsize, 
             "<AbortLoginURL>http://%s:%d/abort</AbortLoginURL>\r\n", 
@@ -469,7 +517,21 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
   return 0;
 }
 
-/* Make an HTTP redirection reply and send it to the client */
+/**
+ * \brief Make an HTTP redirection reply and send it to the client.
+ * \param redir redir_t instance
+ * \param fd file descriptor to send response
+ * \param conn client connection
+ * \param res reply state (reject, logoff, ...)
+ * \param timeleft session time left
+ * \param hexchal challenge number
+ * \param uid user ID 
+ * \param userurl original client wanted webpage
+ * \param reply reply message
+ * \param redirurl redirection URL
+ * \param hismac client MAC address
+ * \return 0
+ */
 static int redir_reply(struct redir_t *redir, int fd, 
     struct redir_conn_t *conn, int res, 
     long int timeleft,
@@ -531,9 +593,9 @@ static int redir_reply(struct redir_t *redir, int fd,
           "HTTP/1.0 302 Moved Temporarily\r\n"
           "Location: %s?res=%s&uamip=[%s]&uamport=%d",
           redir->url6, resp, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port);
-      printf("HTTP/1.0 302 Moved Temporarily\r\n"
+      /* printf("HTTP/1.0 302 Moved Temporarily\r\n"
           "Location: %s?res=%s&uamip=[%s]&uamport=%d",
-          redir->url6, resp, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port);
+          redir->url6, resp, inet_ntop(AF_INET6, &conn->ouripv6, buf, sizeof(buf)), redir->port); */
     }
     else
     {
@@ -542,11 +604,11 @@ static int redir_reply(struct redir_t *redir, int fd,
           "Location: %s?res=%s&uamip=%s&uamport=%d", 
           redir->url, resp, inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
     }
-    buffer[sizeof(buffer)-1] = 0;
+    buffer[sizeof(buffer) - 1] = 0;
   }
   else {
     snprintf(buffer, sizeof(buffer), "HTTP/1.0 200 OK\r\n");
-    buffer[sizeof(buffer)-1] = 0;
+    buffer[sizeof(buffer) - 1] = 0;
   }
 
   if (hexchal) {
@@ -710,9 +772,9 @@ int redir_new(struct redir_t **redir,
 
   if(addrv6) {
     /* [SV] */
-    addressv6.sin6_family=AF_INET6;
+    addressv6.sin6_family = AF_INET6;
     memcpy(&addressv6.sin6_addr, addrv6, sizeof(struct in6_addr));
-    addressv6.sin6_port=htons(port);
+    addressv6.sin6_port = htons(port);
     addressv6.sin6_flowinfo = htons(1);
     /*addressv6.sin6_scope_id = htons(0);*/
 #if defined(__FreeBSD__)  || defined (__APPLE__)
@@ -721,7 +783,7 @@ int redir_new(struct redir_t **redir,
 
     memcpy(&(*redir)->addrv6, &addressv6.sin6_addr, sizeof(struct in6_addr));
 
-    if(((*redir)->fdv6=socket(AF_INET6, SOCK_STREAM, 0))<0)
+    if(((*redir)->fdv6 = socket(AF_INET6, SOCK_STREAM, 0)) < 0)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket6() failed");
       return -1;
@@ -822,7 +884,7 @@ void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int pr
   memcpy(&redir->prefix, prefix, prefixlen);
   redir->prefixlen = prefixlen;
   redir->url = url;
-  redir->url6=url6;
+  redir->url6 = url6;
   redir->homepage = homepage;
   redir->secret = secret;
   memcpy(&redir->radiuslisten, radiuslisten, sizeof(struct sockaddr_storage));
@@ -844,7 +906,14 @@ void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int pr
 }
 
 
-/* Get the path of an HTTP request */
+/**
+ * \brief Get the path of an HTTP request (GET).
+ * \param redir redir_t instance
+ * \param src request
+ * \param dst path will be stored in this variable
+ * \param dstsize size of dst
+ * \return 0 if success, -1 otherwise
+ */
 static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsize) {
 
   char *p1 = NULL;
@@ -887,17 +956,17 @@ static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsiz
     return -1;
 
   if (p2 && !p3) {
-    dstlen = p2-p1;
+    dstlen = p2 - p1;
   } 
   else if (!p2 && p3) {
-    dstlen = p3-p1;
+    dstlen = p3 - p1;
   } 
-  else if (p3>p2)
-    dstlen = p2-p1;
+  else if (p3 > p2)
+    dstlen = p2 - p1;
   else
-    dstlen = p3-p1;
+    dstlen = p3 - p1;
 
-  if (dstlen>=dstsize)
+  if (dstlen >= dstsize)
     return -1;
 
   strncpy(dst, p1, dstlen);
@@ -909,7 +978,9 @@ static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsiz
 
 }
 
-/* Get the url of an HTTP request */
+/**
+ * \brief Get the url of an HTTP request.
+ */
 static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize) {
 
   char *p1 = NULL;
@@ -951,7 +1022,7 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
     return -1;
 
   path = p1;
-  pathlen = p3-p1;
+  pathlen = p3 - p1;
 
   if (!(p1 = strstr(p3, "\r\nHost:")))
     return -1;
@@ -962,10 +1033,10 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
   if (!(peol = strstr(p1, "\r\n"))) /* End of the line */
     return -1;
 
-  hostlen = peol-p1;
+  hostlen = peol - p1;
   host = p1;
 
-  if ((7 + hostlen + pathlen)>=dstsize) {
+  if ((7 + hostlen + pathlen) >= dstsize) {
     return -1;
   }
 
@@ -981,7 +1052,9 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
 }
 
 
-/* Get a parameter of an HTTP request. Parameter is url decoded */
+/**
+ * \brief Get a parameter of an HTTP request. Parameter is url decoded.
+ */
 /* TODO: Should be merged with other parsers */
 static int redir_getparam(struct redir_t *redir, char *src, 
     char *param,
@@ -1008,9 +1081,9 @@ static int redir_getparam(struct redir_t *redir, char *src,
   }
 
   strncpy(sstr, param, sizeof(sstr));
-  sstr[sizeof(sstr)-1] = 0;
+  sstr[sizeof(sstr) - 1] = 0;
   strncat(sstr, "=", sizeof(sstr));
-  sstr[sizeof(sstr)-1] = 0;
+  sstr[sizeof(sstr) - 1] = 0;
 
   if (!(p1 = strstr(src, sstr)))
     return -1;
@@ -1030,15 +1103,15 @@ static int redir_getparam(struct redir_t *redir, char *src,
     return -1;
 
   if (p2 && !p3) {
-    len = p2-p1;
+    len = p2 - p1;
   } 
   else if (!p2 && p3) {
-    len = p3-p1;
+    len = p3 - p1;
   } 
-  else if (p3>p2)
-    len = p2-p1;
+  else if (p3 > p2)
+    len = p2 - p1;
   else
-    len = p3-p1;
+    len = p3 - p1;
 
   (void)redir_urldecode(p1, len, dst, dstsize);
 
@@ -1048,7 +1121,13 @@ static int redir_getparam(struct redir_t *redir, char *src,
 
 }
 
-/* Read the an HTTP request from a client */
+/**
+ * \brief Read the an HTTP request from a client.
+ * \param redir redir_t instance
+ * \param fd file descriptor to read client message
+ * \param conn client connection
+ * \return 0 if success, -1 otherwise
+ */
 static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn) {
 
   int maxfd = 0;	        /* For select() */
@@ -1087,7 +1166,7 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
 
     if ((status > 0) && FD_ISSET(fd, &fds)) {
       if ((recvlen = 
-            recv(fd, buffer+buflen, sizeof(buffer)-1 - buflen, 0)) < 0) {
+            recv(fd, buffer+buflen, sizeof(buffer) - 1 - buflen, 0)) < 0) {
         if (errno != ECONNRESET)
           sys_err(LOG_ERR, __FILE__, __LINE__, errno, "recv() failed!");
         return -1;
@@ -1098,7 +1177,7 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
     }
   }
 
-  for (i = 0; i<buflen; i++) if (buffer[i] == 0) buffer[i] = 0x0a; /* TODO: Hack to make Flash work */
+  for (i = 0; i < buflen; i++) if (buffer[i] == 0) buffer[i] = 0x0a; /* TODO: Hack to make Flash work */
 
   if (buflen <= 0) {
     if (optionsdebug) printf("No HTTP request received!\n");
@@ -1123,7 +1202,7 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
     }
 
     /* SV */
-    printf("username = %s\n", conn->username);
+    /* printf("username = %s\n", conn->username); */
 
     if (!redir_getparam(redir, buffer, "response",
           resp, sizeof(resp))) {
@@ -1178,7 +1257,9 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
   }
 }
 
-/* Radius callback when access accept/reject/challenge has been received */
+/**
+ * \brief Radius callback when access accept/reject/challenge has been received.
+ */
 static int redir_cb_radius_auth_conf(struct radius_t *radius,
     struct radius_packet_t *pack,
     struct radius_packet_t *pack_req, void *cbp) {
@@ -1227,8 +1308,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Reply message (might be present in both ACCESS-ACCEPT and ACCESS-REJECT */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_REPLY_MESSAGE, 0, 0, 0)) {
-    memcpy(conn->replybuf, attr->v.t, attr->l-2);
-    conn->replybuf[attr->l-2] = 0;
+    memcpy(conn->replybuf, attr->v.t, attr->l - 2);
+    conn->replybuf[attr->l - 2] = 0;
     conn->reply = conn->replybuf;
   }
   else {
@@ -1254,8 +1335,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* State */
   if (!radius_getattr(pack, &stateattr, RADIUS_ATTR_STATE, 0, 0, 0)) {
-    conn->statelen = stateattr->l-2;
-    memcpy(conn->statebuf, stateattr->v.t, stateattr->l-2);
+    conn->statelen = stateattr->l - 2;
+    memcpy(conn->statebuf, stateattr->v.t, stateattr->l - 2);
   }
   else {
     conn->statelen = 0;
@@ -1263,8 +1344,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   /* Class */
   if (!radius_getattr(pack, &classattr, RADIUS_ATTR_CLASS, 0, 0, 0)) {
-    conn->classlen = classattr->l-2;
-    memcpy(conn->classbuf, classattr->v.t, classattr->l-2);
+    conn->classlen = classattr->l - 2;
+    memcpy(conn->classbuf, classattr->v.t, classattr->l - 2);
   }
   else {
     conn->classlen = 0;
@@ -1292,9 +1373,9 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   /* Filter ID */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_FILTER_ID,
         0, 0, 0)) {
-    conn->filteridlen = attr->l-2;
-    memcpy(conn->filteridbuf, attr->v.t, attr->l-2);
-    conn->filteridbuf[attr->l-2] = 0;
+    conn->filteridlen = attr->l - 2;
+    memcpy(conn->filteridbuf, attr->v.t, attr->l - 2);
+    conn->filteridbuf[attr->l - 2] = 0;
     conn->filterid = conn->filteridbuf;
   }
   else {
@@ -1328,9 +1409,9 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
         RADIUS_VENDOR_WISPR,
         RADIUS_ATTR_WISPR_REDIRECTION_URL, 0)) {
-    conn->redirurllen = attr->l-2;
-    memcpy(conn->redirurlbuf, attr->v.t, attr->l-2);
-    conn->redirurlbuf[attr->l-2] = 0;
+    conn->redirurllen = attr->l - 2;
+    memcpy(conn->redirurlbuf, attr->v.t, attr->l - 2);
+    conn->redirurlbuf[attr->l - 2] = 0;
     conn->redirurl = conn->redirurlbuf;
   }
   else {
@@ -1413,8 +1494,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
         RADIUS_ATTR_WISPR_SESSION_TERMINATE_TIME, 0)) {
     struct timeval timenow;
     gettimeofday(&timenow, NULL);
-    memcpy(attrs, attr->v.t, attr->l-2);
-    attrs[attr->l-2] = 0;
+    memcpy(attrs, attr->v.t, attr->l - 2);
+    attrs[attr->l - 2] = 0;
     memset(&stt, 0, sizeof(stt));
     result = sscanf(attrs, "%d-%d-%dT%d:%d:%d %d:%d",
         &stt.tm_year, &stt.tm_mon, &stt.tm_mday,
@@ -1528,7 +1609,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   }
 
   if (conn->chap == 0) {
-    for (n=0; n<REDIR_MD5LEN; n++) 
+    for (n = 0; n < REDIR_MD5LEN; n++) 
       user_password[n] = conn->password[n] ^ chap_challenge[n];
     user_password[REDIR_MD5LEN] = 0;
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_USER_PASSWORD, 0, 0, 0,
@@ -1601,7 +1682,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 
 
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_ACCT_SESSION_ID, 0, 0, 0,
-      (uint8_t*) conn->sessionid, REDIR_SESSIONID_LEN-1);
+      (uint8_t*) conn->sessionid, REDIR_SESSIONID_LEN - 1);
 
 
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_PORT_TYPE, 0, 0,
@@ -1627,13 +1708,13 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 
   if(!conn->ipv6)
   {
-    snprintf(url, REDIR_URL_LEN-1, "http://%s:%d/logoff",
+    snprintf(url, REDIR_URL_LEN - 1, "http://%s:%d/logoff",
         inet_ntop(AF_INET, &redir->addr, buf, sizeof(buf)), redir->port);
-    url[REDIR_URL_LEN-1] = 0;
+    url[REDIR_URL_LEN - 1] = 0;
   }
   else 
   {
-    snprintf(url, REDIR_URL_LEN-1, "http://[%s]:%d/logoff",
+    snprintf(url, REDIR_URL_LEN - 1, "http://[%s]:%d/logoff",
         inet_ntop(AF_INET6, &redir->addrv6, buf, sizeof(buf)), redir->port);
     url[REDIR_URL_LEN-1] = 0;
   }
@@ -1689,49 +1770,39 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 
   }
   return 0;
-
 }
 
-/* Close of socket */
-void redir_close(int new_socket){
+/**
+ * \brief Close of socket.
+ * \param new_socket socket to close
+ */
+static void redir_close(int new_socket){
   if (!keep_going) shutdown(new_socket, SHUT_RDWR);
   close(new_socket);
   return;
 }
 
-void redir_memcopy(int msg_type, unsigned char *challenge, char *hexchal, struct redir_msg_t *msg, struct sockaddr_in address, struct sockaddr_in6 addressv6, struct sockaddr_storage addrstorage){
+/**
+ * \brief Copy client information into message (to send to pepper process).
+ * \param msg_type type of message
+ * \param challenge challenge number
+ * \param hexchal challenge in hex format
+ * \param msg will be filled with information
+ * \param address IPv4 address
+ * \param addressv6 IPv6 address
+ * \param addrstorage to see if client use IPv6 connection
+ */
+static void redir_memcopy(int msg_type, unsigned char *challenge, char *hexchal, struct redir_msg_t *msg, struct sockaddr_in address, struct sockaddr_in6 addressv6, struct sockaddr_storage addrstorage){
   redir_challenge(challenge);
   (void)redir_chartohex(challenge, hexchal);
   msg->type = msg_type;
   msg->addr = address.sin_addr;
   memcpy(&msg->addrv6, &addressv6.sin6_addr, sizeof(struct in6_addr));
-  msg->ipv6= (addrstorage.ss_family==AF_INET6);
+  msg->ipv6 = (addrstorage.ss_family == AF_INET6);
   /* [SV] TODO */
   memcpy(&msg->uamchal, challenge, REDIR_MD5LEN);
   return;
 }
-
-/* redir_accept() does the following:
-   1) forks a child process
-   2) Accepts the tcp connection 
-   3) Analyses a HTTP get request
-   4) GET request can be one of the following:
-   a) Logon request with username and challenge response
-   - Does a radius request
-   - If OK send result to parent and redirect to welcome page
-   - Else redirect to error login page
-   b) Logoff request
-   - Send logoff request to parent
-   - Redirect to login page?
-   c) Request for another server
-   - Redirect to login server.
-
-   Incoming requests are identified only by their IP address. No MAC
-   address information is obtained. The main security problem is denial
-   of service attacks by malicious hosts sending logoff requests for
-   clients. This can be prevented by checking incoming packets for
-   matching MAC and src IP addresses.
-   */
 
 int redir_accept(struct redir_t *redir, int ipv6) {
 
@@ -1823,9 +1894,9 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   termstate = REDIR_TERM_GETSTATE;
   if (optionsdebug) printf("Calling cb_getstate()\n");
 
-  if(addrstorage.ss_family==AF_INET)
+  if(addrstorage.ss_family == AF_INET)
   {
-    msg.ipv6=0;
+    msg.ipv6 = 0;
     if (!redir->cb_getstate) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "No cb_getstate() defined!");
@@ -1833,9 +1904,9 @@ int redir_accept(struct redir_t *redir, int ipv6) {
     }
     state = redir->cb_getstate(redir, &address.sin_addr, &conn);
   }
-  else if(addrstorage.ss_family==AF_INET6)
+  else if(addrstorage.ss_family == AF_INET6)
   {
-    msg.ipv6=1;
+    msg.ipv6 = 1;
     if(!redir->cb_getstatev6)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, "No cb_getstate6() defined!");
@@ -1895,7 +1966,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
 
       msg.type = REDIR_LOGIN;
       strncpy(msg.username, conn.username, sizeof(msg.username));
-      msg.username[sizeof(msg.username)-1] = 0;
+      msg.username[sizeof(msg.username) - 1] = 0;
       msg.statelen = conn.statelen;
       memcpy(msg.statebuf, conn.statebuf, conn.statelen);
       msg.classlen = conn.classlen;
@@ -2031,7 +2102,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   if ((conn.uamtime + REDIR_CHALLENGETIMEOUT1) < time(NULL)) {
     redir_memcopy(REDIR_CHALLENGE, challenge, hexchal, &msg, address, addressv6, addrstorage);
     strncpy(msg.userurl, conn.userurl, sizeof(msg.userurl));
-    msg.userurl[sizeof(msg.userurl)-1] = 0;
+    msg.userurl[sizeof(msg.userurl) - 1] = 0;
     if (msgsnd(redir->msgid, &msg, 
           sizeof(struct redir_msg_t), 0) < 0) {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
@@ -2054,7 +2125,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
         "<BODY><H1>Browser error!</H1>"
         "Browser does not support redirects!</BODY></HTML>",
         redir->homepage);
-    buffer[bufsize-1] = 0;
+    buffer[bufsize - 1] = 0;
     if (buflen>bufsize) buflen = bufsize;
 
     if (optionsdebug) printf("redir_reply: Sending http reply: %s\n",
@@ -2079,10 +2150,9 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   /*  close(redir->fd);*/
 }
 
-
 int redir_set_cb_getstatev6(struct redir_t* redir, int (*cb_getstatev6)(struct redir_t* redir, struct in6_addr* addr, struct redir_conn_t* conn))
 {
-  redir->cb_getstatev6=cb_getstatev6;
+  redir->cb_getstatev6 = cb_getstatev6;
   return 0;
 }
 
