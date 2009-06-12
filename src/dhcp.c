@@ -2163,7 +2163,6 @@ static int dhcp_undoDNATv6(struct dhcp_conn_t *conn, struct dhcp_ipv6packet_t *p
         printf("modify packet src : %s : port : %d\n", inet_ntop(AF_INET6, &conn->dnatipv6[n], buf, sizeof(buf)), DHCP_HTTP);
         memcpy(&pack->ip6h.src_addr, &conn->dnatipv6[n], sizeof(struct in6_addr));
         tcph->src = htons(DHCP_HTTP);
-        printf("tcp6 check\n");
         dhcp_tcp_checkv6(pack, len);
         return 0;
       }
@@ -2234,7 +2233,6 @@ static int dhcp_undoDNAT(struct dhcp_conn_t *conn,
         tcph->src = htons(DHCP_HTTP);
         (void)dhcp_tcp_check(pack, len);
         (void)dhcp_ip_check((struct dhcp_ippacket_t*) pack);
-        printf("tcho 1\n");
         return 0; /* It was a DNAT reply */
       }
     }
