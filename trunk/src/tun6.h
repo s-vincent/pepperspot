@@ -59,7 +59,7 @@
 #define IFNAMSIZ IF_NAMESIZE /**< Maximum interface name size */
 #endif
 
-# define LIBTUN6_ERRBUF_SIZE 4096
+# define LIBTUN6_ERRBUF_SIZE 4096 /**< Buffer for tun6 error message */
 
 # if __STDC_VERSION__ < 199901L
 #  ifndef inline
@@ -70,6 +70,7 @@
 #  endif
 # endif
 
+#if 0 /* not used anymore */
 # ifdef __GNUC__
 #  define LIBTUN6_NONNULL __attribute__ ((nonnull))
 #  if __GNUC__ >= 3
@@ -87,11 +88,12 @@
 #  define LIBTUN6_WARN_UNUSED
 #  define LIBTUN6_PURE
 # endif
+#endif
 
 struct ip6_hdr;
 struct in6_addr;
 
-typedef struct tun6 tun6;
+/* typedef struct tun6 tun6; */
 
 /* [SV] : do similar struct as tun.h 
  * in two word : makes wrapper for the libtun6
@@ -215,6 +217,7 @@ int tun6_runscript(struct tun6_t *tun, char* script);
  */
 int tun6_sifflags(struct tun6_t *this, int flags);
 
+#if 0
 # ifdef __cplusplus
 extern "C" {
 # endif
@@ -258,6 +261,6 @@ extern "C" {
 # ifdef __cplusplus
 }
 # endif /* C++ */
-
+#endif
 #endif /* ifndef LIBTUN6_TUN6_H */
 

@@ -105,15 +105,14 @@
 #define CHECK_INTERVAL 3   /**< Time between checking connections */
 
 /* Authtype defs */
-#define CHAP_DIGEST_MD5   0x05
-#define CHAP_MICROSOFT    0x80
-#define CHAP_MICROSOFT_V2 0x81
-#define PAP_PASSWORD       256
-#define EAP_MESSAGE        257
+#define CHAP_DIGEST_MD5   0x05 /**< Code for using CHAP-MD5 */
+#define CHAP_MICROSOFT    0x80 /**< Code for using MS-CHAP  */
+#define CHAP_MICROSOFT_V2 0x81 /**< Code for using MS-CHAPv2 */
+#define PAP_PASSWORD       256 /**< Code for using PAP */
+#define EAP_MESSAGE        257 /**< Code for using EAP */
 
 #define MPPE_KEYSIZE  16
-#define NT_KEYSIZE    16
-
+#define NT_KEYSIZE    16 
 
 #define DNPROT_DHCP_NONE  2
 #define DNPROT_UAM        3
@@ -122,10 +121,10 @@
 #define DNPROT_MAC        6
 
 /* Debug facility */
-#define DEBUG_DHCP        2
-#define DEBUG_RADIUS      4
-#define DEBUG_REDIR       8
-#define DEBUG_CONF       16
+#define DEBUG_DHCP        2 /**< Allow debug print for DHCP module */
+#define DEBUG_RADIUS      4 /**< Allow debug print for RADIUS module */
+#define DEBUG_REDIR       8 /**< Allow debug print for redir module */
+#define DEBUG_CONF       16 /**< Allow debug print for configuration module */
 
 /**
  * \struct app_conn_t
@@ -152,14 +151,14 @@ struct app_conn_t
   int challen;                   /**< Length of EAP challenge */
   uint8_t sendkey[RADIUS_ATTR_VLEN];
   uint8_t recvkey[RADIUS_ATTR_VLEN];
-  uint8_t lmntkeys[RADIUS_MPPEKEYSSIZE];
+  uint8_t lmntkeys[RADIUS_MPPEKEYSSIZE]; /**< LMNT key */
   int sendlen;
   int recvlen;
-  int lmntlen;
-  uint32_t policy;
-  uint32_t types;
-  uint8_t ms2succ[MS2SUCCSIZE];
-  int ms2succlen;
+  int lmntlen; /**< Length of LMNT key */
+  uint32_t policy; /**< Encryption policy */
+  uint32_t types; /**< Encryption types */
+  uint8_t ms2succ[MS2SUCCSIZE]; /**< MS-CHAPv2 SUCCESS attribute */
+  /* int ms2succlen; */
   char sessionid[REDIR_SESSIONID_LEN]; /**< Accounting session ID */
   long int sessiontimeout; /**< RADIUS session timeout */
   long int idletimeout; /**< RADIUS idle timeout */
@@ -169,10 +168,10 @@ struct app_conn_t
   int classlen;
   int bandwidthmaxup; /**< Maximum upload bandwith */
   int bandwidthmaxdown; /**< Maximum download bandwidth */
-  uint64_t maxinputoctets;
-  uint64_t maxoutputoctets;
-  uint64_t maxtotaloctets;
-  time_t sessionterminatetime;
+  uint64_t maxinputoctets; /**< Maximum input bytes */
+  uint64_t maxoutputoctets; /**< Maximum output bytes */
+  uint64_t maxtotaloctets; /**< Maximum bytes allowed */
+  time_t sessionterminatetime; /**< Time when session terminates */
   char filteridbuf[RADIUS_ATTR_VLEN+1];
   int filteridlen;
 
@@ -183,7 +182,7 @@ struct app_conn_t
   struct sockaddr_storage radiuspeer; /**< Where to send reply */
   uint8_t radiusid;              /**< ID to reply with */
   uint8_t authenticator[RADIUS_AUTHLEN];
-  int authtype; /* TODO */
+  int authtype; /**< Authentication method used (CHAP-MD5, MS-CHAPv2, ... */
   char proxyuser[USERNAMESIZE];     /**< Unauthenticated user: */
   uint8_t proxyuserlen;             /**< Length of unauthenticated user */
   uint32_t proxynasip;              /**< Set by access request */
@@ -209,14 +208,14 @@ struct app_conn_t
   uint16_t mtu;            /**< MTU of the link */
 
   /* Accounting */
-  struct timeval start_time;
+  struct timeval start_time; /**< Start time of connection */
   struct timeval interim_time;
   long int interim_interval;   /**< Seconds. 0 = No interim accounting */
-  uint32_t input_packets;
-  uint32_t output_packets;
-  uint64_t input_octets;
-  uint64_t output_octets;
-  uint32_t terminate_cause;
+  uint32_t input_packets; /**< Packets received */
+  uint32_t output_packets; /**< Packets sent */
+  uint64_t input_octets; /**< Bytes received */
+  uint64_t output_octets; /**< Bytes sent */
+  uint32_t terminate_cause; /**< RADIUS cause of termination */
   uint32_t session_id; /**< Accounting session ID */
 
   /* Information for each connection */
@@ -235,8 +234,8 @@ struct app_conn_t
   /* UAM information */
   uint8_t uamchal[REDIR_MD5LEN]; /**< UAM challenge number */
   int uamtime; /**< UAM time */
-  char userurl[USERURLSIZE];
-  int uamabort;
+  char userurl[USERURLSIZE]; /**< Requested user URL */
+  int uamabort; /**< If UAM authentication is aborted */
 };
 
 

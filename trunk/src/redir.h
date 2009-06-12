@@ -142,7 +142,7 @@ struct redir_conn_t {
   int bandwidthmaxdown; /**< Maximum download bandwith */
   int maxinputoctets;  /**< Maximum output bytes that can be received */
   int maxoutputoctets; /**< Maximum output bytes that can be sent */
-  int maxtotaloctets; /**< Maximum total bytes */
+  int maxtotaloctets; /**< Maximum bytes allowed */
   time_t sessionterminatetime;
   char filteridbuf[RADIUS_ATTR_VLEN+1];
   int filteridlen;
@@ -217,10 +217,10 @@ struct redir_msg_t {
   int classlen;
   int bandwidthmaxup; /**< Maximum upload bandwidth */
   int bandwidthmaxdown; /**< Maximum download bandwidth */
-  int maxinputoctets;
-  int maxoutputoctets;
-  int maxtotaloctets;
-  int sessionterminatetime;
+  int maxinputoctets; /**< Maximum bytes that can be received */
+  int maxoutputoctets; /**< Maximum bytes that can be sent */
+  int maxtotaloctets; /**< Maximum bytes allowed */
+  int sessionterminatetime; /**< Time when session terminate */
   char filteridbuf[RADIUS_ATTR_VLEN+1];
   int filteridlen;
   int ipv6; /**< If connection use IPv6 */

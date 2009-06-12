@@ -4326,7 +4326,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
         RADIUS_ATTR_WISPR_SESSION_TERMINATE_TIME, 0)) {
     struct timeval timenow;
     gettimeofday(&timenow, NULL);
-    memcpy(attrs, attr->v.t, attr->l-2);
+    memcpy(attrs, attr->v.t, attr->l - 2);
     attrs[attr->l-2] = 0;
     memset(&stt, 0, sizeof(stt));
     result = sscanf(attrs, "%d-%d-%dT%d:%d:%d %d:%d",
@@ -4398,7 +4398,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
         RADIUS_ATTR_MS_MPPE_SEND_KEY, 0)) {
     if (radius_keydecode(radius_obj, appconn->sendkey, RADIUS_ATTR_VLEN, 
           &appconn->sendlen, (uint8_t*) &sendattr->v.t,
-          sendattr->l-2, pack_req->authenticator,
+          sendattr->l - 2, pack_req->authenticator,
           radius->secret, radius->secretlen)) {
       sys_err(LOG_INFO, __FILE__, __LINE__, 0,
           "radius_keydecode() failed!");
@@ -4412,7 +4412,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
         RADIUS_ATTR_MS_MPPE_RECV_KEY, 0)) {
     if (radius_keydecode(radius_obj, appconn->recvkey, RADIUS_ATTR_VLEN,
           &appconn->recvlen, (uint8_t*) &recvattr->v.t,
-          recvattr->l-2, pack_req->authenticator,
+          recvattr->l - 2, pack_req->authenticator,
           radius->secret, radius->secretlen) ) {
       sys_err(LOG_INFO, __FILE__, __LINE__, 0,
           "radius_keydecode() failed!");
@@ -4428,7 +4428,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     /* TODO: Check length of vendor attributes */
     if (radius_pwdecode(radius_obj, appconn->lmntkeys, RADIUS_MPPEKEYSSIZE,
           &appconn->lmntlen, (uint8_t*) &lmntattr->v.t,
-          lmntattr->l-2, pack_req->authenticator,
+          lmntattr->l - 2, pack_req->authenticator,
           radius->secret, radius->secretlen)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "radius_pwdecode() failed");
@@ -4455,12 +4455,12 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
   if (!radius_getattr(pack, &succattr, RADIUS_ATTR_VENDOR_SPECIFIC,
         RADIUS_VENDOR_MS,
         RADIUS_ATTR_MS_CHAP2_SUCCESS, 0)) {
-    if ((succattr->l-5) != MS2SUCCSIZE) {
+    if ((succattr->l - 5) != MS2SUCCSIZE) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-          "Wrong length of MS-CHAP2 success: %d", succattr->l-5);
+          "Wrong length of MS-CHAP2 success: %d", succattr->l - 5);
       return dnprot_reject(appconn);
     }
-    memcpy(appconn->ms2succ, ((char *)&succattr->v.t)+3, MS2SUCCSIZE);  /* cast with (char *) to avoid use of void* in arithmetic warning */
+    memcpy(appconn->ms2succ, ((char *)&succattr->v.t) + 3, MS2SUCCSIZE);  /* cast with (char *) to avoid use of void* in arithmetic warning */
   }
 
   switch(appconn->authtype) {
