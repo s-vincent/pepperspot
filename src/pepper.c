@@ -614,7 +614,7 @@ static int get_namepart(char *src, char *host, int hostsize, int *port)
   }
 
   strncpy(host, slashslash, hostsize);
-  host[hostlen] = 0;
+  host[hostlen] = 0x00;
 
   return 0;
 }
@@ -633,10 +633,15 @@ static int get_namepart6(char *src, char *host, int *port)
   char *colon = NULL;
   unsigned int pos = 0;
 
-  if (!strncmp(src, "http://", 7)) {
+  if(!src)
+  {
+    return -1;
+  }
+
+  if (!memcmp(src, "http://", 7)) {
     *port = DHCP_HTTP;
   }
-  else   if (!strncmp(src, "https://", 8)) {
+  else if (!memcmp(src, "https://", 8)) {
     *port = DHCP_HTTPS;
   }
   else {
@@ -651,7 +656,6 @@ static int get_namepart6(char *src, char *host, int *port)
   colon = strstr(croch2, ":");
 
   while(croch[pos] != ']' && pos < strlen(croch)) {
-
     host[pos] = croch[pos];
     pos++;
   }
@@ -1131,66 +1135,71 @@ static int process_options(int argc, char **argv, int firsttime)
   if (options.debug & DEBUG_CONF) {
     printf ("Uamurl6: %s\n", args_info.uamserver6_arg);
   }
+
   memset(options.uamserver6, 0, sizeof(options.uamserver6));
   options.uamserverlen6 = 0;
 
-  if(!args_info.uamserver6_arg && (!strcmp(options.ipversion, "dual") || !strcmp(options.ipversion, "ipv6")))
+  if((!strcmp(options.ipversion, "dual") || !strcmp(options.ipversion, "ipv6")))
   {
-    printf("uamserver6 option must be configured!\n");
-    return -1;
-  }
-
-  if (get_namepart6(args_info.uamserver6_arg, hostname, 
-        &options.uamserverport6)==-1) {
-    sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-        "Failed to parse uamserver6: %s!", args_info.uamserver6_arg);
-    return -1;
-  }
-  /* TODO: parsing ipv6 url */
-  if(options.debug) printf("UAM server6:%s\n", hostname);
-
-  memset(&hints, 0, sizeof(struct addrinfo));
-  hints.ai_family = AF_INET6;
-  hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = 0;
-  hints.ai_protocol = 0;
-
-  if(getaddrinfo(hostname, NULL, &hints, &res) != 0)
-  {
-    sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-        "Could not resolve IPv6 address of uamserver: %s!",
-        hostname);
-    return -1;
-  }
-  else
-  {
-    unsigned int j = 0;
-    for (rp = res; rp != NULL; rp = rp->ai_next)
+    if(!args_info.uamserver6_arg)
     {
-      if (options.debug & DEBUG_CONF)
+      printf("uamserver6 option must be configured!\n");
+      return -1;
+    }
+
+    if(get_namepart6(args_info.uamserver6_arg, hostname, 
+          &options.uamserverport6)==-1) {
+      sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+          "Failed to parse uamserver6: %s!", args_info.uamserver6_arg);
+      return -1;
+    }
+  
+    /* TODO: parsing ipv6 url */
+    if(options.debug) printf("UAM server6:%s\n", hostname);
+  
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = 0;
+    hints.ai_protocol = 0;
+
+    if(getaddrinfo(hostname, NULL, &hints, &res) != 0)
+    {
+      sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+          "Could not resolve IPv6 address of uamserver: %s!",
+          hostname);
+      return -1;
+    }
+    else
+    {
+      unsigned int j = 0;
+      for(rp = res; rp != NULL; rp = rp->ai_next)
       {
-        if(getnameinfo(rp->ai_addr, rp->ai_addrlen, uamserveraddr6, INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST) == 0)
+        if(options.debug & DEBUG_CONF)
+          {
+          if(getnameinfo(rp->ai_addr, rp->ai_addrlen, uamserveraddr6, INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST) == 0)
+          {
+            printf("Uamserver IPv6 address #%d: %s\n", j, uamserveraddr6);
+          }
+        }
+        if(options.uamserverlen6 >= UAMSERVER_MAX) {
+          sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+              "Too many IPv6s in uamserver6 %s!",
+              args_info.uamserver6_arg);
+          return -1;
+        }
+        else 
         {
-          printf("Uamserver IPv6 address #%d: %s\n", j, uamserveraddr6);
+          memcpy(&options.uamserver6[options.uamserverlen6++], &((struct sockaddr_in6*)rp->ai_addr)->sin6_addr, sizeof(struct in6_addr));
+          uamserveraddr6[0] = '\0';
+          j++;
         }
       }
-      if (options.uamserverlen6 >= UAMSERVER_MAX) {
-        sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-            "Too many IPv6s in uamserver6 %s!",
-            args_info.uamserver6_arg);
-        return -1;
-      }
-      else 
-      {
-        memcpy(&options.uamserver6[options.uamserverlen6++], &((struct sockaddr_in6*)rp->ai_addr)->sin6_addr, sizeof(struct in6_addr));
-        uamserveraddr6[0] = '\0';
-        j++;
-      }
+      freeaddrinfo(res);
     }
-    freeaddrinfo(res);
-  }
 
-  options.uamurl6 = args_info.uamserver6_arg;
+    options.uamurl6 = args_info.uamserver6_arg;
+  }
 
   /* uamhomepage                                                  */
   if (!args_info.uamhomepage_arg) {
