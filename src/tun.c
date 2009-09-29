@@ -157,7 +157,7 @@ static int tun_gifindex(struct tun_t *this, unsigned int *ifindex)
   ifr.ifr_addr.sa_family = AF_INET;
   ifr.ifr_dstaddr.sa_family = AF_INET;
   ifr.ifr_netmask.sa_family = AF_INET;
-  strncpy(ifr.ifr_name, this->devname, IFNAMSIZ-1);
+  strncpy(ifr.ifr_name, this->devname, IFNAMSIZ - 1);
   ifr.ifr_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
   if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
   {
@@ -191,8 +191,8 @@ static int tun_sifflags(struct tun_t *this, int flags)
 
   memset (&ifr, '\0', sizeof (ifr));
   ifr.ifr_flags = flags;
-  strncpy(ifr.ifr_name, this->devname, IFNAMSIZ-1);
-  ifr.ifr_name[IFNAMSIZ-1] = 0; /* Make sure to terminate */
+  strncpy(ifr.ifr_name, this->devname, IFNAMSIZ - 1);
+  ifr.ifr_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
   if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
@@ -333,8 +333,8 @@ int tun_addaddr(struct tun_t *this,
   memset(&areq, 0, sizeof(areq));
 
   /* Set up interface name */
-  strncpy(areq.ifra_name, this->devname, IFNAMSIZ-1);
-  areq.ifra_name[IFNAMSIZ-1] = 0; /* Make sure to terminate */
+  strncpy(areq.ifra_name, this->devname, IFNAMSIZ - 1);
+  areq.ifra_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
 
   ((struct sockaddr_in*) &areq.ifra_addr)->sin_family = AF_INET;
   ((struct sockaddr_in*) &areq.ifra_addr)->sin_len = sizeof(areq.ifra_addr);
@@ -408,8 +408,8 @@ int tun_setaddr(struct tun_t *this,
     sizeof (struct sockaddr_in);
 #endif
 
-  strncpy(ifr.ifr_name, this->devname, IFNAMSIZ-1);
-  ifr.ifr_name[IFNAMSIZ-1] = 0; /* Make sure to terminate */
+  strncpy(ifr.ifr_name, this->devname, IFNAMSIZ - 1);
+  ifr.ifr_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
 
   /* Create a channel to the NET kernel. */
   if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
@@ -669,7 +669,7 @@ int tun_new(struct tun_t **tun)
   struct ifreq ifr;
 
 #elif defined(__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
-  char devname[IFNAMSIZ+5]; /* "/dev/" + ifname */
+  char devname[IFNAMSIZ + 5]; /* "/dev/" + ifname */
   int devnum = 0;
   struct ifaliasreq areq;
   int fd = -1;
@@ -720,8 +720,8 @@ int tun_new(struct tun_t **tun)
     return -1;
   }
 
-  strncpy((*tun)->devname, ifr.ifr_name, IFNAMSIZ-1);
-  (*tun)->devname[IFNAMSIZ-1] = 0; /* make sure to terminate */
+  strncpy((*tun)->devname, ifr.ifr_name, IFNAMSIZ - 1);
+  (*tun)->devname[IFNAMSIZ - 1] = 0; /* make sure to terminate */
 
   ioctl((*tun)->fd, TUNSETNOCSUM, 1); /* Disable checksums */
   return 0;
@@ -751,8 +751,8 @@ int tun_new(struct tun_t **tun)
   memset(&areq, 0, sizeof(areq));
 
   /* Set up interface name */
-  strncpy(areq.ifra_name, (*tun)->devname, IFNAMSIZ-1);
-  areq.ifra_name[IFNAMSIZ-1] = 0; /* Make sure to terminate */
+  strncpy(areq.ifra_name, (*tun)->devname, IFNAMSIZ - 1);
+  areq.ifra_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
 
   /* Create a channel to the NET kernel. */
   if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
@@ -903,7 +903,7 @@ int tun_decaps(struct tun_t *this)
   /* tun interface adds 4 bytes to front of packet under OpenBSD */
   if (this->cb_ind)
 #if defined (__OpenBSD__)
-    return this->cb_ind(this, buffer+4, sbuf.len);
+    return this->cb_ind(this, buffer + 4, sbuf.len);
 #else
   return this->cb_ind(this, buffer, sbuf.len);
 #endif
@@ -919,13 +919,13 @@ int tun_encaps(struct tun_t *tun, void *pack, unsigned len)
 
 #if defined (__OpenBSD__)
 
-  unsigned char buffer[PACKET_MAX+4];
+  unsigned char buffer[PACKET_MAX + 4];
 
   /* TODO: Can we user writev here to be more efficient??? */
-  *((long*)(&buffer))=htonl(AF_INET);
+  *((long*)(&buffer)) = htonl(AF_INET);
   memcpy(&buffer[4], pack, PACKET_MAX);
 
-  return write(tun->fd, buffer, len+4);
+  return write(tun->fd, buffer, len + 4);
 
 #elif defined(__linux__) || defined (__FreeBSD__)  || defined (__NetBSD__) || defined (__APPLE__)
 

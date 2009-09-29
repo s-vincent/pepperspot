@@ -169,7 +169,7 @@ static int dhcp_ip_check(struct dhcp_ippacket_t *pack) {
     sum += ((uint16_t*) &pack->iph)[i];
   }
   while (sum>>16)
-    sum = (sum & 0xFFFF)+(sum >> 16);
+    sum = (sum & 0xFFFF) + (sum >> 16);
   pack->iph.check = ~sum;
   return 0;
 }
@@ -295,7 +295,7 @@ static int dhcp_udp_checkv6(struct dhcp_ipv6packet_t *pack, int length)
   udp_len = ntohs(pack->ip6h.payload_length);
 
   /* Sum UDP header and payload */
-  for (i = 0; i < (udp_len/2); i++) {
+  for (i = 0; i < (udp_len / 2); i++) {
     sum += ((uint16_t*) pack->payload)[i];
   }
 
@@ -313,7 +313,7 @@ static int dhcp_udp_checkv6(struct dhcp_ipv6packet_t *pack, int length)
   sum = sum + udph->len + ((pack->ip6h.next_header<<8)&0xFF00);
 
   while (sum>>16)
-    sum = (sum & 0xFFFF)+(sum >> 16);
+    sum = (sum & 0xFFFF) + (sum >> 16);
 
   udph->check = ~sum;
 
@@ -366,7 +366,7 @@ static int dhcp_tcp_check(struct dhcp_ippacket_t *pack, int length)
   sum = sum + htons(tcp_len) + ((pack->iph.protocol<<8)&0xFF00);
 
   while (sum>>16)
-    sum = (sum & 0xFFFF)+(sum >> 16);
+    sum = (sum & 0xFFFF) + (sum >> 16);
 
   tcph->check = ~sum;
 
@@ -766,7 +766,7 @@ static int dhcp_getmac(const char *ifname, unsigned char *macaddr)
 static int dhcp_open_eth(char const *ifname, uint16_t protocol, int promisc,
     int usemac, unsigned char *macaddr, int *ifindex) {
 
-  char devname[IFNAMSIZ+5]; /* "/dev/" + ifname */
+  char devname[IFNAMSIZ + 5]; /* "/dev/" + ifname */
   int devnum = 0;
   struct ifreq ifr;
   int fd = -1;
@@ -1251,7 +1251,7 @@ static int dhcp_initconn(struct dhcp_t *this)
       this->conn[n].prev = &this->conn[n - 1];
       this->conn[n - 1].next = &this->conn[n];
     }
-    if (n == (this->numconn-1)) {
+    if (n == (this->numconn - 1)) {
       this->conn[n].next = NULL; /* Redundant */
       this->lastfreeconn  = &this->conn[n];
     }
@@ -1968,8 +1968,8 @@ struct timeval* dhcp_timeleft(struct dhcp_t *this, struct timeval *tvp)
 static int dhcp_doDNATv6(struct dhcp_conn_t* conn, struct dhcp_ipv6packet_t* pack, int len)
 {
   struct dhcp_t* this = conn->parent;
-  struct dhcp_tcphdr_t* tcph=(struct dhcp_tcphdr_t*)pack->payload;
-  struct dhcp_udphdr_t* udph=(struct dhcp_udphdr_t*)pack->payload;
+  struct dhcp_tcphdr_t* tcph = (struct dhcp_tcphdr_t*)pack->payload;
+  struct dhcp_udphdr_t* udph = (struct dhcp_udphdr_t*)pack->payload;
   char buf[INET6_ADDRSTRLEN];
   char buf2[INET6_ADDRSTRLEN];
 
@@ -2026,11 +2026,10 @@ static int dhcp_doDNATv6(struct dhcp_conn_t* conn, struct dhcp_ipv6packet_t* pac
 
     if(pos == -1) /* save for undoing */
     {
-      /* char buf3[64]; */
       printf("save dnat for dst : %s port : %d\n", inet_ntop(AF_INET6, &pack->ip6h.dst_addr, buf, sizeof(buf)), tcph->src);
       memcpy(&conn->dnatipv6[conn->nextdnatv6], pack->ip6h.dst_addr, sizeof(struct in6_addr));
-      conn->dnatportv6[conn->nextdnatv6]=tcph->src;
-      conn->nextdnatv6=(conn->nextdnatv6 + 1) % DHCP_DNATV6_MAX;
+      conn->dnatportv6[conn->nextdnatv6] = tcph->src;
+      conn->nextdnatv6 = (conn->nextdnatv6 + 1) % DHCP_DNATV6_MAX;
     }
 
     memcpy(&pack->ip6h.dst_addr, &this->ouripv6.s6_addr, sizeof(struct in6_addr));
@@ -2136,8 +2135,8 @@ static int dhcp_doDNAT(struct dhcp_conn_t *conn,
 static int dhcp_undoDNATv6(struct dhcp_conn_t *conn, struct dhcp_ipv6packet_t *pack, int len) 
 {
   struct dhcp_t* this = conn->parent;
-  struct dhcp_tcphdr_t* tcph=(struct dhcp_tcphdr_t*)pack->payload;
-  struct dhcp_udphdr_t* udph=(struct dhcp_udphdr_t*) pack->payload;
+  struct dhcp_tcphdr_t* tcph = (struct dhcp_tcphdr_t*)pack->payload;
+  struct dhcp_udphdr_t* udph = (struct dhcp_udphdr_t*) pack->payload;
 
   if (this->anydns ||
       ((pack->ip6h.next_header == DHCP_IP_UDP) &&
@@ -3004,7 +3003,7 @@ static int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack
     if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.dst_addr, &solict_addr) || IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.dst_addr, &this->ouripv6))
     {
       struct in6_addr src;
-      struct dhcp_icmpv6packet_t*icmpv6=(struct dhcp_icmpv6packet_t*)pack->payload;
+      struct dhcp_icmpv6packet_t* icmpv6 = (struct dhcp_icmpv6packet_t*)pack->payload;
       memcpy(&src, pack->ip6h.src_addr, 16);
 
       printf("icmpv6 for us!\n");

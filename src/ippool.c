@@ -426,7 +426,7 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
 
   /* Determine hashsize */
   (*this)->hashsize = 1 << (*this)->hashlog; /* Fails if mask=0: All Internet*/
-  (*this)->hashmask = (*this)->hashsize -1;
+  (*this)->hashmask = (*this)->hashsize - 1;
 
   /* Allocate hash table */
   if (!((*this)->hash = calloc(sizeof(struct ippoolm_t), (*this)->hashsize))){
@@ -438,7 +438,7 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
   (*this)->firstdyn = NULL;
   (*this)->lastdyn = NULL;
 
-  for (i = 0; i<dynsize; i++) {
+  for (i = 0; i < dynsize; i++) {
 
     if (flags & IPPOOL_NOGATEWAY)
       (*this)->member[i].addr.s_addr = htonl(ntohl(addr.s_addr) + i + 2);
@@ -502,7 +502,6 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
     }
     (*this)->lastipv6 = &((*this)->member[i]);
     (*this)->member[i].next = NULL;
-
   }
 
   if (0) (void)ippool_printaddr(*this);

@@ -67,7 +67,7 @@ int daemon(int nochdir, int noclose)
 {
   pid_t pid = -1;
 
-  pid=fork();
+  pid = fork();
 
   if(pid == -1) /* error */
   {

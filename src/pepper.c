@@ -297,7 +297,7 @@ static int leaky_bucket(struct app_conn_t *conn, int octetsup, int octetsdown)
   if (conn->bandwidthmaxup) {
 
     /* Subtract what the leak since last time we visited */
-    if (conn->bucketup > ((timediff * conn->bandwidthmaxup)/8000000)) {
+    if (conn->bucketup > ((timediff * conn->bandwidthmaxup) / 8000000)) {
       conn->bucketup -= (timediff * conn->bandwidthmaxup) / 8000000;
     }
     else {
@@ -312,9 +312,8 @@ static int leaky_bucket(struct app_conn_t *conn, int octetsup, int octetsdown)
       conn->bucketup += octetsup;
     }
   }
-
   if (conn->bandwidthmaxdown) {
-    if (conn->bucketdown > ((timediff * conn->bandwidthmaxdown)/8000000)) {
+    if (conn->bucketdown > ((timediff * conn->bandwidthmaxdown) / 8000000)) {
       conn->bucketdown -= (timediff * conn->bandwidthmaxdown) / 8000000;
     }
     else {
@@ -356,19 +355,19 @@ static int set_env(char *name, char *value, unsigned int len, struct in_addr *ad
   char s[1024];
   char buf[INET_ADDRSTRLEN];
 
-  if (addr!=NULL) {
-    strncpy(s, inet_ntop(AF_INET, addr, buf, sizeof(buf)), sizeof(s)); s[sizeof(s)-1] = 0;
+  if (addr != NULL) {
+    strncpy(s, inet_ntop(AF_INET, addr, buf, sizeof(buf)), sizeof(s)); s[sizeof(s) - 1] = 0;
     value = s;
   }
   else if (mac != NULL) {
-    (void) snprintf(s, sizeof(s)-1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+    (void) snprintf(s, sizeof(s) - 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
         mac[0], mac[1],
         mac[2], mac[3],
         mac[4], mac[5]);
     value = s;
   }
   else if (integer != NULL) {
-    (void) snprintf(s, sizeof(s)-1, "%ld", *integer);
+    (void) snprintf(s, sizeof(s) - 1, "%ld", *integer);
     value = s;
   }
   else if (len != 0) {
@@ -407,19 +406,19 @@ static int set_envv6(char *name, char *value, unsigned int len, struct in6_addr 
     uint8_t *mac, long int *integer)
 {
   char s[1024];
-  if (addr!=NULL) {
+  if (addr != NULL) {
     inet_ntop(AF_INET6, addr, s, INET6_ADDRSTRLEN);
     value = s;
   }
   else if (mac != NULL) {
-    (void) snprintf(s, sizeof(s)-1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+    (void) snprintf(s, sizeof(s) - 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
         mac[0], mac[1],
         mac[2], mac[3],
         mac[4], mac[5]);
     value = s;
   }
   else if (integer != NULL) {
-    (void) snprintf(s, sizeof(s)-1, "%ld", *integer);
+    (void) snprintf(s, sizeof(s) - 1, "%ld", *integer);
     value = s;
   }
   else if (len != 0) {
@@ -597,7 +596,7 @@ static int get_namepart(char *src, char *host, int hostsize, int *port)
   }
   else if (colon != NULL) {
     hostlen = colon - slashslash;
-    if (1 != sscanf(colon+1, "%d", port)) {
+    if (1 != sscanf(colon + 1, "%d", port)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Not able to parse URL port: %s!", src);
       return -1;
@@ -607,9 +606,9 @@ static int get_namepart(char *src, char *host, int hostsize, int *port)
     hostlen = strlen(src);
   }
 
-  if (hostlen > (hostsize-1)) {
+  if (hostlen > (hostsize - 1)) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-        "URL hostname larger than %d: %s!", hostsize-1, src);
+        "URL hostname larger than %d: %s!", hostsize - 1, src);
     return -1;
   }
 
@@ -689,7 +688,7 @@ static int set_uamallowed(char *uamallowed, int len)
   struct sockaddr_in *addr = NULL;
   struct sockaddr_in6 *addrv6 = NULL;
 
-  p3 = malloc(len+1);
+  p3 = malloc(len + 1);
   if(!p3)
   {
     return -1;
@@ -814,7 +813,7 @@ static int set_uamallowed(char *uamallowed, int len)
       }			
     }
     if (p2) {
-      p1 = p2+1;
+      p1 = p2 + 1;
       if ((p2 = strchr(p1, ','))) {
         *p2 = '\0';
       }
@@ -840,7 +839,7 @@ static int set_macallowed(char *macallowed, int len) {
   char *p3 = NULL;
   unsigned int i = 0;
 
-  p3 = malloc(len+1);
+  p3 = malloc(len + 1);
   if(!p3)
   {
     return -1;
@@ -889,7 +888,7 @@ static int set_macallowed(char *macallowed, int len) {
     options.macoklen++;
 
     if (p2) {
-      p1 = p2+1;
+      p1 = p2 + 1;
       if ((p2 = strchr(p1, ','))) {
         *p2 = '\0';
       }
@@ -989,7 +988,7 @@ static int process_options(int argc, char **argv, int firsttime)
     char macstr[RADIUS_ATTR_VLEN];
     int macstrlen = 0;
 
-    if ((macstrlen = strlen(args_info.dhcpmac_arg)) >= (RADIUS_ATTR_VLEN-1)) {
+    if ((macstrlen = strlen(args_info.dhcpmac_arg)) >= (RADIUS_ATTR_VLEN - 1)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "MAC address too long");
       return -1;
@@ -1029,7 +1028,7 @@ static int process_options(int argc, char **argv, int firsttime)
     }
 
     /* Set DHCP server IP address to network address plus 1 */
-    options.dhcplisten.s_addr = htonl(ntohl(options.net.s_addr)+1);
+    options.dhcplisten.s_addr = htonl(ntohl(options.net.s_addr) + 1);
   }
   else {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1040,7 +1039,7 @@ static int process_options(int argc, char **argv, int firsttime)
   /* IPv6 address of the TUN interface */
   if(args_info.staticipv6_arg) 
   {
-    if(inet_pton(AF_INET6, args_info.staticipv6_arg, &options.ip6listen)==-1)
+    if(inet_pton(AF_INET6, args_info.staticipv6_arg, &options.ip6listen) == -1)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno,
           "Can't assign static IPv6 address: %s!", args_info.net_arg);
@@ -1063,7 +1062,7 @@ static int process_options(int argc, char **argv, int firsttime)
     }
 
     /* Set DHCP server IP address to network address plus 1 */
-    options.dhcplisten.s_addr = htonl(ntohl(options.net.s_addr)+1);
+    options.dhcplisten.s_addr = htonl(ntohl(options.net.s_addr) + 1);
   }
   else {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1078,7 +1077,7 @@ static int process_options(int argc, char **argv, int firsttime)
   memset(options.uamserver, 0, sizeof(options.uamserver));
   options.uamserverlen = 0;
   if (get_namepart(args_info.uamserver_arg, hostname, USERURLSIZE, 
-        &options.uamserverport)==-1) {
+        &options.uamserverport) == -1) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Failed to parse uamserver: %s!", args_info.uamserver_arg);
     return -1;
@@ -1148,7 +1147,7 @@ static int process_options(int argc, char **argv, int firsttime)
     }
 
     if(get_namepart6(args_info.uamserver6_arg, hostname, 
-          &options.uamserverport6)==-1) {
+          &options.uamserverport6) == -1) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Failed to parse uamserver6: %s!", args_info.uamserver6_arg);
       return -1;
@@ -1621,8 +1620,8 @@ static int process_options(int argc, char **argv, int firsttime)
     options.radiuscalled = args_info.radiuscalled_arg;
   }
   else if (options.dhcpusemac == 1) {
-    options.radiuscalled = malloc(MACSTRLEN+1);
-    (void) snprintf(options.radiuscalled, MACSTRLEN+1,
+    options.radiuscalled = malloc(MACSTRLEN + 1);
+    (void) snprintf(options.radiuscalled, MACSTRLEN + 1,
         "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
         options.dhcpmac[0], options.dhcpmac[1],
         options.dhcpmac[2], options.dhcpmac[3],
@@ -1631,8 +1630,8 @@ static int process_options(int argc, char **argv, int firsttime)
   else if (options.dhcpif) {
     unsigned char macaddr[DHCP_ETH_ALEN];
     (void) dhcp_getmac(options.dhcpif, macaddr);
-    options.radiuscalled = malloc(MACSTRLEN+1);
-    (void) snprintf(options.radiuscalled, MACSTRLEN+1,
+    options.radiuscalled = malloc(MACSTRLEN + 1);
+    (void) snprintf(options.radiuscalled, MACSTRLEN + 1,
         "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
         macaddr[0], macaddr[1],
         macaddr[2], macaddr[3],
@@ -1912,7 +1911,7 @@ static int initconn(void)
   gettimeofday(&rereadtime, NULL);
 
 
-  for (n = 0; n < (2*APP_NUM_CONN); n++) {
+  for (n = 0; n < (2 * APP_NUM_CONN); n++) {
     g_connection[n].inuse = 0; /* Redundant */
     if (n == 0) {
       g_connection[n].prev = NULL; /* Redundant */
@@ -1920,10 +1919,10 @@ static int initconn(void)
 
     }
     else {
-      g_connection[n].prev = &g_connection[n-1];
-      g_connection[n-1].next = &g_connection[n];
+      g_connection[n].prev = &g_connection[n - 1];
+      g_connection[n - 1].next = &g_connection[n];
     }
-    if (n == ((2*APP_NUM_CONN)-1)) {
+    if (n == ((2 * APP_NUM_CONN) - 1)) {
       g_connection[n].next = NULL; /* Redundant */
       g_lastfreeconn  = &g_connection[n];
     }
@@ -2143,7 +2142,7 @@ static int checkconn(void)
 
   checktime = timenow;
 
-  for (n = 0; n < (2*APP_NUM_CONN); n++) {
+  for (n = 0; n < (2 * APP_NUM_CONN); n++) {
     conn = &g_connection[n];
     if ((conn->inuse != 0) && (conn->authenticated == 1)) {
       if (!(dhcpconn = (struct dhcp_conn_t*) conn->dnlink)) {
@@ -2230,7 +2229,7 @@ static int killconn(void)
   struct app_conn_t *conn = NULL;
   struct dhcp_conn_t* dhcpconn = NULL;
 
-  for (n = 0; n < (2*APP_NUM_CONN); n++) {
+  for (n = 0; n < (2 * APP_NUM_CONN); n++) {
     conn = &g_connection[n];
     if ((conn->inuse != 0) && (conn->authenticated == 1)) {
       if (!(dhcpconn = (struct dhcp_conn_t*) conn->dnlink)) {
@@ -2264,7 +2263,7 @@ static int maccmp(unsigned char *mac) {
 static int macauth_radius(struct app_conn_t *appconn) {
   struct radius_packet_t radius_pack;
   struct dhcp_conn_t* dhcpconn = (struct dhcp_conn_t*) appconn->dnlink;
-  char mac[MACSTRLEN+1];
+  char mac[MACSTRLEN + 1];
 
   if (radius_default_pack(radius, &radius_pack, RADIUS_CODE_ACCESS_REQUEST)) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -2273,16 +2272,16 @@ static int macauth_radius(struct app_conn_t *appconn) {
   }
 
   /* Include his MAC address */
-  (void) snprintf(mac, MACSTRLEN+1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+  (void) snprintf(mac, MACSTRLEN + 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
       dhcpconn->hismac[0], dhcpconn->hismac[1],
       dhcpconn->hismac[2], dhcpconn->hismac[3],
       dhcpconn->hismac[4], dhcpconn->hismac[5]);
 
   strncpy(appconn->proxyuser, mac, USERNAMESIZE);
-  appconn->proxyuser[USERNAMESIZE-1] = 0;
+  appconn->proxyuser[USERNAMESIZE - 1] = 0;
   if (options.macsuffix) {
     strncat(appconn->proxyuser, options.macsuffix, USERNAMESIZE);
-    appconn->proxyuser[USERNAMESIZE-1] = 0;
+    appconn->proxyuser[USERNAMESIZE - 1] = 0;
   }
   appconn->proxyuserlen = strlen(appconn->proxyuser);
 
@@ -2323,7 +2322,7 @@ static int macauth_radius(struct app_conn_t *appconn) {
         (uint8_t*) options.radiusnasid, strlen(options.radiusnasid));
 
   (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_ACCT_SESSION_ID, 0, 0, 0,
-      (uint8_t*) appconn->sessionid, REDIR_SESSIONID_LEN-1);
+      (uint8_t*) appconn->sessionid, REDIR_SESSIONID_LEN - 1);
 
   (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_PORT_TYPE, 0, 0,
       options.radiusnasporttype, NULL, 0);
@@ -2536,9 +2535,9 @@ static int radius_access_accept(struct app_conn_t *conn) {
 static int acct_req(struct app_conn_t *conn, int status_type)
 {
   struct radius_packet_t radius_pack;
-  char mac[MACSTRLEN+1];
+  char mac[MACSTRLEN + 1];
   struct in6_addr idv6;
-  char portid[16+1];
+  char portid[16 + 1];
   struct timeval timenow;
   uint32_t timediff = 0;
   uint64_t suf = 0;
@@ -2576,7 +2575,7 @@ static int acct_req(struct app_conn_t *conn, int status_type)
         conn->classlen);
   }
 
-  (void) snprintf(mac, MACSTRLEN+1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+  (void) snprintf(mac, MACSTRLEN + 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
       conn->hismac[0], conn->hismac[1],
       conn->hismac[2], conn->hismac[3],
       conn->hismac[4], conn->hismac[5]);
@@ -2585,7 +2584,7 @@ static int acct_req(struct app_conn_t *conn, int status_type)
   (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_CALLING_STATION_ID, 0, 0, 0,
       (uint8_t*) mac, MACSTRLEN);
 
-  (void) snprintf(mac, MACSTRLEN+1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+  (void) snprintf(mac, MACSTRLEN + 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
       conn->ourmac[0], conn->ourmac[1],
       conn->ourmac[2], conn->ourmac[3],
       conn->ourmac[4], conn->ourmac[5]);
@@ -2600,7 +2599,7 @@ static int acct_req(struct app_conn_t *conn, int status_type)
   (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_PORT, 0, 0,
       conn->unit, NULL, 0);
 
-  (void) snprintf(portid, 16+1, "%.8d", conn->unit);
+  (void) snprintf(portid, 16 + 1, "%.8d", conn->unit);
   (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_PORT_ID, 0, 0, 0,
       (uint8_t*) portid, strlen(portid));
 
@@ -2625,7 +2624,7 @@ static int acct_req(struct app_conn_t *conn, int status_type)
         ntohl(conn->hisip.s_addr), NULL, 0);
   else {
     (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_IPV6_PREFIX, 0, 0,
-        options.prefix, NULL, options.prefixlen+2);
+        options.prefix, NULL, options.prefixlen + 2);
 
     ippool_getv6suffix(&idv6, &conn->hisipv6, options.ipv6mask);
 
@@ -2646,7 +2645,7 @@ static int acct_req(struct app_conn_t *conn, int status_type)
 
 
   (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_ACCT_SESSION_ID, 0, 0, 0,
-      (uint8_t*) conn->sessionid, REDIR_SESSIONID_LEN-1);
+      (uint8_t*) conn->sessionid, REDIR_SESSIONID_LEN - 1);
 
   if ((status_type == RADIUS_STATUS_TYPE_STOP) ||
       (status_type == RADIUS_STATUS_TYPE_INTERIM_UPDATE)) {
@@ -2754,7 +2753,7 @@ static int dnprot_reject(struct app_conn_t *appconn) {
         appconn->hisip.s_addr = ipm->addr.s_addr;
 
         /* TODO: Listening address is network address plus 1 */
-        appconn->ourip.s_addr = htonl((ntohl(options.net.s_addr)+1));
+        appconn->ourip.s_addr = htonl((ntohl(options.net.s_addr) + 1));
       }
 
       appconn->uplink =  ipm;
@@ -3162,7 +3161,7 @@ static int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
   conn->hisip = appconn->hisip;
   memcpy(conn->sessionid, appconn->sessionid, REDIR_SESSIONID_LEN);
   /*strncpy(conn->userurl, appconn->userurl, REDIR_MAXCHAR);
-    conn->userurl[REDIR_MAXCHAR-1] = 0;*/
+    conn->userurl[REDIR_MAXCHAR - 1] = 0;*/
 
   conn->ipv6 = 0;
 
@@ -3229,7 +3228,7 @@ static int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr,
   memcpy(&conn->hisipv6, &appconn->hisipv6, sizeof(struct in6_addr));
   memcpy(conn->sessionid, appconn->sessionid, REDIR_SESSIONID_LEN);
   /*strncpy(conn->userurl, appconn->userurl, REDIR_MAXCHAR);*/
-  /*conn->userurl[REDIR_MAXCHAR-1] = 0;*/
+  /*conn->userurl[REDIR_MAXCHAR - 1] = 0;*/
 
   conn->ipv6 = 1;
 
@@ -3301,7 +3300,7 @@ int accounting_request(struct radius_packet_t *pack,
 
   /* NAS IP */
   if (!radius_getattr(pack, &nasipattr, RADIUS_ATTR_NAS_IP_ADDRESS, 0, 0, 0)) {
-    if ((nasipattr->l-2) != sizeof(appconn->nasip)) {
+    if ((nasipattr->l - 2) != sizeof(appconn->nasip)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Wrong length of NAS IP address");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
@@ -3311,7 +3310,7 @@ int accounting_request(struct radius_packet_t *pack,
 
   /* NAS IPV6 */
   if (!radius_getattrv6(pack, &nasipattrv6, RADIUS_ATTR_NAS_IPV6_ADDRESS, 0, 0, 0)) {
-    if ((nasipattrv6->l-2) != sizeof(appconn->nasip)) {
+    if ((nasipattrv6->l - 2) != sizeof(appconn->nasip)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Wrong length of NAS IP address");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
@@ -3321,7 +3320,7 @@ int accounting_request(struct radius_packet_t *pack,
 
   /* NAS PORT */
   if (!radius_getattr(pack, &nasportattr, RADIUS_ATTR_NAS_PORT, 0, 0, 0)) {
-    if ((nasportattr->l-2) != sizeof(appconn->nasport)) {
+    if ((nasportattr->l - 2) != sizeof(appconn->nasport)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Wrong length of NAS port");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
@@ -3333,10 +3332,10 @@ int accounting_request(struct radius_packet_t *pack,
   if (!radius_getattr(pack, &hismacattr, RADIUS_ATTR_CALLING_STATION_ID, 0, 0, 0)) {
     if (options.debug) {
       printf("Calling Station ID is: ");
-      for (n = 0; n < hismacattr->l-2; n++) printf("%c", hismacattr->v.t[n]);
+      for (n = 0; n < hismacattr->l - 2; n++) printf("%c", hismacattr->v.t[n]);
       printf("\n");
     }
-    if ((macstrlen = hismacattr->l-2) >= (RADIUS_ATTR_VLEN-1)) {
+    if ((macstrlen = hismacattr->l - 2) >= (RADIUS_ATTR_VLEN - 1)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Wrong length of called station ID");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
@@ -3453,7 +3452,7 @@ int access_request(struct radius_packet_t *pack,
   int macstrlen = 0;
   unsigned int temp[DHCP_ETH_ALEN];
   int	i = 0;
-  char mac[MACSTRLEN+1];
+  char mac[MACSTRLEN + 1];
 
   struct app_conn_t *appconn = NULL;
   struct dhcp_conn_t *dhcpconn = NULL;
@@ -3480,10 +3479,10 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattr(pack, &hisipattr, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0, 0)) {
     if (options.debug) {
       printf("Framed IP address is: ");
-      for (n = 0; n < hisipattr->l-2; n++) printf("%.2x", hisipattr->v.t[n]); 
+      for (n = 0; n < hisipattr->l - 2; n++) printf("%.2x", hisipattr->v.t[n]); 
       printf("\n");
     }
-    if ((hisipattr->l-2) != sizeof(hisip.s_addr)) {
+    if ((hisipattr->l - 2) != sizeof(hisip.s_addr)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Wrong length of framed IP address");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
@@ -3495,10 +3494,10 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattrv6(pack, &hisprefixattr, RADIUS_ATTR_FRAMED_IPV6_PREFIX, 0, 0, 0)) {
     if (options.debug) {
       printf("Framed IPv6 prefix is: ");
-      for (n = 0; n < hisprefixattr->l-2; n++) printf("%.2x", hisprefixattr->v.t[n]); 
+      for (n = 0; n < hisprefixattr->l - 2; n++) printf("%.2x", hisprefixattr->v.t[n]); 
       printf("\n");
     }
-    if ((hisprefixattr->l-2) != sizeof(hisprefix)) {
+    if ((hisprefixattr->l - 2) != sizeof(hisprefix)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Wrong length of framed IPv6 Prefix");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
@@ -3510,10 +3509,10 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattrv6(pack, &hisifaceidattr, RADIUS_ATTR_FRAMED_INTERFACE_ID, 0, 0, 0)) {
     if (options.debug) {
       printf("Framed Interface Id is: ");
-      for (n = 0; n < hisifaceidattr->l-2; n++) printf("%.2x", hisifaceidattr->v.t[n]); 
+      for (n = 0; n < hisifaceidattr->l - 2; n++) printf("%.2x", hisifaceidattr->v.t[n]); 
       printf("\n");
     }
-    if ((hisifaceidattr->l-2) != sizeof(ifaceid)) {
+    if ((hisifaceidattr->l - 2) != sizeof(ifaceid)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Wrong length of framed Interface Id");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
@@ -3525,10 +3524,10 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattr(pack, &hismacattr, RADIUS_ATTR_CALLING_STATION_ID, 0, 0, 0)) {
     if (options.debug) {
       printf("Calling Station ID is: ");
-      for (n = 0; n < hismacattr->l-2; n++) printf("%c", hismacattr->v.t[n]);
+      for (n = 0; n < hismacattr->l - 2; n++) printf("%c", hismacattr->v.t[n]);
       printf("\n");
     }
-    if ((macstrlen = hismacattr->l-2) >= (RADIUS_ATTR_VLEN-1)) {
+    if ((macstrlen = hismacattr->l - 2) >= (RADIUS_ATTR_VLEN - 1)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Wrong length of called station ID");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
@@ -3568,7 +3567,7 @@ int access_request(struct radius_packet_t *pack,
   else {
     if (options.debug) {
       printf("Username is: ");
-      for (n = 0; n < uidattr->l-2; n++) printf("%c", uidattr->v.t[n]); 
+      for (n = 0; n < uidattr->l - 2; n++) printf("%c", uidattr->v.t[n]); 
       printf("\n");
     }
   }
@@ -3625,11 +3624,11 @@ int access_request(struct radius_packet_t *pack,
   if (!radius_getattr(pack, &pwdattr, RADIUS_ATTR_USER_PASSWORD, 0, 0, 0)) {
     if (options.debug) {
       printf("Password is: ");
-      for (n = 0; n < pwdattr->l-2; n++) printf("%.2x", pwdattr->v.t[n]); 
+      for (n = 0; n < pwdattr->l - 2; n++) printf("%.2x", pwdattr->v.t[n]); 
       printf("\n");
     }
     if (radius_pwdecode(radius, (uint8_t*) pwd, RADIUS_ATTR_VLEN, &pwdlen, 
-          pwdattr->v.t, pwdattr->l-2, pack->authenticator,
+          pwdattr->v.t, pwdattr->l - 2, pack->authenticator,
           radius->proxysecret,
           radius->proxysecretlen)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -3645,14 +3644,14 @@ int access_request(struct radius_packet_t *pack,
     eapattr = NULL;
     if (!radius_getattr(pack, &eapattr, RADIUS_ATTR_EAP_MESSAGE, 0, 0, 
           instance++)) {
-      if ((resplen + eapattr->l-2) > EAP_LEN) {
+      if ((resplen + eapattr->l - 2) > EAP_LEN) {
         sys_err(LOG_INFO, __FILE__, __LINE__, 0,
             "EAP message too long");
         return radius_resp(radius, &radius_pack, peer, pack->authenticator);
       }
-      memcpy(resp+resplen, 
-          eapattr->v.t, eapattr->l-2);
-      resplen += eapattr->l-2;
+      memcpy(resp + resplen, 
+          eapattr->v.t, eapattr->l - 2);
+      resplen += eapattr->l - 2;
     }
   } while (eapattr);
 
@@ -3679,15 +3678,15 @@ int access_request(struct radius_packet_t *pack,
 
   /* Reject if trying to login with another username */
   if ((appconn->authenticated == 1) && 
-      ((appconn->userlen != uidattr->l-2) ||
-       (memcmp(appconn->user, uidattr->v.t, uidattr->l-2)))) {
+      ((appconn->userlen != uidattr->l - 2) ||
+       (memcmp(appconn->user, uidattr->v.t, uidattr->l - 2)))) {
     return radius_resp(radius, &radius_pack, peer, pack->authenticator);
   }
 
 
   /* NAS PORT */
   if (!radius_getattr(pack, &nasportattr, RADIUS_ATTR_NAS_PORT, 0, 0, 0)) {
-    if ((nasportattr->l-2) != sizeof(appconn->nasport)) {
+    if ((nasportattr->l - 2) != sizeof(appconn->nasport)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Wrong length of NAS port");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
@@ -3696,9 +3695,9 @@ int access_request(struct radius_packet_t *pack,
   }
 
   /* Store parameters for later use */
-  if (uidattr->l-2 <= USERNAMESIZE) {
-    memcpy(appconn->proxyuser, uidattr->v.t, uidattr->l-2);
-    appconn->proxyuserlen = uidattr->l-2;
+  if (uidattr->l - 2 <= USERNAMESIZE) {
+    memcpy(appconn->proxyuser, uidattr->v.t, uidattr->l - 2);
+    appconn->proxyuserlen = uidattr->l - 2;
   }
   appconn->radiuswait = 1;
   appconn->radiusid = pack->id;
@@ -3744,7 +3743,7 @@ int access_request(struct radius_packet_t *pack,
 
 
   /* Include his MAC address */
-  (void) snprintf(mac, MACSTRLEN+1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+  (void) snprintf(mac, MACSTRLEN + 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
       appconn->proxyhismac[0], appconn->proxyhismac[1],
       appconn->proxyhismac[2], appconn->proxyhismac[3],
       appconn->proxyhismac[4], appconn->proxyhismac[5]);
@@ -3853,7 +3852,7 @@ int upprot_getip(struct app_conn_t *appconn,
     appconn->hisip.s_addr = ipm->addr.s_addr;
 
     /* TODO: Listening address is network address plus 1 */
-    appconn->ourip.s_addr = htonl((ntohl(options.net.s_addr)+1));
+    appconn->ourip.s_addr = htonl((ntohl(options.net.s_addr) + 1));
 
     appconn->uplink = ipm;
     ipm->peer   = appconn; 
@@ -3971,7 +3970,7 @@ int radius_conf(struct radius_t *radius_obj,
     memset(options.uamokaddr, 0, sizeof(options.uamokaddr));
     memset(options.uamokmask, 0, sizeof(options.uamokmask));
     options.uamoknetlen = 0;
-    (void) set_uamallowed((char*)attr->v.t, attr->l-2);
+    (void) set_uamallowed((char*)attr->v.t, attr->l - 2);
   }
 
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
@@ -3979,7 +3978,7 @@ int radius_conf(struct radius_t *radius_obj,
         RADIUS_ATTR_PEPPERSPOT_MAC_ALLOWED, 0)) {
     memset(options.macok, 0, sizeof(options.macok));
     options.macoklen = 0;
-    (void) set_macallowed((char*)attr->v.t, attr->l-2);
+    (void) set_macallowed((char*)attr->v.t, attr->l - 2);
   }
 
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
@@ -4039,7 +4038,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
 
   struct radius_attr_t *attr = NULL;
 
-  char attrs[RADIUS_ATTR_VLEN+1];
+  char attrs[RADIUS_ATTR_VLEN + 1];
   struct tm stt;
   int tzhour = 0;
   int tzmin = 0;
@@ -4094,14 +4093,14 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
       eapattr = NULL;
       if (!radius_getattr(pack, &eapattr, RADIUS_ATTR_EAP_MESSAGE, 0, 0, 
             instance++)) {
-        if ((appconn->challen + eapattr->l-2) > EAP_LEN) {
+        if ((appconn->challen + eapattr->l - 2) > EAP_LEN) {
           sys_err(LOG_INFO, __FILE__, __LINE__, 0,
               "EAP message too long");
           return dnprot_reject(appconn);
         }
-        memcpy(appconn->chal+appconn->challen, 
-            eapattr->v.t, eapattr->l-2);
-        appconn->challen += eapattr->l-2;
+        memcpy(appconn->chal + appconn->challen, 
+            eapattr->v.t, eapattr->l - 2);
+        appconn->challen += eapattr->l - 2;
       }
     } while (eapattr);
 
@@ -4113,8 +4112,8 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
 
     /* Get State */
     if (!radius_getattr(pack, &stateattr, RADIUS_ATTR_STATE, 0, 0, 0)) {
-      appconn->statelen = stateattr->l-2;
-      memcpy(appconn->statebuf, stateattr->v.t, stateattr->l-2);
+      appconn->statelen = stateattr->l - 2;
+      memcpy(appconn->statebuf, stateattr->v.t, stateattr->l - 2);
     }
     return dnprot_challenge(appconn);
   }
@@ -4137,14 +4136,14 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
 
   /* Get State */
   if (!radius_getattr(pack, &stateattr, RADIUS_ATTR_STATE, 0, 0, 0)) {
-    appconn->statelen = stateattr->l-2;
-    memcpy(appconn->statebuf, stateattr->v.t, stateattr->l-2);
+    appconn->statelen = stateattr->l - 2;
+    memcpy(appconn->statebuf, stateattr->v.t, stateattr->l - 2);
   }
 
   /* Class */
   if (!radius_getattr(pack, &classattr, RADIUS_ATTR_CLASS, 0, 0, 0)) {
-    appconn->classlen = classattr->l-2;
-    memcpy(appconn->classbuf, classattr->v.t, classattr->l-2);
+    appconn->classlen = classattr->l - 2;
+    memcpy(appconn->classbuf, classattr->v.t, classattr->l - 2);
   }
   else {
     appconn->classlen = 0;
@@ -4173,10 +4172,10 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     if (!radius_getattr(pack, &hisipattr, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0, 0)) {
       if (options.debug) {
         printf("Framed IPv6 address is: ");
-        for (n = 0; n < hisipattr->l-2; n++) printf("%.2x", hisipattr->v.t[n]); 
+        for (n = 0; n < hisipattr->l - 2; n++) printf("%.2x", hisipattr->v.t[n]); 
         printf("\n");
       }
-      if ((hisipattr->l-2) != sizeof(struct in_addr)) {
+      if ((hisipattr->l - 2) != sizeof(struct in_addr)) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Wrong length of framed IPv6 address");
         return dnprot_reject(appconn);
@@ -4191,10 +4190,10 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     if (!radius_getattr(pack, &hisipattr, RADIUS_ATTR_FRAMED_IP_ADDRESS, 0, 0, 0)) {
       if (options.debug) {
         printf("Framed IP address is: ");
-        for (n = 0; n < hisipattr->l-2; n++) printf("%.2x", hisipattr->v.t[n]); 
+        for (n = 0; n < hisipattr->l - 2; n++) printf("%.2x", hisipattr->v.t[n]); 
         printf("\n");
       }
-      if ((hisipattr->l-2) != sizeof(struct in_addr)) {
+      if ((hisipattr->l - 2) != sizeof(struct in_addr)) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Wrong length of framed IP address");
         return dnprot_reject(appconn);
@@ -4210,9 +4209,9 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
   /* Filter ID */
   if (!radius_getattr(pack, &attr, RADIUS_ATTR_FILTER_ID,
         0, 0, 0)) {
-    appconn->filteridlen = attr->l-2;
-    memcpy(appconn->filteridbuf, attr->v.t, attr->l-2);
-    appconn->filteridbuf[attr->l-2] = 0;
+    appconn->filteridlen = attr->l - 2;
+    memcpy(appconn->filteridbuf, attr->v.t, attr->l - 2);
+    appconn->filteridbuf[attr->l - 2] = 0;
     /*conn->filterid = conn->filteridbuf;*/
   }
   else {
@@ -4336,7 +4335,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     struct timeval timenow;
     gettimeofday(&timenow, NULL);
     memcpy(attrs, attr->v.t, attr->l - 2);
-    attrs[attr->l-2] = 0;
+    attrs[attr->l - 2] = 0;
     memset(&stt, 0, sizeof(stt));
     result = sscanf(attrs, "%d-%d-%dT%d:%d:%d %d:%d",
         &stt.tm_year, &stt.tm_mon, &stt.tm_mday,
@@ -4390,14 +4389,14 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     eapattr = NULL;
     if (!radius_getattr(pack, &eapattr, RADIUS_ATTR_EAP_MESSAGE, 0, 0, 
           instance++)) {
-      if ((appconn->challen + eapattr->l-2) > EAP_LEN) {
+      if ((appconn->challen + eapattr->l - 2) > EAP_LEN) {
         sys_err(LOG_INFO, __FILE__, __LINE__, 0,
             "EAP message too long");
         return dnprot_reject(appconn);
       }
-      memcpy(appconn->chal+appconn->challen,
-          eapattr->v.t, eapattr->l-2);
-      appconn->challen += eapattr->l-2;
+      memcpy(appconn->chal + appconn->challen,
+          eapattr->v.t, eapattr->l - 2);
+      appconn->challen += eapattr->l - 2;
     }
   } while (eapattr);
 
@@ -4544,7 +4543,7 @@ int cb_radius_coa_ind(struct radius_t *radius_obj, struct radius_packet_t *pack,
         "Username must be included in disconnect request");
   }
 
-  while (!getconn_username(&appconn, (char*) userattr->v.t, userattr->l-2)) {
+  while (!getconn_username(&appconn, (char*) userattr->v.t, userattr->l - 2)) {
     found = 1;
     if (appconn->authenticated == 1) {
       dnprot_terminate(appconn);
@@ -4886,7 +4885,7 @@ static int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr)
         inet_ntop(AF_INET, &appconn->hisip, buf, sizeof(buf)));
 
     /* TODO: Listening address is network address plus 1 */
-    appconn->ourip.s_addr = htonl((ntohl(options.net.s_addr)+1));
+    appconn->ourip.s_addr = htonl((ntohl(options.net.s_addr) + 1));
     appconn->ipv6 = 0;
     appconn->uplink =  ipm;
     ipm->peer   = appconn; 
@@ -5034,7 +5033,7 @@ static int cb_dhcp_ipv6_ind(struct dhcp_conn_t* conn, void* pack, unsigned int l
 #endif /* ifndef COUNT_UPLINK_DROP */
 #endif /* ifndef NO_LEAKY_BUCKET */
     appconn->input_packets++;
-    appconn->input_octets +=len;
+    appconn->input_octets += len;
 #ifndef NO_LEAKY_BUCKET
 #ifdef COUNT_UPLINK_DROP
     if (leaky_bucket(appconn, len, 0)) return 0;
@@ -5274,7 +5273,7 @@ static int uam_msg(struct redir_msg_t *msg) {
     appconn->maxoutputoctets = msg->maxoutputoctets;
     appconn->maxtotaloctets = msg->maxtotaloctets;
     appconn->sessionterminatetime = msg->sessionterminatetime;
-    strncpy(appconn->filteridbuf, msg->filteridbuf, RADIUS_ATTR_VLEN+1);
+    strncpy(appconn->filteridbuf, msg->filteridbuf, RADIUS_ATTR_VLEN + 1);
     appconn->filteridlen = msg->filteridlen;
 
 #ifdef BUCKET_SIZE
@@ -5365,7 +5364,7 @@ static int uam_msg(struct redir_msg_t *msg) {
     appconn->uamabort = 0;
     if (msg->userurl[0]) {
       strncpy(appconn->userurl, msg->userurl, USERURLSIZE);
-      appconn->userurl[USERURLSIZE-1] = 0;
+      appconn->userurl[USERURLSIZE - 1] = 0;
     }
   }
   else {
@@ -5453,7 +5452,7 @@ int main(int argc, char **argv)
   if(ipv6 || dual) 
   {
     /* [SV] : create the ICMPv6 socket */
-    if (icmp6_init()==-1)
+    if (icmp6_init() == -1)
     {
       /* error */
       printf("ICMPv6 socket creation error\n");
@@ -5463,7 +5462,7 @@ int main(int argc, char **argv)
     }
 
     /* [SV] : Create an IPv6 tunnel interface */
-    if(tun6_new(&tunv6)!=0)
+    if(tun6_new(&tunv6) != 0)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Failed to create tun6");
       if(tun) tun_free(tun);
@@ -5482,7 +5481,7 @@ int main(int argc, char **argv)
 
   /* Create an instance of dhcp */
   if (!options.nodhcp) {
-    if (dhcp_new(&dhcp, 2*APP_NUM_CONN, options.dhcpif,
+    if (dhcp_new(&dhcp, 2 * APP_NUM_CONN, options.dhcpif,
           options.dhcpusemac, options.dhcpmac, 1, 
           &options.dhcplisten, &options.ip6listen, options.lease, 1, 
           options.uamserver, options.uamserver6, options.uamport, options.eapolenable, options.ipversion)) {
@@ -5737,7 +5736,7 @@ int main(int argc, char **argv)
 
     if(ipv6 || dual)
     {
-      if(redir->fdv6!=-1) FD_SET(redir->fdv6, &fds);
+      if(redir->fdv6 != -1) FD_SET(redir->fdv6, &fds);
     }
 
     idleTime.tv_sec = IDLETIME;

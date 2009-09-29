@@ -165,7 +165,7 @@ static int redir_challenge(unsigned char *dst) {
 
 
 /**
- * \brief Convert 32+1 bytes ASCII hex string to 16 octet unsigned char.
+ * \brief Convert 32 + 1 bytes ASCII hex string to 16 octet unsigned char.
  * \param src hex string to convert
  * \param dst destination to store result
  * \return 0 if success, -1 otherwise
@@ -191,7 +191,7 @@ static int redir_hextochar(char *src, unsigned char * dst) {
 }
 
 /**
- * \brief Convert 16 bytes unsigned char to 32+1 octet ASCII hex string.
+ * \brief Convert 16 bytes unsigned char to 32 + 1 octet ASCII hex string.
  * \param src source to convert
  * \param dst destination to store result
  * \return 0
@@ -271,9 +271,9 @@ static int redir_urldecode(  char *src, int srclen, char *dst, unsigned int dsts
 
   while (n < srclen) {
     if (src[n] == '%') {
-      if ((n+2) < srclen) {
-        x[0] = src[n+1];
-        x[1] = src[n+2];
+      if ((n + 2) < srclen) {
+        x[0] = src[n + 1];
+        x[1] = src[n + 2];
         x[2] = 0;
         c = '_';
         sscanf(x, "%x", &c);
@@ -657,10 +657,10 @@ static int redir_reply(struct redir_t *redir, int fd,
   }
 
   if (hismac) {
-    char mac[REDIR_MACSTRLEN+1];
+    char mac[REDIR_MACSTRLEN + 1];
     char mid2[REDIR_MAXBUFFER];
     mid2[0] = 0;
-    snprintf(mac, REDIR_MACSTRLEN+1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+    snprintf(mac, REDIR_MACSTRLEN + 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
         hismac[0], hismac[1],
         hismac[2], hismac[3],
         hismac[4], hismac[5]);
@@ -1041,8 +1041,8 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
   }
 
   strncpy(dst, "http://", 7);
-  strncpy(dst+7, host, hostlen);
-  strncpy(dst+7+hostlen, path, pathlen);
+  strncpy(dst + 7, host, hostlen);
+  strncpy(dst + 7 + hostlen, path, pathlen);
   dst[7 + hostlen + pathlen] = 0;
 
   if (optionsdebug) printf("Userurl: %s\n", dst);
@@ -1166,7 +1166,7 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
 
     if ((status > 0) && FD_ISSET(fd, &fds)) {
       if ((recvlen = 
-            recv(fd, buffer+buflen, sizeof(buffer) - 1 - buflen, 0)) < 0) {
+            recv(fd, buffer + buflen, sizeof(buffer) - 1 - buflen, 0)) < 0) {
         if (errno != ECONNRESET)
           sys_err(LOG_ERR, __FILE__, __LINE__, errno, "recv() failed!");
         return -1;
@@ -1268,7 +1268,7 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   struct radius_attr_t *stateattr = NULL;
   struct radius_attr_t *classattr = NULL;
   struct radius_attr_t *attr = NULL;
-  char attrs[RADIUS_ATTR_VLEN+1];
+  char attrs[RADIUS_ATTR_VLEN + 1];
   struct tm stt;
   int tzhour = 0; 
   int tzmin = 0;
@@ -1560,14 +1560,14 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   int status = 0;
   unsigned char chap_password[REDIR_MD5LEN + 1];
   unsigned char chap_challenge[REDIR_MD5LEN];
-  unsigned char user_password[REDIR_MD5LEN+1];
+  unsigned char user_password[REDIR_MD5LEN + 1];
   uint64_t suf = 0;
   struct in6_addr idv6;
   char buf[INET6_ADDRSTRLEN];
 
   MD5_CTX context;
 
-  char mac[REDIR_MACSTRLEN+1];
+  char mac[REDIR_MACSTRLEN + 1];
   char url[REDIR_URL_LEN];
   int n = 0;
 
@@ -1621,7 +1621,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_CHAP_CHALLENGE, 0, 0, 0,
         chap_challenge, REDIR_MD5LEN);
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_CHAP_PASSWORD, 0, 0, 0,
-        chap_password, REDIR_MD5LEN+1);
+        chap_password, REDIR_MD5LEN + 1);
   }
 
   if(redir->radiuslisten.ss_family == AF_INET)
@@ -1646,7 +1646,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   else 
   {
     (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_IPV6_PREFIX, 0, 0,
-        redir->prefix, NULL, redir->prefixlen+2);
+        redir->prefix, NULL, redir->prefixlen + 2);
     /* todo : interface id */   
 
     ippool_getv6suffix(&idv6, &conn->hisipv6, 64);
@@ -1663,7 +1663,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 
 
   /* Include his MAC address */
-  snprintf(mac, REDIR_MACSTRLEN+1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
+  snprintf(mac, REDIR_MACSTRLEN + 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
       conn->hismac[0], conn->hismac[1],
       conn->hismac[2], conn->hismac[3],
       conn->hismac[4], conn->hismac[5]);
@@ -1716,7 +1716,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   {
     snprintf(url, REDIR_URL_LEN - 1, "http://[%s]:%d/logoff",
         inet_ntop(AF_INET6, &redir->addrv6, buf, sizeof(buf)), redir->port);
-    url[REDIR_URL_LEN-1] = 0;
+    url[REDIR_URL_LEN - 1] = 0;
   }
 
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_VENDOR_SPECIFIC,
@@ -1817,7 +1817,7 @@ int redir_accept(struct redir_t *redir, int ipv6) {
   char buffer[bufsize];
   int buflen = 0;
   int status = 0;
-  char hexchal[1+(2*REDIR_MD5LEN)];
+  char hexchal[1 + (2 * REDIR_MD5LEN)];
   unsigned char challenge[REDIR_MD5LEN];
   struct redir_msg_t msg;
   int state = 0;
