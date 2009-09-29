@@ -33,7 +33,8 @@
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+extern "C" 
+{ /* } */
 #endif
 
 #if defined (__FreeBSD__)  || defined (__APPLE__) || defined(__NetBSD__) || defined(__OpenBSD__)

@@ -88,7 +88,7 @@ int radius_printqueue(struct radius_t *this) {
   printf("next %d, first %d, last %d\n", 
       this->next, this->first, this ->last);
 
-  for(n=0; n<256; n++) {
+  for(n = 0; n < 256; n++) {
     if (this->queue[n].state) {
       printf("%3d %3d %3d %3d %8d %8d %d\n",
           n, this->queue[n].state,
@@ -139,7 +139,7 @@ int radius_hmac_md5(struct radius_t *this, struct radius_packet_t *pack,
   memset(k_ipad, 0x36, sizeof k_ipad);
   memset(k_opad, 0x5c, sizeof k_opad);
 
-  for (i=0; i<key_len; i++) {
+  for (i = 0; i < key_len; i++) {
     k_ipad[i] ^= key[i];
     k_opad[i] ^= key[i];
   }
@@ -267,7 +267,7 @@ int radius_queue_in(struct radius_t *this, struct radius_packet_t *pack,
   this->queue[this->next].prev = this->last; /* Link to previous */
 
   if (this->last != -1)
-    this->queue[this->last].next=this->next; /* Link previous to us */
+    this->queue[this->last].next = this->next; /* Link previous to us */
   this->last = this->next;                   /* End of queue */
 
   if (this->first == -1)
@@ -369,7 +369,7 @@ int radius_queue_reschedule(struct radius_t *this, int id) {
   this->queue[id].prev = this->last; /* Link to previous (could be -1) */
 
   if (this->last != -1)
-    this->queue[this->last].next=id; /* If not empty: link previous to us */
+    this->queue[this->last].next = id; /* If not empty: link previous to us */
   this->last = id;                   /* End of queue */
 
   if (this->first == -1)
@@ -513,7 +513,7 @@ int radius_timeout(struct radius_t *this) {
     radius_printqueue(this);
   }
 
-  while ((this->first!=-1) && 
+  while ((this->first != -1) && 
       (radius_cmptv(&now, &this->queue[this->first].timeout) >= 0)) {
 
     if (this->queue[this->first].retrans < RADIUS_RETRY2) {
@@ -525,7 +525,7 @@ int radius_timeout(struct radius_t *this) {
         addr.sin_family = AF_INET;
       }
 
-      if (this->queue[this->first].retrans == (RADIUS_RETRY1-1)) {
+      if (this->queue[this->first].retrans == (RADIUS_RETRY1 - 1)) {
         /* Use the other server for next retransmission */
         if (this->queue[this->first].lastsent) {
           if(ipv6)
@@ -631,7 +631,7 @@ int radius_timeout(struct radius_t *this) {
  * radius_addattr()
  * Add an attribute to a packet. The packet length is modified 
  * accordingly.
- * If data==NULL and dlen!=0 insert null attribute.
+ * If data == NULL and dlen != 0 insert null attribute.
  */
 int 
 radius_addattr(struct radius_t *this, struct radius_packet_t *pack, 
@@ -668,7 +668,7 @@ radius_addattr(struct radius_t *this, struct radius_packet_t *pack,
       return -1;
     }
 
-    if ((length+vlen+2) > RADIUS_PACKSIZE) {
+    if ((length + vlen + 2) > RADIUS_PACKSIZE) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "No more space!");
       return -1;
@@ -679,7 +679,7 @@ radius_addattr(struct radius_t *this, struct radius_packet_t *pack,
     pack->length = htons(length);
 
     a->t = type;
-    a->l = vlen+2;
+    a->l = vlen + 2;
     if (data)
       memcpy(&a->v, data, dlen);
     else if (dlen)
@@ -701,7 +701,7 @@ radius_addattr(struct radius_t *this, struct radius_packet_t *pack,
       return -1;
     }
 
-    if ((length+vlen+2) > RADIUS_PACKSIZE) { 
+    if ((length + vlen + 2) > RADIUS_PACKSIZE) { 
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "No more space!");
       return -1;
@@ -712,16 +712,16 @@ radius_addattr(struct radius_t *this, struct radius_packet_t *pack,
     pack->length = htons(length);
 
     a->t = type;
-    a->l = vlen+8;
+    a->l = vlen + 8;
 
     a->v.vv.i = htonl(vendor_id);
     a->v.vv.t = vendor_type;
-    a->v.vv.l = vlen+2;
+    a->v.vv.l = vlen + 2;
 
     if (data)
-      memcpy(((char *) a)+8, data, dlen); /* cast with (char *) to avoid use of void* in arithmetic warning */
+      memcpy(((char *) a) + 8, data, dlen); /* cast with (char *) to avoid use of void* in arithmetic warning */
     else if (dlen)
-      memset(((char *) a)+8, 0, dlen); 
+      memset(((char *) a) + 8, 0, dlen); 
     else
       a->v.vv.i = htonl(value);
   }
@@ -734,7 +734,7 @@ radius_addattr(struct radius_t *this, struct radius_packet_t *pack,
  * radius_addattrv6()
  * Add an attribute to a packet. The packet length is modified 
  * accordingly.
- * If data==NULL and dlen!=0 insert null attribute.
+ * If data == NULL and dlen != 0 insert null attribute.
  */
 int 
 radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack, 
@@ -764,7 +764,7 @@ radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack,
       return -1;
     }
 
-    if ((length+vlen+2) > RADIUS_PACKSIZE) {
+    if ((length + vlen + 2) > RADIUS_PACKSIZE) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "No more space!");
       return -1;
@@ -774,7 +774,7 @@ radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack,
       length += vlen + 2;
       pack->length = htons(length);
       a->t = type;
-      a->l = vlen+2;
+      a->l = vlen + 2;
     } else if(type == RADIUS_ATTR_FRAMED_INTERFACE_ID) {
       length += vlen + 2;
       pack->length = htons(length);
@@ -785,17 +785,17 @@ radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack,
       length += vlen + 2;
       pack->length = htons(length);
       a->t = type;
-      a->l = vlen+2;
+      a->l = vlen + 2;
     }
     if (data)
       memcpy(&a->v, data, dlen);
     else {
       if(type == RADIUS_ATTR_FRAMED_IPV6_PREFIX) { /* this attribute has a reserved and prefix-length field */
         vlen += 2;
-        memset(&a->v.i,0,vlen+2);
-        int val = (dlen-2)*8;
-        memcpy(((char *)&a->v.i)+1, &val, 1); /* cast with (char *) to avoid use of void* in arithmetic warning */
-        memcpy(((char *)&a->v.i)+2, &value.s6_addr, vlen);
+        memset(&a->v.i,0,vlen + 2);
+        int val = (dlen - 2) * 8;
+        memcpy(((char *)&a->v.i) + 1, &val, 1); /* cast with (char *) to avoid use of void* in arithmetic warning */
+        memcpy(((char *)&a->v.i) + 2, &value.s6_addr, vlen);
       } else if(type == RADIUS_ATTR_FRAMED_INTERFACE_ID ) {
         memcpy(((char *)&a->v.i), (uint64_t *)&value, vlen);
       } else
@@ -818,7 +818,7 @@ radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack,
       return -1;
     }
 
-    if ((length+vlen+2) > RADIUS_PACKSIZE) { 
+    if ((length + vlen + 2) > RADIUS_PACKSIZE) { 
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "No more space!");
       return -1;
@@ -829,16 +829,16 @@ radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack,
     pack->length = htons(length);
 
     a->t = type;
-    a->l = vlen+8;
+    a->l = vlen + 8;
 
     a->v.vv.i = htonl(vendor_id);
     a->v.vv.t = vendor_type;
-    a->v.vv.l = vlen+2;
+    a->v.vv.l = vlen + 2;
 
     if (data)
-      memcpy(((char *) a)+8, data, dlen); /* cast with (char *) to avoid use of void* in arithmetic warning */
+      memcpy(((char *) a) + 8, data, dlen); /* cast with (char *) to avoid use of void* in arithmetic warning */
     else if (dlen)
-      memset(((char *) a)+8, 0, dlen); 
+      memset(((char *) a) + 8, 0, dlen); 
     else
       memcpy(&a->v.vv.i, &value.s6_addr, sizeof(struct in6_addr));
   }
@@ -887,7 +887,7 @@ radius_getattr(struct radius_packet_t *pack, struct radius_attr_t **attr,
         }
       }
       offset +=  t->l;
-    } while (offset < (ntohs(pack->length)-RADIUS_HDRSIZE)); /* TODO */
+    } while (offset < (ntohs(pack->length) - RADIUS_HDRSIZE)); /* TODO */
   }
   else {     /* Need to check pack -> length */
     do {
@@ -902,7 +902,7 @@ radius_getattr(struct radius_packet_t *pack, struct radius_attr_t **attr,
         }
       }
       offset +=  t->l;
-    } while (offset < (ntohs(pack->length)-RADIUS_HDRSIZE)); /* TODO */
+    } while (offset < (ntohs(pack->length) - RADIUS_HDRSIZE)); /* TODO */
   }
 
   return -1; /* Not found */
@@ -949,7 +949,7 @@ radius_getattrv6(struct radius_packet_t *pack, struct radius_attrv6_t **attr,
         }
       }
       offset +=  t->l;
-    } while (offset < (ntohs(pack->length)-RADIUS_HDRSIZE)); /* TODO */
+    } while (offset < (ntohs(pack->length) - RADIUS_HDRSIZE)); /* TODO */
   }
   else {     /* Need to check pack -> length */
     do {
@@ -964,7 +964,7 @@ radius_getattrv6(struct radius_packet_t *pack, struct radius_attrv6_t **attr,
         }
       }
       offset +=  t->l;
-    } while (offset < (ntohs(pack->length)-RADIUS_HDRSIZE)); /* TODO */
+    } while (offset < (ntohs(pack->length) - RADIUS_HDRSIZE)); /* TODO */
   }
 
   return -1; /* Not found */
@@ -1035,9 +1035,9 @@ int radius_keydecode(struct radius_t *this, uint8_t *dst, int dstsize,
 
   blocks = (srclen - 2) / RADIUS_MD5LEN;
 
-  if ((blocks * RADIUS_MD5LEN +2) != srclen) {
+  if ((blocks * RADIUS_MD5LEN + 2) != srclen) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-        "radius_keydecode: srclen must be 2 plus n*16");
+        "radius_keydecode: srclen must be 2 plus n * 16");
     return -1;
   }
 
@@ -1069,18 +1069,18 @@ int radius_keydecode(struct radius_t *this, uint8_t *dst, int dstsize,
   *dstlen = src[2] ^ b[0];
 
   for (i = 1; i < RADIUS_MD5LEN; i++)
-    if ((i-1) < *dstlen)
-      dst[i-1] = src[i+2] ^ b[i];
+    if ((i - 1) < *dstlen)
+      dst[i - 1] = src[i + 2] ^ b[i];
 
   /* Next blocks of 16 octets */
-  for (n=1; n<blocks; n++) {
+  for (n = 1; n < blocks; n++) {
     MD5Init(&context);
     MD5Update(&context, (uint8_t*) secret, secretlen);
-    MD5Update(&context, src + 2 + ((n-1) * RADIUS_MD5LEN), RADIUS_MD5LEN);
+    MD5Update(&context, src + 2 + ((n - 1) * RADIUS_MD5LEN), RADIUS_MD5LEN);
     MD5Final(b, &context);
     for (i = 0; i < RADIUS_MD5LEN; i++)
-      if ((i-1+n*RADIUS_MD5LEN) < *dstlen)
-        dst[i-1+n*RADIUS_MD5LEN] = src[i+2+n*RADIUS_MD5LEN] ^ b[i];
+      if ((i - 1 + n * RADIUS_MD5LEN) < *dstlen)
+        dst[i - 1 + n * RADIUS_MD5LEN] = src[i + 2 + n * RADIUS_MD5LEN] ^ b[i];
   }
 
   return 0;
@@ -1101,9 +1101,9 @@ int radius_keyencode(struct radius_t *this, uint8_t *dst, int dstsize,
   int blocks = 0;
 
   blocks = (srclen + 1) / RADIUS_MD5LEN;
-  if ((blocks * RADIUS_MD5LEN) < (srclen +1)) blocks++;
+  if ((blocks * RADIUS_MD5LEN) < (srclen + 1)) blocks++;
 
-  if (((blocks * RADIUS_MD5LEN) +2 ) > dstsize) {
+  if (((blocks * RADIUS_MD5LEN) + 2 ) > dstsize) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "radius_keyencode dstsize too small");
     return -1;
@@ -1126,22 +1126,22 @@ int radius_keyencode(struct radius_t *this, uint8_t *dst, int dstsize,
   MD5Final(b, &context);
   dst[2] = (uint8_t) srclen ^ b[0]; /* Length of key */
   for (i = 1; i < RADIUS_MD5LEN; i++)
-    if ((i-1) < srclen)
-      dst[i+2] = src[i-1] ^ b[i];
+    if ((i - 1) < srclen)
+      dst[i + 2] = src[i - 1] ^ b[i];
     else
-      dst[i+2] = b[i];
+      dst[i + 2] = b[i];
 
-  /* Get MD5 hash on secret + c(n-1) (Next j 16 octets) */
-  for (n=1; n<blocks; n++) {
+  /* Get MD5 hash on secret + c(n - 1) (Next j 16 octets) */
+  for (n = 1; n < blocks; n++) {
     MD5Init(&context);
     MD5Update(&context, (uint8_t*) secret, secretlen);
-    MD5Update(&context, dst+2+((n-1) * RADIUS_MD5LEN), RADIUS_MD5LEN);
+    MD5Update(&context, dst + 2 + ((n - 1) * RADIUS_MD5LEN), RADIUS_MD5LEN);
     MD5Final(b, &context);
     for (i = 0; i < RADIUS_MD5LEN; i++)
-      if ((i-1) < srclen)
-        dst[i+2+n*RADIUS_MD5LEN] = src[i-1+n*RADIUS_MD5LEN] ^ b[i];
+      if ((i - 1) < srclen)
+        dst[i + 2 + n * RADIUS_MD5LEN] = src[i - 1 + n * RADIUS_MD5LEN] ^ b[i];
       else
-        dst[i+2+n*RADIUS_MD5LEN] = b[i];
+        dst[i + 2 + n * RADIUS_MD5LEN] = b[i];
   }
 
   return 0;
@@ -1177,7 +1177,7 @@ int radius_pwdecode(struct radius_t *this, uint8_t *dst, int dstsize,
 
   if (this->debug) {
     printf("pwdecode srclen %d\n", srclen);
-    for (n=0; n< srclen; n++) {
+    for (n = 0; n < srclen; n++) {
       printf("%.2x ", src[n]);
       if ((n % 16) == 15)
         printf("\n");
@@ -1185,7 +1185,7 @@ int radius_pwdecode(struct radius_t *this, uint8_t *dst, int dstsize,
     printf("\n");
 
     printf("pwdecode authenticator \n");
-    for (n=0; n< RADIUS_AUTHLEN; n++) {
+    for (n = 0; n < RADIUS_AUTHLEN; n++) {
       printf("%.2x ", authenticator[n]);
       if ((n % 16) == 15)
         printf("\n");
@@ -1193,7 +1193,7 @@ int radius_pwdecode(struct radius_t *this, uint8_t *dst, int dstsize,
     printf("\n");
 
     printf("pwdecode secret \n");
-    for (n=0; n< secretlen; n++) {
+    for (n = 0; n< secretlen; n++) {
       printf("%.2x ", secret[n]);
       if ((n % 16) == 15)
         printf("\n");
@@ -1223,7 +1223,7 @@ int radius_pwdecode(struct radius_t *this, uint8_t *dst, int dstsize,
 
   if (this->debug) {
     printf("pwdecode dest \n");
-    for (n=0; n< 32; n++) {
+    for (n = 0; n < 32; n++) {
       printf("%.2x ", dst[n]);
       if ((n % 16) == 15)
         printf("\n");
@@ -1740,7 +1740,7 @@ int radius_authcheck(struct radius_t *this, struct radius_packet_t *pack,
   MD5_CTX context;
 
   MD5Init(&context);
-  MD5Update(&context, (void*) pack, RADIUS_HDRSIZE-RADIUS_AUTHLEN);
+  MD5Update(&context, (void*) pack, RADIUS_HDRSIZE - RADIUS_AUTHLEN);
   MD5Update(&context, pack_req->authenticator, RADIUS_AUTHLEN);
   MD5Update(&context, ((unsigned char *) pack) + RADIUS_HDRSIZE,  /* cast with (unsigned char *) to avoid use of void* in arithmetic warning */
       ntohs(pack->length) - RADIUS_HDRSIZE);
@@ -1761,7 +1761,7 @@ int radius_acctcheck(struct radius_t *this, struct radius_packet_t *pack)
   MD5_CTX context;
 
   MD5Init(&context);
-  MD5Update(&context, (void*) pack, RADIUS_HDRSIZE-RADIUS_AUTHLEN);
+  MD5Update(&context, (void*) pack, RADIUS_HDRSIZE - RADIUS_AUTHLEN);
   MD5Update(&context, (uint8_t*) padd, RADIUS_AUTHLEN);
   MD5Update(&context, ((unsigned char *) pack) + RADIUS_HDRSIZE, /* cast with (unsigned char *) to avoid use of void* in arithmetic warning */
       ntohs(pack->length) - RADIUS_HDRSIZE);

@@ -260,7 +260,7 @@ static struct tun6 *tun6_create (const char *req_name)
       fd = open (tundev, O_RDWR);
       if ((fd == -1) && (errno == ENOENT))
         /* If /dev/tun<i> does not exist,
-         * /dev/tun<i+1> won't exist either
+         * /dev/tun<i + 1> won't exist either
          */
         break;
 
@@ -991,24 +991,24 @@ static int tun6_send (struct tun6 *t, const void *packet, size_t len)
  */
 static int tun6_addroutegw(struct tun6* this, struct in6_addr* dst, struct in6_addr* gateway, uint8_t prefixlen)
 {
-  int code=-1;
+  int code = -1;
   char buf[1024];
-  struct in6_rtmsg* rtm=NULL;
+  struct in6_rtmsg* rtm = NULL;
 
-  rtm=(struct in6_rtmsg*)buf;
+  rtm = (struct in6_rtmsg*)buf;
   memset(buf, 0x00, sizeof(buf));
-  rtm->rtmsg_type=0;
-  rtm->rtmsg_metric=1024;
-  rtm->rtmsg_dst_len=prefixlen;
-  rtm->rtmsg_src_len=0;
-  rtm->rtmsg_ifindex=this->id;
-  rtm->rtmsg_flags=RTF_UP | RTF_GATEWAY;
+  rtm->rtmsg_type = 0;
+  rtm->rtmsg_metric = 1024;
+  rtm->rtmsg_dst_len = prefixlen;
+  rtm->rtmsg_src_len = 0;
+  rtm->rtmsg_ifindex = this->id;
+  rtm->rtmsg_flags = RTF_UP | RTF_GATEWAY;
 
   memcpy(&rtm->rtmsg_dst, dst, sizeof(struct in6_addr));
   memcpy(&rtm->rtmsg_gateway, gateway, sizeof(struct in6_addr));
 
 
-  code=ioctl(this->reqfd, SIOCADDRT, rtm);
+  code = ioctl(this->reqfd, SIOCADDRT, rtm);
 
   return code!=-1 ? 0 : -1;
 }
@@ -1096,7 +1096,7 @@ int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *ga
 
 int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void *pack, unsigned len))
 {
-  this->cb_indv6=cb_ind;
+  this->cb_indv6 = cb_ind;
   return 0;
 }
 
@@ -1127,7 +1127,7 @@ int tun6_sifflags(struct tun6_t *this, int flags)
     return -1;
   }
 
-  ifr.ifr_name[IFNAMSIZ-1] = 0; /* Make sure to terminate */
+  ifr.ifr_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
 
   if ((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
   {
