@@ -319,7 +319,6 @@ cmdline_parser_init (struct gengetopt_args_info *args_info)
 static void
 cmdline_parser_release (struct gengetopt_args_info *args_info)
 {
-  
   unsigned int i;
   if (args_info->debugfacility_orig)
     {
@@ -805,7 +804,7 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
       free (args_info->macpasswd_orig); /* free previous argument */
       args_info->macpasswd_orig = 0;
     }
-  
+
   clear_given (args_info);
 }
 
@@ -1424,11 +1423,21 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
         case 'h':	/* Print help and exit.  */
           cmdline_parser_print_help ();
           cmdline_parser_free (&local_args_info);
+          
+          if(initialize)
+          {
+            cmdline_parser_free(args_info);
+          }
           exit (EXIT_SUCCESS);
 
         case 'V':	/* Print version and exit.  */
           cmdline_parser_print_version ();
           cmdline_parser_free (&local_args_info);
+
+          if(initialize)
+          {
+            cmdline_parser_free(args_info);
+          }
           exit (EXIT_SUCCESS);
 
         case 'f':	/* Run in foreground.  */
@@ -2731,7 +2740,8 @@ conf_failure:
     fclose(file);
   if (result == EXIT_FAILURE)
     {
-      free(cmd_line_list_tmp);
+      cmdline_parser_free (args_info);
+      /* free(cmd_line_list_tmp); */
       exit (EXIT_FAILURE);
     }
   

@@ -924,9 +924,12 @@ static int process_options(int argc, char **argv, int firsttime)
   int sfd = 0;
   char buf[INET6_ADDRSTRLEN];
 
+  memset(&args_info, 0x00, sizeof(args_info));
+
   if (cmdline_parser (argc, argv, &args_info) != 0) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Failed to parse command line options");
+    cmdline_parser_free(&args_info);
     return -1;
   }
 
@@ -934,6 +937,7 @@ static int process_options(int argc, char **argv, int firsttime)
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Failed to parse configuration file: %s!", 
         args_info.conf_arg);
+    cmdline_parser_free(&args_info);
     return -1;
   }
 
@@ -942,6 +946,7 @@ static int process_options(int argc, char **argv, int firsttime)
   if (res_init()) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Failed to update system DNS settings (res_init()!");
+    cmdline_parser_free(&args_info);
     return -1;
   }
 #endif
@@ -991,6 +996,7 @@ static int process_options(int argc, char **argv, int firsttime)
     if ((macstrlen = strlen(args_info.dhcpmac_arg)) >= (RADIUS_ATTR_VLEN - 1)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "MAC address too long");
+      cmdline_parser_free(&args_info);
       return -1;
     }
     memcpy(macstr, args_info.dhcpmac_arg, macstrlen);
@@ -1004,6 +1010,7 @@ static int process_options(int argc, char **argv, int firsttime)
           &temp[0], &temp[1], &temp[2], 
           &temp[3], &temp[4], &temp[5]) != 6) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, "MAC conversion failed!");
+      cmdline_parser_free(&args_info);
       return -1;
     }
 
@@ -1024,6 +1031,7 @@ static int process_options(int argc, char **argv, int firsttime)
     if(ippool_aton(&options.net, &options.mask, args_info.net_arg, 0)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Invalid network address: %s!", args_info.net_arg);
+      cmdline_parser_free(&args_info);
       return -1;
     }
 
@@ -1033,6 +1041,7 @@ static int process_options(int argc, char **argv, int firsttime)
   else {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Network address must be specified: %s!", args_info.net_arg);
+    cmdline_parser_free(&args_info);
     return -1;
   }
 
@@ -1043,6 +1052,7 @@ static int process_options(int argc, char **argv, int firsttime)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno,
           "Can't assign static IPv6 address: %s!", args_info.net_arg);
+      cmdline_parser_free(&args_info);
       return -1;
     }
   }
@@ -1058,6 +1068,7 @@ static int process_options(int argc, char **argv, int firsttime)
     if(ippool_atonv6(&options.prefix, &options.prefixlen, &options.ipv6mask, args_info.ipv6prefix_arg)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Invalid IPv6 prefix: %s!", args_info.ipv6prefix_arg);
+      cmdline_parser_free(&args_info);
       return -1;
     }
 
@@ -1067,6 +1078,7 @@ static int process_options(int argc, char **argv, int firsttime)
   else {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Prefix must be specified: %s!", args_info.ipv6prefix_arg);
+    cmdline_parser_free(&args_info);
     return -1;
   }
 
@@ -1080,6 +1092,7 @@ static int process_options(int argc, char **argv, int firsttime)
         &options.uamserverport) == -1) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Failed to parse uamserver: %s!", args_info.uamserver_arg);
+    cmdline_parser_free(&args_info);
     return -1;
   }
 
@@ -1097,6 +1110,7 @@ static int process_options(int argc, char **argv, int firsttime)
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Could not resolve IP address of uamserver: %s!",
         hostname);
+    cmdline_parser_free(&args_info);
     return -1;
   }
   else
@@ -1115,6 +1129,7 @@ static int process_options(int argc, char **argv, int firsttime)
         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Too many IPs in uamserver %s!",
             args_info.uamserver_arg);
+        cmdline_parser_free(&args_info);
         return -1;
       }
       else 
@@ -1143,6 +1158,7 @@ static int process_options(int argc, char **argv, int firsttime)
     if(!args_info.uamserver6_arg)
     {
       printf("uamserver6 option must be configured!\n");
+      cmdline_parser_free(&args_info);
       return -1;
     }
 
@@ -1150,6 +1166,7 @@ static int process_options(int argc, char **argv, int firsttime)
           &options.uamserverport6) == -1) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Failed to parse uamserver6: %s!", args_info.uamserver6_arg);
+      cmdline_parser_free(&args_info);
       return -1;
     }
   
@@ -1167,6 +1184,7 @@ static int process_options(int argc, char **argv, int firsttime)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Could not resolve IPv6 address of uamserver: %s!",
           hostname);
+      cmdline_parser_free(&args_info);
       return -1;
     }
     else
@@ -1185,6 +1203,7 @@ static int process_options(int argc, char **argv, int firsttime)
           sys_err(LOG_ERR, __FILE__, __LINE__, 0,
               "Too many IPv6s in uamserver6 %s!",
               args_info.uamserver6_arg);
+          cmdline_parser_free(&args_info);
           return -1;
         }
         else 
@@ -1211,6 +1230,7 @@ static int process_options(int argc, char **argv, int firsttime)
       {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Failed to parse uamhomepage: %s!", args_info.uamhomepage_arg);
+        cmdline_parser_free(&args_info);
         return -1;
       }
     }
@@ -1226,6 +1246,7 @@ static int process_options(int argc, char **argv, int firsttime)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Invalid uamhomepage: %s!",
           args_info.uamhomepage_arg);
+      cmdline_parser_free(&args_info);
       return -1;
     }
     else
@@ -1238,6 +1259,7 @@ static int process_options(int argc, char **argv, int firsttime)
           sys_err(LOG_ERR, __FILE__, __LINE__, 0,
               "Too many IPs (or IPv6s) in uamhomepage %s!",
               args_info.uamhomepage_arg);
+          cmdline_parser_free(&args_info);
           return -1;
         }
         else 
@@ -1270,6 +1292,7 @@ static int process_options(int argc, char **argv, int firsttime)
   else if(!inet_pton(AF_INET, args_info.uamlisten_arg, &options.uamlisten)) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Invalid UAM IP address: %s!", args_info.uamlisten_arg);
+    cmdline_parser_free(&args_info);
     return -1;
   }
 
@@ -1289,6 +1312,7 @@ static int process_options(int argc, char **argv, int firsttime)
     }
     if (set_uamallowed(args_info.uamallowed_arg[numargs],
           strlen(args_info.uamallowed_arg[numargs])))
+      cmdline_parser_free(&args_info);
       return -1;
   }
 
@@ -1308,6 +1332,7 @@ static int process_options(int argc, char **argv, int firsttime)
     if (ippool_aton(&addr, &mask, options.dynip, 0)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Failed to parse dynamic IP address pool!");
+      cmdline_parser_free(&args_info);
       return -1;
     }
   }
@@ -1320,6 +1345,7 @@ static int process_options(int argc, char **argv, int firsttime)
     if (ippool_aton(&addr, &mask, options.statip, 0)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Failed to parse static IP address pool!");
+      cmdline_parser_free(&args_info);
       return -1;
     }
     options.allowstat = 1;
@@ -1337,6 +1363,7 @@ static int process_options(int argc, char **argv, int firsttime)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Invalid primary DNS address: %s!", 
           args_info.dns1_arg);
+      cmdline_parser_free(&args_info);
       return -1;
     }
   }
@@ -1357,6 +1384,7 @@ static int process_options(int argc, char **argv, int firsttime)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Invalid secondary DNS address: %s!", 
           args_info.dns1_arg);
+      cmdline_parser_free(&args_info);
       return -1;
     }
   }
@@ -1401,6 +1429,7 @@ static int process_options(int argc, char **argv, int firsttime)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
           "Invalid listening address: %s!", 
           gai_strerror(err));
+      cmdline_parser_free(&args_info);
       return -1;
     }
     else {
@@ -1422,9 +1451,11 @@ static int process_options(int argc, char **argv, int firsttime)
 
       if (rp == NULL) {               /* No address succeeded */
         fprintf(stderr, "Could not connect\n");
+        cmdline_parser_free(&args_info);
         exit(EXIT_FAILURE);
       }
       options.radiuslisten.ss_family = res->ai_family;
+      
       if(res->ai_family == AF_INET)
       {
         inet_ntop(res->ai_family, &((struct sockaddr_in *)&options.radiuslisten)->sin_addr, buf, sizeof(buf));
@@ -1457,6 +1488,7 @@ static int process_options(int argc, char **argv, int firsttime)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
           "Invalid listening address: %s!", 
           gai_strerror(err));
+      cmdline_parser_free(&args_info);
       return -1;
     }
     else {      
@@ -1496,6 +1528,7 @@ static int process_options(int argc, char **argv, int firsttime)
   else {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "No radiusserver1 address given!");
+    cmdline_parser_free(&args_info);
     return -1;
   }
 
@@ -1507,6 +1540,7 @@ static int process_options(int argc, char **argv, int firsttime)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
           "Invalid listening address: %s!", 
           gai_strerror(err));
+      cmdline_parser_free(&args_info);
       return -1;
     }
     else {      
@@ -1526,6 +1560,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
       if (rp == NULL) {               /* No address succeeded */
         fprintf(stderr, "Could not connect\n");
+        cmdline_parser_free(&args_info);
         exit(EXIT_FAILURE);
       }
       options.radiusserver2.ss_family = res->ai_family;
@@ -1546,6 +1581,7 @@ static int process_options(int argc, char **argv, int firsttime)
   else {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "No radiusserver2 address given!");
+    cmdline_parser_free(&args_info);
     return -1;
   }
   /* radiusauthport */
@@ -1558,6 +1594,7 @@ static int process_options(int argc, char **argv, int firsttime)
   if (!args_info.radiussecret_arg) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
         "radiussecret must be specified!");
+    cmdline_parser_free(&args_info);
     return -1;
   }
   options.radiussecret = args_info.radiussecret_arg;
@@ -1573,6 +1610,7 @@ static int process_options(int argc, char **argv, int firsttime)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
           "Invalid listening address: %s!", 
           gai_strerror(err));
+      cmdline_parser_free(&args_info);
       return -1;
     }
     else {      
@@ -1592,6 +1630,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
       if (rp == NULL) {               /* No address succeeded */
         fprintf(stderr, "Could not connect\n");
+        cmdline_parser_free(&args_info);
         exit(EXIT_FAILURE);
       }
       options.radiusnasip.ss_family = res->ai_family;
@@ -1629,7 +1668,12 @@ static int process_options(int argc, char **argv, int firsttime)
   }
   else if (options.dhcpif) {
     unsigned char macaddr[DHCP_ETH_ALEN];
-    (void) dhcp_getmac(options.dhcpif, macaddr);
+    if(dhcp_getmac(options.dhcpif, macaddr) == -1)
+    {
+      cmdline_parser_free(&args_info);
+      return -1;
+    }
+
     options.radiuscalled = malloc(MACSTRLEN + 1);
     (void) snprintf(options.radiuscalled, MACSTRLEN + 1,
         "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
@@ -1665,6 +1709,7 @@ static int process_options(int argc, char **argv, int firsttime)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
           "Invalid listening address: %s!", 
           gai_strerror(err));
+      cmdline_parser_free(&args_info);
       return -1;
     }
     else {      
@@ -1684,6 +1729,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
       if (rp == NULL) {               /* No address succeeded */
         fprintf(stderr, "Could not connect\n");
+        cmdline_parser_free(&args_info);
         exit(EXIT_FAILURE);
       }
       options.proxylisten.ss_family = res->ai_family;
@@ -1717,6 +1763,7 @@ static int process_options(int argc, char **argv, int firsttime)
             args_info.proxyclient_arg, 0)) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Invalid proxy client address: %s!", args_info.proxyclient_arg);
+        cmdline_parser_free(&args_info);
         return -1;
       }
     } else { /* IPv6 client */
@@ -1725,6 +1772,7 @@ static int process_options(int argc, char **argv, int firsttime)
       if(ippool_atonv6(&((struct sockaddr_in6 *)&options.proxyaddr)->sin6_addr, &preflen, &maskk, args_info.proxyclient_arg)== -1) {
         sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Invalid proxy client address: %s!", args_info.proxyclient_arg);
+        cmdline_parser_free(&args_info);
         return -1;
       }
     }
@@ -1763,6 +1811,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
     if (set_macallowed(args_info.macallowed_arg[numargs],
           strlen(args_info.macallowed_arg[numargs]))) 
+      cmdline_parser_free(&args_info);
       return -1;
   }
 
@@ -1787,6 +1836,8 @@ static int process_options(int argc, char **argv, int firsttime)
 
   /* pidfile */
   options.pidfile = args_info.pidfile_arg;
+
+  cmdline_parser_free(&args_info);
 
   return 0;
 }

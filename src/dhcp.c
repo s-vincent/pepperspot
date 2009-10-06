@@ -557,6 +557,7 @@ int dhcp_getmac(const char *ifname, unsigned char *macaddr)
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
         "socket(domain=%d, protocol=%lx, protocol=%d) failed",
         PF_PACKET, SOCK_RAW, DHCP_ETH_IP);
+    return -1;
   }
 
   /* Get the MAC address of our interface */
@@ -565,20 +566,25 @@ int dhcp_getmac(const char *ifname, unsigned char *macaddr)
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
         "ioctl(d=%d, request=%d) failed",
         fd, SIOCGIFHWADDR);
+    close(fd);
+    return -1;
   }
   memcpy(macaddr, ifr.ifr_hwaddr.sa_data, DHCP_ETH_ALEN);
   if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Not Ethernet: %.16s", ifname);
+    close(fd);
+    return -1;
   }
 
   if (macaddr[0] & 0x01) {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0, 
         "Ethernet has broadcast or multicast address: %.16s", ifname);
+    close(fd);
+    return -1;
   }
 
   close(fd);
-
   return 0;
 }
 
