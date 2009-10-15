@@ -772,10 +772,11 @@ int redir_new(struct redir_t **redir,
 
   if(addrv6) {
     /* [SV] */
+    memset(&addressv6, 0x00, sizeof(struct sockaddr_in6));
     addressv6.sin6_family = AF_INET6;
     memcpy(&addressv6.sin6_addr, addrv6, sizeof(struct in6_addr));
     addressv6.sin6_port = htons(port);
-    addressv6.sin6_flowinfo = htons(1);
+    addressv6.sin6_flowinfo = htonl(1);
     /*addressv6.sin6_scope_id = htons(0);*/
 #if defined(__FreeBSD__)  || defined (__APPLE__)
     addressv6.sin6_len = sizeof (struct sockaddr_in6);

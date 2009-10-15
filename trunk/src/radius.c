@@ -1387,10 +1387,14 @@ int radius_new(struct radius_t **this,
   }
 
   if(ipv6) {
-    memset(&addr, 0, sizeof(addr));
+    memset(&addr6, 0, sizeof(addr6));
     addr6.sin6_family = listen_addr->ss_family;
     addr6.sin6_port = htons((*this)->ourport);
     addr6.sin6_addr = ((struct sockaddr_in6 *)&(*this)->ouraddr)->sin6_addr;
+    addr6.sin6_flowinfo = htonl(0);
+#ifdef SIN6_LEN
+    addr6->sin6_len = sizeof(struct sockaddr_in6);
+#endif
   } else {
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = listen_addr->ss_family;

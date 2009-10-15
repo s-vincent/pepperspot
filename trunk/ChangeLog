@@ -1,6 +1,8 @@
 2009-xx-xx  Sebastien Vincent <sebastien.vincent@peppespot.info>
   
   * Version 0.3   - IPv4/IPv6 authentication unification;
+                  - Fix segfault in IPv4 only mode;
+									- Fix valgrind issues;
                   - Doxygenization.
 
 2009-03-27  Sebastien Vincent <sebastien.vincent@pepperspot.info>

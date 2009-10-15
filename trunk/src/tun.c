@@ -667,6 +667,7 @@ int tun_new(struct tun_t **tun)
 
 #if defined(__linux__)
   struct ifreq ifr;
+  int on = 1;
 
 #elif defined(__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
   char devname[IFNAMSIZ + 5]; /* "/dev/" + ifname */
@@ -705,13 +706,14 @@ int tun_new(struct tun_t **tun)
 
   /* Set device flags. For some weird reason this is also the method
      used to obtain the network interface name */
-  memset(&ifr, 0, sizeof(ifr));
+  memset(&ifr, 0x00, sizeof(struct ifreq));
   ifr.ifr_flags = IFF_TUN | IFF_NO_PI; /* Tun device, no packet info */
 
 #if defined(IFF_ONE_QUEUE) && defined(SIOCSIFTXQLEN)
   ifr.ifr_flags |= IFF_ONE_QUEUE;
 #endif
 
+  /* if (ioctl((*tun)->fd, TUNSETIFF, (void *) &ifr) < 0) */
   if (ioctl((*tun)->fd, TUNSETIFF, (void *) &ifr) < 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "ioctl() failed");
@@ -723,7 +725,7 @@ int tun_new(struct tun_t **tun)
   strncpy((*tun)->devname, ifr.ifr_name, IFNAMSIZ - 1);
   (*tun)->devname[IFNAMSIZ - 1] = 0; /* make sure to terminate */
 
-  ioctl((*tun)->fd, TUNSETNOCSUM, 1); /* Disable checksums */
+  ioctl((*tun)->fd, TUNSETNOCSUM, &on); /* Disable checksums */
   return 0;
 
 #elif defined(__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
