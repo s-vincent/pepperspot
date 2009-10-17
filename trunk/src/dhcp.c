@@ -553,6 +553,7 @@ int dhcp_getmac(const char *ifname, unsigned char *macaddr)
     if (errno == EPERM) {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno,
           "Cannot create raw socket. Must be root.");
+      return -1;
     }
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
         "socket(domain=%d, protocol=%lx, protocol=%d) failed",
