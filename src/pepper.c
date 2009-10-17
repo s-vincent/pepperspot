@@ -1434,7 +1434,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
       if (rp == NULL) {               /* No address succeeded */
         fprintf(stderr, "Could not connect\n");
-        exit(EXIT_FAILURE);
+        return -1;
       }
       options.radiuslisten.ss_family = res->ai_family;
       
@@ -1489,7 +1489,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
       if (rp == NULL) {               /* No address succeeded */
         fprintf(stderr, "Could not connect\n");
-        exit(EXIT_FAILURE);
+        return -1;
       }
       options.radiusserver1.ss_family = res->ai_family;
 
@@ -1539,7 +1539,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
       if (rp == NULL) {               /* No address succeeded */
         fprintf(stderr, "Could not connect\n");
-        exit(EXIT_FAILURE);
+        return -1;
       }
       options.radiusserver2.ss_family = res->ai_family;
 
@@ -1605,7 +1605,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
       if (rp == NULL) {               /* No address succeeded */
         fprintf(stderr, "Could not connect\n");
-        exit(EXIT_FAILURE);
+        return -1;
       }
       options.radiusnasip.ss_family = res->ai_family;
 
@@ -1701,7 +1701,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
       if (rp == NULL) {               /* No address succeeded */
         fprintf(stderr, "Could not connect\n");
-        exit(EXIT_FAILURE);
+        return -1;
       }
       options.proxylisten.ss_family = res->ai_family;
       if(res->ai_family == AF_INET)
@@ -5419,7 +5419,10 @@ int main(int argc, char **argv)
 
   /* Process options given in configuration file and command line */
   if (process_options(argc, argv, 1))
-    exit(1);
+  {
+    cmdline_parser_free(&args_info);
+    exit(EXIT_FAILURE);
+  }
 
   if (options.debug) 
     printf("PepperSpot version %s started.\n", VERSION);
@@ -5444,7 +5447,8 @@ int main(int argc, char **argv)
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
         "Failed to allocate IP pool!");
 
-    exit(1);
+    cmdline_parser_free(&args_info);
+    exit(EXIT_FAILURE);
   }
 
 
@@ -5454,8 +5458,12 @@ int main(int argc, char **argv)
     if (tun_new((struct tun_t**) &tun)) {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
           "Failed to create tun");
-      if (ippool) (void) ippool_free(ippool);
-      exit(1);
+      if (ippool)
+      {
+        (void) ippool_free(ippool);
+      }
+      cmdline_parser_free(&args_info);
+      exit(EXIT_FAILURE);
     }
 
     (void) tun_setaddr(tun, &options.dhcplisten,  &options.dhcplisten, 
@@ -5475,8 +5483,12 @@ int main(int argc, char **argv)
       /* error */
       printf("ICMPv6 socket creation error\n");
       if(tun) tun_free(tun);
-      if (ippool) (void) ippool_free(ippool);
-      exit(1);
+      if (ippool)
+      {
+        (void) ippool_free(ippool);
+      }
+      cmdline_parser_free(&args_info);
+      exit(EXIT_FAILURE);
     }
 
     /* [SV] : Create an IPv6 tunnel interface */
@@ -5485,8 +5497,12 @@ int main(int argc, char **argv)
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Failed to create tun6");
       if(tun) tun_free(tun);
       icmp6_cleanup();
-      if (ippool) (void) ippool_free(ippool);
-      exit(1);
+      if (ippool)
+      {
+        (void) ippool_free(ippool);
+      }
+      cmdline_parser_free(&args_info);
+      exit(EXIT_FAILURE);
     }
 
     /* [SV] : IPv6 address */
@@ -5509,7 +5525,8 @@ int main(int argc, char **argv)
       if(tunv6) tun6_free(tunv6);
       if(ipv6 || dual) icmp6_cleanup();
       if (ippool) (void) ippool_free(ippool);
-      exit(1);
+      cmdline_parser_free(&args_info);
+      exit(EXIT_FAILURE);
     }
 
     if (dhcp->eapol_fd > maxfd)
@@ -5541,7 +5558,8 @@ int main(int argc, char **argv)
         if(tunv6) tun6_free(tunv6);
         if(ipv6 || dual) icmp6_cleanup();
         if (ippool) (void) ippool_free(ippool);
-        exit(1);
+        cmdline_parser_free(&args_info);
+        exit(EXIT_FAILURE);
       }
 
     }
@@ -5566,12 +5584,10 @@ int main(int argc, char **argv)
         if(tunv6) tun6_free(tunv6);
         if(ipv6 || dual) icmp6_cleanup();
         if (ippool) (void) ippool_free(ippool);
-        exit(1);
+        cmdline_parser_free(&args_info);
+        exit(EXIT_FAILURE);
       }
-
-
     }
-
   }
 
   /* Create an instance of radius */
@@ -5587,7 +5603,8 @@ int main(int argc, char **argv)
     if(tunv6) tun6_free(tunv6);
     if(ipv6 || dual) icmp6_cleanup();
     if (ippool) (void) ippool_free(ippool);
-    return -1;
+    cmdline_parser_free(&args_info);
+    exit(EXIT_FAILURE);
   }
   if (radius->fd > maxfd)
     maxfd = radius->fd;
@@ -5617,7 +5634,8 @@ int main(int argc, char **argv)
       if(dhcp) dhcp_free(dhcp);
       if(tun) tun_free(tun);
       if (ippool) (void) ippool_free(ippool);
-      return -1;
+      cmdline_parser_free(&args_info);
+      exit(EXIT_FAILURE);
     }
   }
   else if(ipv6) {
@@ -5629,7 +5647,8 @@ int main(int argc, char **argv)
       if(dhcp) dhcp_free(dhcp);
       if(tunv6) tun6_free(tunv6);
       if (ippool) (void) ippool_free(ippool);
-      return -1;
+      cmdline_parser_free(&args_info);
+      exit(EXIT_FAILURE);
     }
   } else { /* dual */
     if(redir_new(&redir, options.uamserver, options.uamserver6, options.uamport)) {
@@ -5640,7 +5659,8 @@ int main(int argc, char **argv)
       if (tun) (void) tun_free(tun);
       icmp6_cleanup();
       if (ippool) (void) ippool_free(ippool);
-      return -1;
+      cmdline_parser_free(&args_info);
+      exit(EXIT_FAILURE);
     }
   }
 
