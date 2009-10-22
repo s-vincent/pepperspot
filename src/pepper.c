@@ -771,53 +771,50 @@ static int set_uamallowed(char *uamallowed, int len)
           if (sfd == -1)
             continue;
 
-          if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1) {
-            if(rp->ai_family == AF_INET) {
-              addr = (struct sockaddr_in *)rp->ai_addr;
-              if (options.debug & DEBUG_CONF) {
-                printf("Uamallowed IP address %d: %s\n", 
-                    options.uamokiplen,
-                    inet_ntop(AF_INET, &addr->sin_addr, buf, INET_ADDRSTRLEN));
-              }
-              if (options.uamokiplen >= UAMOKIP_MAX) {
-                sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-                    "Too many domains or IPs in uamallowed %s!",
-                    p3);
-                free(p3);
-                freeaddrinfo(res);
-                return -1;
-              }
-              else {
-                memcpy(&options.uamokip[options.uamokiplen], &addr->sin_addr, 4);
-                options.uamokiplen++;
-              }				
+          if(rp->ai_family == AF_INET) {
+            addr = (struct sockaddr_in *)rp->ai_addr;
+            if (options.debug & DEBUG_CONF) {
+              printf("Uamallowed IP address %d: %s\n", 
+                  options.uamokiplen,
+                  inet_ntop(AF_INET, &addr->sin_addr, buf, INET_ADDRSTRLEN));
             }
-            else { /* AF_INET6 */
-              addrv6 = (struct sockaddr_in6 *)rp->ai_addr;
-              if (options.debug & DEBUG_CONF) {
-                printf("Uamallowed IPv6 address %d: %s\n", 
-                    options.uamokiplen,
-                    inet_ntop(AF_INET6, &addrv6->sin6_addr, buf, INET6_ADDRSTRLEN));
-              }
-              if (options.uamokiplen >= UAMOKIP_MAX) {
-                sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-                    "Too many domains or IPv6s in uamallowed %s!",
-                    p3);
-                freeaddrinfo(res);
-                free(p3);
-                return -1;
-              }
-              else {
-                printf("Ici, IPv6\n");
-                memcpy(&options.uamokip6[options.uamokiplen6], &addrv6->sin6_addr, 16);
-                options.uamokiplen6++;
-              }
-
-
+            if (options.uamokiplen >= UAMOKIP_MAX) {
+              sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+                   "Too many domains or IPs in uamallowed %s!",
+                  p3);
+              free(p3);
+              freeaddrinfo(res);
+              return -1;
             }
-            close(sfd);
-            break;
+            else {
+              memcpy(&options.uamokip[options.uamokiplen], &addr->sin_addr, 4);
+              options.uamokiplen++;
+            }
           }
+          else { /* AF_INET6 */
+            addrv6 = (struct sockaddr_in6 *)rp->ai_addr;
+            if (options.debug & DEBUG_CONF) {
+              printf("Uamallowed IPv6 address %d: %s\n", 
+                  options.uamokiplen,
+                  inet_ntop(AF_INET6, &addrv6->sin6_addr, buf, INET6_ADDRSTRLEN));
+            }
+            if (options.uamokiplen >= UAMOKIP_MAX) {
+              sys_err(LOG_ERR, __FILE__, __LINE__, 0,
+                  "Too many domains or IPv6s in uamallowed %s!",
+                  p3);
+              freeaddrinfo(res);
+              free(p3);
+              return -1;
+            }
+            else {
+              printf("Ici, IPv6\n");
+              memcpy(&options.uamokip6[options.uamokiplen6], &addrv6->sin6_addr, 16);
+              options.uamokiplen6++;
+            }
+
+          }
+          close(sfd);
+          break;
           close(sfd);
         }
       }			
@@ -1294,6 +1291,7 @@ static int process_options(int argc, char **argv, int firsttime)
   memset(options.uamokaddr, 0, sizeof(options.uamokaddr));
   memset(options.uamokmask, 0, sizeof(options.uamokmask));
   options.uamoknetlen = 0;
+
   for (numargs = 0; numargs < args_info.uamallowed_given; ++numargs) {
     if (options.debug & DEBUG_CONF) {
       printf ("Uamallowed #%d: %s\n", 
