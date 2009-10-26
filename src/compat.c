@@ -41,8 +41,13 @@
 
 /* code from miredo */
 #ifdef __APPLE__
-# include <crt_externs.h>
-# define environ (*_NSGetEnviron())
+#include <crt_externs.h>
+/**
+ * \def environ
+ * \brief Extern variable environ replacement
+ * for Mac OS X.
+ */
+#define environ (*_NSGetEnviron())
 #else
 /**
  * \brief environ variable which contains
@@ -109,7 +114,7 @@ int daemon(int nochdir, int noclose)
   {
     _exit(EXIT_SUCCESS);
   }
-
 }
+
 #endif
 
