@@ -2,7 +2,8 @@
   
   * Version 0.3   - IPv4/IPv6 authentication unification;
                   - Fix segfault in IPv4 only mode;
-									- Fix valgrind issues;
+									- Fix various bugs and valgrind issues;
+									- Put several files from doc/ to extra/ directory;
                   - Doxygenization.
 
 2009-03-27  Sebastien Vincent <sebastien.vincent@pepperspot.info>

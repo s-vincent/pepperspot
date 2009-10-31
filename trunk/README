@@ -509,16 +509,16 @@ You should have a line like this:
 AM_CFLAGS = -D_DARWIN_C_SOURCE -fno-builtin -DSBINDIR='"$(sbindir)"' -Wall -Wextra -pedantic -std=c99 -Wstrict-prototypes -Wredundant-decls
 
 Copy some configuration files:
-# cp doc/pepper.conf /etc/
-# cp doc/hotspotlogin.cgi /usr/lib/cgi-bin/
+# cp extra/pepper.conf /etc/
+# cp extra/hotspotlogin.cgi /usr/lib/cgi-bin/
 # chmod +x /usr/lib/cgi-bin/hotspotlogin.cgi
 
 For IPv4:
-# cp doc/pepper.iptables /etc/
+# cp extra/pepper.iptables /etc/
 # chmod +x /etc/pepper.iptables
 
 For IPv6:
-# cp doc/pepper.ip6tables /etc/
+# cp extra/pepper.ip6tables /etc/
 # chmod +x /etc/pepper.ip6tables
 
 5.2) iptables
