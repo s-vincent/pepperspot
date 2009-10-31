@@ -71,6 +71,8 @@ AM_CONDITIONAL(ENABLE_DEBUG_BUILD, test "$enable_debug_build" = "yes")
 
 AC_CONFIG_FILES([Makefile
                  doc/Makefile
+                 man/Makefile
+                 extra/Makefile
                  src/Makefile
                  debian/Makefile
 		 pepperspot.spec])
