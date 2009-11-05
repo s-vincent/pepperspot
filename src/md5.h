@@ -46,7 +46,8 @@ typedef unsigned long uint32_t;
  *
  * Buffer used for MD5 operations.
  */
-struct MD5Context {
+struct MD5Context
+{
   uint32_t buf[4]; /**< state (ABCD) */
   uint32_t bits[2]; /**< number of bits, modulo 2^64 (lsb first) */
   unsigned char in[64]; /**< Input buffer */
@@ -66,15 +67,15 @@ void MD5Init(struct MD5Context *context);
  * Continues an MD5 message-digest operation, processing.
  * another message block, and updating the context.
  * \param context MD5 context
- * \param buf MD5 block 
+ * \param buf MD5 block
  * \param len length of MD5 block
  */
 void MD5Update(struct MD5Context *context, unsigned char const *buf,
-    unsigned len);
+               unsigned len);
 
 /**
  * \brief MD5 finalization.
- * 
+ *
  * Ends an MD5 message-digest operation, writing the
  * the message digest and zeroizing the context.
  * \param digest MD5 digest that will be filled

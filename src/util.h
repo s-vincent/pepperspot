@@ -40,7 +40,7 @@
 #define IPV6_RECVHOPLIMIT IPV6_HOPLIMIT /**< IPv6 socket option to get/set hop limit value */
 #endif
 
-#ifndef IPV6_RECVPKTINFO 
+#ifndef IPV6_RECVPKTINFO
 #define IPV6_RECVPKTINFO IPV6_PKTINFO /**< IPv6 socket option to receive packet information */
 #endif
 
@@ -49,14 +49,14 @@
  * \brief All nodes multicast address (FF02::1).
  */
 #define IN6ADDR_ALL_NODES_MC_INIT \
-{ { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x1 } } }
+  { { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x1 } } }
 
 /**
  * \def IN6ADDR_ALL_ROUTERS_MC_INIT
  * \brief All routers multicast address (FF02::2).
  */
 #define IN6ADDR_ALL_ROUTERS_MC_INIT \
-{ { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x2 } } }
+  { { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x2 } } }
 
 /* Following 4 routines are taken from include/net/ipv6.h */
 
@@ -68,9 +68,9 @@
  * \param w3 third 32 bit of IPv6 address
  * \param w4 last 32 bit of IPv6 address
  */
-static inline void ipv6_addr_set(struct in6_addr *addr, 
-    uint32_t w1, uint32_t w2,
-    uint32_t w3, uint32_t w4)
+static inline void ipv6_addr_set(struct in6_addr *addr,
+                                 uint32_t w1, uint32_t w2,
+                                 uint32_t w3, uint32_t w4)
 {
   ((uint32_t*)addr->s6_addr)[0] = w1;
   ((uint32_t*)addr->s6_addr)[1] = w2;
@@ -87,7 +87,7 @@ static inline void ipv6_addr_solict_mult(const struct in6_addr *addr,
     struct in6_addr *solicited)
 {
   ipv6_addr_set(solicited, htonl(0xFF020000), 0, htonl(0x1),
-      htonl(0xFF000000) | ((uint32_t*)addr->s6_addr)[3]);
+                htonl(0xFF000000) | ((uint32_t*)addr->s6_addr)[3]);
 }
 
 /**
@@ -96,10 +96,10 @@ static inline void ipv6_addr_solict_mult(const struct in6_addr *addr,
  * \param llocal result link-local address built from addr
  */
 static inline void ipv6_addr_llocal(const struct in6_addr *addr,
-    struct in6_addr *llocal)
+                                    struct in6_addr *llocal)
 {
   ipv6_addr_set(llocal, htonl(0xFE800000), 0,
-      ((uint32_t*)addr->s6_addr)[2], ((uint32_t*)addr->s6_addr)[3]);
+                ((uint32_t*)addr->s6_addr)[2], ((uint32_t*)addr->s6_addr)[3]);
 }
 
 /**
@@ -114,9 +114,10 @@ static inline void free_iov_data(struct iovec *iov, int count)
 {
   int len = count;
 
-  if (iov == NULL) return;
-  while (len--) {
-    if (iov[len].iov_base)
+  if(iov == NULL) return;
+  while(len--)
+  {
+    if(iov[len].iov_base)
       free(iov[len].iov_base);
   }
 }

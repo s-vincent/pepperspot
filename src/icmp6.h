@@ -52,10 +52,10 @@ struct icmpv6_socket
 };
 
 /**
- * Join/leave multicast group on interface.  
+ * Join/leave multicast group on interface.
  *
  * cmd must be either IPV6_JOIN_GROUP or IPV6_LEAVE_GROUP.
- * Also turns off local multicast loopback. 
+ * Also turns off local multicast loopback.
  *
  * \param sock socket
  * \param ifindex interface to join/leave
@@ -87,7 +87,7 @@ void icmp6_cleanup(void);
  * \return number of bytes sent or -1 if failure
  */
 int icmp6_send(int oif, uint8_t hoplimit, const struct in6_addr *src,
-    const struct in6_addr *dst, struct iovec *datav, size_t iovlen);
+               const struct in6_addr *dst, struct iovec *datav, size_t iovlen);
 
 /**
  * \brief Create an ICMPv6 header.

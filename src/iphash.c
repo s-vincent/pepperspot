@@ -76,11 +76,13 @@
 #include "iphash.h"
 
 /* Create new address pool hash */
-int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
+int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize)
+{
 
   int i = 0;
 
-  if (!(*this = calloc(sizeof(struct ippool_t), 1))) {
+  if(!(*this = calloc(sizeof(struct ippool_t), 1)))
+  {
     /* Failed to allocate memory for iphash */
     return -1;
   }
@@ -89,21 +91,23 @@ int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
   (*this)->member = list;
 
   /* Determine log2 of hashsize */
-  for ((*this)->hashlog = 0; 
-      ((1 << (*this)->hashlog) < listsize);
-      (*this)->hashlog++);
+  for((*this)->hashlog = 0;
+       ((1 << (*this)->hashlog) < listsize);
+       (*this)->hashlog++);
 
   /* Determine hashsize */
   (*this)->hashsize = 1 << (*this)->hashlog; /* Fails if mask=0: All Internet*/
   (*this)->hashmask = (*this)->hashsize -1;
 
   /* Allocate hash table */
-  if (!((*this)->hash = calloc(sizeof(struct ippoolm_t), (*this)->hashsize))){
+  if(!((*this)->hash = calloc(sizeof(struct ippoolm_t), (*this)->hashsize)))
+  {
     /* Failed to allocate memory for hash members in iphash */
     return -1;
   }
 
-  for (i = 0; i < listsize; i++) {
+  for(i = 0; i < listsize; i++)
+  {
 
     (*this)->member[i].inuse = 1; /* TODO */
     ippool_hashadd(*this, &(*this)->member[i]);
@@ -113,11 +117,13 @@ int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
 }
 
 /* Create new address pool hash */
-int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
+int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize)
+{
 
   int i = 0;
 
-  if (!(*this = calloc(sizeof(struct ippool_t), 1))) {
+  if(!(*this = calloc(sizeof(struct ippool_t), 1)))
+  {
     /* Failed to allocate memory for iphash */
     return -1;
   }
@@ -126,21 +132,23 @@ int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
   (*this)->member = list;
 
   /* Determine log2 of hashsize */
-  for ((*this)->hashlog = 0; 
-      ((1 << (*this)->hashlog) < listsize);
-      (*this)->hashlog++);
+  for((*this)->hashlog = 0;
+       ((1 << (*this)->hashlog) < listsize);
+       (*this)->hashlog++);
 
   /* Determine hashsize */
   (*this)->hashsize = 1 << (*this)->hashlog; /* Fails if mask=0: All Internet*/
   (*this)->hashmask = (*this)->hashsize -1;
 
   /* Allocate hash table */
-  if (!((*this)->hash = calloc(sizeof(struct ippoolm_t), (*this)->hashsize))){
+  if(!((*this)->hash = calloc(sizeof(struct ippoolm_t), (*this)->hashsize)))
+  {
     /* Failed to allocate memory for hash members in iphash */
     return -1;
   }
 
-  for (i = 0; i < listsize; i++) {
+  for(i = 0; i < listsize; i++)
+  {
 
     (*this)->member[i].inuse = 1; /* TODO */
     ippool_hashadd6(*this, &(*this)->member[i]);
@@ -150,7 +158,8 @@ int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize) {
 }
 
 /* Delete existing address pool */
-int iphash_free(struct ippool_t *this) {
+int iphash_free(struct ippool_t *this)
+{
   free(this->hash);
   free(this);
   return 0; /* Always OK */

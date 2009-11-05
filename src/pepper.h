@@ -112,7 +112,7 @@
 #define EAP_MESSAGE        257 /**< Code for using EAP */
 
 #define MPPE_KEYSIZE  16
-#define NT_KEYSIZE    16 
+#define NT_KEYSIZE    16
 
 #define DNPROT_DHCP_NONE  2
 #define DNPROT_UAM        3
@@ -134,7 +134,7 @@ struct app_conn_t
 {
   /* Management of connections */
   int inuse; /**< If the connection is in use */
-  int unit; 
+  int unit;
   int ipv6; /**< If IPv6 is used */
   struct app_conn_t *next;    /**< Next in linked list. 0: Last */
   struct app_conn_t *prev;    /**< Previous in linked list. 0: First */
@@ -193,7 +193,7 @@ struct app_conn_t
   /* Parameters for radius accounting */
   /* These parameters are set when an access accept is sent back to the
      NAS */
-  int authenticated;           /**< 1 if user was authenticated */  
+  int authenticated;           /**< 1 if user was authenticated */
   char user[USERNAMESIZE];     /**< User: */
   uint8_t userlen;             /**< Length of user */
   struct sockaddr_storage nasip; /**< Set by access request */
@@ -251,7 +251,7 @@ struct app_conn_t
  * \struct options_t
  * \brief Struct with local versions of gengetopt options.
  */
-struct options_t 
+struct options_t
 {
   /* fg */
   int debug;                     /**< If debug message is enabled */
@@ -263,10 +263,10 @@ struct options_t
   char *ipversion;               /**< IP version used ("ipv4", "ipv6" or "dual") */
 
   /* TUN parameters */
-/* 
-  char netc[IPADDRLEN];
-  char maskc[IPADDRLEN];
-*/
+  /*
+    char netc[IPADDRLEN];
+    char maskc[IPADDRLEN];
+  */
   struct in_addr net;            /**< Network IP address */
   struct in_addr mask;           /**< Network mask */
   int prefixlen;                 /**< IPv6 prefix length */
@@ -360,7 +360,7 @@ struct options_t
   unsigned char macok[MACOK_MAX][DHCP_ETH_ALEN]; /**< Allowed MACs */
   int macoklen;                   /**< Number of MAC addresses */
   char* macsuffix;               /**< Suffix to add to MAC address */
-  char* macpasswd;               /**< Password to use for MAC authentication */  
+  char* macpasswd;               /**< Password to use for MAC authentication */
 };
 
 #endif /*_PEPPER_H */

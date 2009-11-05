@@ -65,7 +65,7 @@
 
 /**
  * \file ippool.h
- * \brief IPv4 and IPv6 address pool 
+ * \brief IPv4 and IPv6 address pool
  */
 
 #ifndef _IPPOOL_H
@@ -79,7 +79,7 @@
    When initialising a new address pool it should be possible to pass
    a string of CIDR format networks: "10.0.0.0/24 10.15.0.0/20" would
    translate to 256 addresses starting at 10.0.0.0 and 1024 addresses
-   starting at 10.15.0.0. 
+   starting at 10.15.0.0.
 
    The above also applies to IPv6 which can be specified as described
    in RFC2373.
@@ -97,7 +97,8 @@ struct ippoolm_t;                /* Forward declaration */
  * \struct ippool_t
  * \brief Pool of IPv4/IPv6 addresses.
  */
-struct ippool_t {
+struct ippool_t
+{
   int listsize;                  /**< Total number of addresses */
   int allowdyn;                  /**< Allow dynamic IP address allocation */
   int allowstat;                 /**< Allow static IP address allocation */
@@ -120,7 +121,8 @@ struct ippool_t {
  * \struct ippoolm_t
  * \brief Member of poool.
  */
-struct ippoolm_t {
+struct ippoolm_t
+{
   struct in_addr addr;           /**< IP address of this member */
   struct in6_addr addrv6;        /**< IPv6 address of this member */
   int inuse;                     /**< 0=available; 1= dynamic; 2 = static */
@@ -151,8 +153,8 @@ unsigned long int ippool_hash4(struct in_addr *addr);
  * \param flags flags (IPPOOL_NONETWORK, IPPOOL_NOGATEWAY or IPPOOL_NOBROADCAST)
  * \return 0 if success, -1 otherwise
  */
-int ippool_new(struct ippool_t **this, char *dyn,  char *stat, 
-    int allowdyn, int allowstat, int flags);
+int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
+               int allowdyn, int allowstat, int flags);
 
 /**
  * \brief Delete existing address pool.
@@ -162,18 +164,18 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
 int ippool_free(struct ippool_t *this);
 
 /**
- * \brief Find an IPv4 address in the pool 
+ * \brief Find an IPv4 address in the pool
  * \param this ippool_t instance
  * \param member if found its pointer will be put in this variable
  * \param addr IPv4 address to found
  * \return 0 if found, -1 otherwise
  */
 int ippool_getip(struct ippool_t *this, struct ippoolm_t **member,
-    struct in_addr *addr);
+                 struct in_addr *addr);
 
 /**
  * \brief Get an IP address. If addr = 0.0.0.0 get a dynamic IP address. Otherwise
- *  check to see if the given address is available 
+ *  check to see if the given address is available
  * \param this ippool_t instance
  * \param member if found its pointer will be put in this variable
  * \param addr IPv4 address to found
@@ -181,7 +183,7 @@ int ippool_getip(struct ippool_t *this, struct ippoolm_t **member,
  * \return 0 if found, -1 otherwise
  */
 int ippool_newip(struct ippool_t *this, struct ippoolm_t **member,
-    struct in_addr *addr, int statip);
+                 struct in_addr *addr, int statip);
 
 /**
  * \brief Allocate a new IPv6 address.
@@ -209,7 +211,7 @@ int ippool_freeip(struct ippool_t *this, struct ippoolm_t *member);
  * \return 0 if success, -1 otherwise
  */
 int ippool_aton(struct in_addr *addr, struct in_addr *mask,
-    char *pool, int number);
+                char *pool, int number);
 
 /**
  * \brief Get network and prefix based on ascii string (i.e 2001:db8::/64).
@@ -220,7 +222,7 @@ int ippool_aton(struct in_addr *addr, struct in_addr *mask,
  * \return 0 if success, -1 otherwise
  */
 int ippool_atonv6(struct in6_addr *prefix, int *prefixlen,  int *mask,
-    char *pool);
+                  char *pool);
 
 /**
  * \brief Get IPv6 suffix from an IPv6 address.
@@ -238,7 +240,7 @@ void ippool_getv6suffix(struct in6_addr *suffix, struct in6_addr *addr, int mask
 unsigned long int ippool_hash6(struct in6_addr *addr);
 
 /**
- * \brief Find an IPv6 address in the pool 
+ * \brief Find an IPv6 address in the pool
  * \param this ippool_t instance
  * \param member if found its pointer will be put in this variable
  * \param addr IPv6 address to found

@@ -108,14 +108,14 @@ static const struct in6_addr in6addr_all_routers_mc = IN6ADDR_ALL_ROUTERS_MC_INI
  * \return header or NULL if failure
  */
 static struct nd_opt_hdr *nd_opt_create(struct iovec *iov, uint8_t type,
-    uint16_t len, uint8_t *value)
+                                        uint16_t len, uint8_t *value)
 {
   struct nd_opt_hdr *opt = NULL;
   int hlen = sizeof(struct nd_opt_hdr);
 
   /* len must be lenght(value) in bytes */
   opt = malloc(len + hlen);
-  if (opt == NULL)
+  if(opt == NULL)
     return NULL;
 
   opt->nd_opt_type = type;
@@ -141,17 +141,18 @@ static int nd_get_l2addr(int ifindex, uint8_t *addr)
   int fd = -1;
 
   fd = socket(PF_PACKET, SOCK_DGRAM, 0);
-  if (fd < 0) return -1;
+  if(fd < 0) return -1;
 
   memset(&ifr, 0, sizeof(ifr));
   if_indextoname(ifindex, ifr.ifr_name);
-  if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0) {
+  if(ioctl(fd, SIOCGIFHWADDR, &ifr) < 0)
+  {
     close(fd);
     return -1;
   }
-  if ((res = nd_get_l2addr_len(ifr.ifr_hwaddr.sa_family)) < 0)
+  if((res = nd_get_l2addr_len(ifr.ifr_hwaddr.sa_family)) < 0)
     printf("Unsupported sa_family %d.\n", ifr.ifr_hwaddr.sa_family);
-  else if (res > 0)
+  else if(res > 0)
     memcpy(addr, ifr.ifr_hwaddr.sa_data, res);
 
   close(fd);
@@ -164,19 +165,22 @@ static int nd_get_l2addr(int ifindex, uint8_t *addr)
 
   if_indextoname(ifindex, ifname);
 
-  if (getifaddrs(&ifap)) {
+  if(getifaddrs(&ifap))
+  {
     return -1;
   }
 
   ifa = ifap;
-  while (ifa) {
-    if ((strcmp(ifa->ifa_name, ifname) == 0) && (ifa->ifa_addr->sa_family == AF_LINK)) {
+  while(ifa)
+  {
+    if((strcmp(ifa->ifa_name, ifname) == 0) && (ifa->ifa_addr->sa_family == AF_LINK))
+    {
       sdl = (struct sockaddr_dl *)ifa->ifa_addr;
-      if ((res = nd_get_l2addr_len(sdl->sdl_type)) < 0)
+      if((res = nd_get_l2addr_len(sdl->sdl_type)) < 0)
       {
         printf("Unsupported sa_family %d.\n", sdl->sdl_type);
       }
-      else if (res > 0)
+      else if(res > 0)
       {
         memcpy(addr, LLADDR(sdl), res);
       }
@@ -193,9 +197,9 @@ static int nd_get_l2addr(int ifindex, uint8_t *addr)
   return res;
 }
 
-int ndisc_send_na(int ifindex, const struct in6_addr *src, 
-    const struct in6_addr *dst,
-    const struct in6_addr *target, uint32_t flags)
+int ndisc_send_na(int ifindex, const struct in6_addr *src,
+                  const struct in6_addr *dst,
+                  const struct in6_addr *target, uint32_t flags)
 {
   struct nd_neighbor_advert *na = NULL;
   struct iovec iov[2];
@@ -204,15 +208,15 @@ int ndisc_send_na(int ifindex, const struct in6_addr *src,
 
   memset(iov, 0, sizeof(iov));
 
-  if ((len = nd_get_l2addr(ifindex, l2addr)) < 0)
+  if((len = nd_get_l2addr(ifindex, l2addr)) < 0)
     return -EINVAL;
 
   na = icmp6_create(iov, ND_NEIGHBOR_ADVERT, 0);
 
-  if (na == NULL) return -ENOMEM;
+  if(na == NULL) return -ENOMEM;
 
-  if (len > 0 && nd_opt_create(&iov[1], ND_OPT_TARGET_LINKADDR,
-        len, l2addr) == NULL) {
+  if(len > 0 && nd_opt_create(&iov[1], ND_OPT_TARGET_LINKADDR, len, l2addr) == NULL)
+  {
     free_iov_data(iov, 1);
     return -ENOMEM;
   }

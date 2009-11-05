@@ -43,8 +43,9 @@
  */
 static inline short nd_get_l2addr_len(unsigned short iface_type)
 {
-  switch (iface_type) {
-    /* supported physical devices */
+  switch(iface_type)
+  {
+      /* supported physical devices */
     case ARPHRD_ETHER:
     case ARPHRD_IEEE802:
       /*	case ARPHRD_IEEE802_TR: */
@@ -56,7 +57,7 @@ static inline short nd_get_l2addr_len(unsigned short iface_type)
       return 1;
       /* supported virtual devices */
     case ARPHRD_SIT:
-    case ARPHRD_TUNNEL6: 
+    case ARPHRD_TUNNEL6:
     case ARPHRD_PPP:
     case ARPHRD_IPGRE:
       return 0;
@@ -76,9 +77,9 @@ static inline short nd_get_l2addr_len(unsigned short iface_type)
  * \param flags NA flags
  * \return 0 if success, -1 otherwise
  */
-int ndisc_send_na(int ifindex, const struct in6_addr *src, 
-    const struct in6_addr *dst,
-    const struct in6_addr *target, uint32_t flags);
+int ndisc_send_na(int ifindex, const struct in6_addr *src,
+                  const struct in6_addr *dst,
+                  const struct in6_addr *target, uint32_t flags);
 
 #endif /* __NDISC_H__ */
 
