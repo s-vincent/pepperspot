@@ -1561,7 +1561,7 @@ int radius_new(struct radius_t **this,
     addr6.sin6_addr = ((struct sockaddr_in6 *)&(*this)->ouraddr)->sin6_addr;
     addr6.sin6_flowinfo = htonl(0);
 #ifdef SIN6_LEN
-    addr6->sin6_len = sizeof(struct sockaddr_in6);
+    addr6.sin6_len = sizeof(struct sockaddr_in6);
 #endif
   }
   else

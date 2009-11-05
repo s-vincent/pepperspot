@@ -136,6 +136,7 @@
 #include "cmdline.h"
 #include "pepper.h"
 #include "util.h"
+#include "compat.h"
 
 #ifndef DEBUG_REDIR
 #define DEBUG_REDIR 1

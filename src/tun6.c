@@ -46,7 +46,7 @@
  ***********************************************************************/
 
 #ifdef HAVE_CONFIG_H
-# include <config.h>
+#include <config.h>
 #endif
 
 /* #include <gettext.h> */
@@ -102,8 +102,8 @@ typedef struct
   uint16_t proto;
 } tun_head_t;
 
-# define TUN_HEAD_IPV6_INITIALIZER { 0, htons(ETH_P_IPV6) }
-# define tun_head_is_ipv6(h) (h.proto == htons(ETH_P_IPV6))
+#define TUN_HEAD_IPV6_INITIALIZER { 0, htons(ETH_P_IPV6) }
+#define tun_head_is_ipv6(h) (h.proto == htons(ETH_P_IPV6))
 
 #elif defined (__FreeBSD__) || defined (__FreeBSD_kernel__) || \
   defined (__NetBSD__)  || defined (__NetBSD_kernel__)  || \
@@ -115,19 +115,19 @@ defined (__APPLE__) /* Darwin */
  * NOTE: the driver is NOT tested on Darwin (Mac OS X).
  */
 const char os_driver[] = "BSD";
-# define USE_BSD 1
+#define USE_BSD 1
 
 /* TUNSIFHEAD or TUNSLMODE */
 #if defined (HAVE_NET_IF_TUN_H)
-# include <net/if_tun.h>
+#include <net/if_tun.h>
 #elif defined (HAVE_NET_TUN_IF_TUN_H)
-# include <net/tun/if_tun.h>
+#include <net/tun/if_tun.h>
 #elif defined (__APPLE__)
-# define TUNSIFHEAD  _IOW('t', 96, int)
+#define TUNSIFHEAD _IOW('t', 96, int)
 #endif
 
 #ifdef HAVE_NET_IF_VAR_H
-# include <net/if_var.h>
+#include <net/if_var.h>
 #endif
 
 #include <net/if_dl.h> /* struct sockaddr_dl */
@@ -148,7 +148,7 @@ typedef uint32_t tun_head_t;
  */
 const char os_driver[] = "Generic";
 
-# warning Unknown host OS. The driver will probably not work.
+#warning Unknown host OS. The driver will probably not work.
 #endif
 
 #include "tun6.h"
@@ -162,8 +162,6 @@ const char os_driver[] = "Generic";
  */
 #define safe_strcpy(tgt, src) \
   (strncpy(tgt, src, sizeof(tgt)))
-/*	((strncpy(tgt, src, sizeof(tgt)) >= sizeof(tgt)) ? -1 : 0) */
-
 
 /**
  * \struct tun6
@@ -190,7 +188,7 @@ struct tun6
  */
 static struct tun6 *tun6_create(const char *req_name)
 {
-  /*	(void)bindtextdomain (PACKAGE_NAME, LOCALEDIR); */
+  /*  (void)bindtextdomain (PACKAGE_NAME, LOCALEDIR); */
   struct tun6 *t = (struct tun6 *)malloc(sizeof(*t));
   if(t == NULL)
     return NULL;
@@ -281,7 +279,7 @@ static struct tun6 *tun6_create(const char *req_name)
     fstat(fd, &st);
 #ifdef HAVE_DEVNAME_R
     devname_r(st.st_rdev, S_IFCHR, t->orig_name, sizeof(t->orig_name));
-# else
+#else
   const char *name = devname(st.st_rdev, S_IFCHR);
   if(safe_strcpy(t->orig_name, name))
     goto error;
@@ -313,15 +311,15 @@ static struct tun6 *tun6_create(const char *req_name)
   {
     syslog(LOG_ERR, "Tunneling driver error (%s): %s",
             "TUNSIFHEAD", strerror(errno));
-#  if defined (__APPLE__)
+#if defined (__APPLE__)
     if(errno == EINVAL)
       syslog(LOG_NOTICE,
               "*** Ignoring tun-tap-osx spurious error ***");
     else
-#  endif
+#endif
       goto error;
   }
-# elif defined (TUNSLMODE)
+#elif defined (TUNSLMODE)
   /* Disables TUNSLMODE (deprecated opposite of TUNSIFHEAD) */
   if(ioctl(fd, TUNSLMODE, &(int)
 {
@@ -370,7 +368,7 @@ static struct tun6 *tun6_create(const char *req_name)
     }
   }
 #else
-# error No tunneling driver implemented on your platform!
+#error No tunneling driver implemented on your platform!
 #endif /* HAVE_os */
 
   fcntl(fd, F_SETFD, FD_CLOEXEC);
@@ -608,7 +606,7 @@ static int _iface_addr(int reqfd, int id, int add,
     req = &r.delreq6;
   }
 #else
-# error FIXME tunnel address setup not implemented
+#error FIXME tunnel address setup not implemented
 #endif
 
   return ioctl(reqfd, cmd, req) >= 0 ? 0 : -1;
@@ -760,7 +758,7 @@ static int _iface_route(int reqfd, int id, int add, const struct in6_addr *addr,
 
   (void)close(s);
 #else
-# error FIXME route setup not implemented
+#error FIXME route setup not implemented
 #endif
 
   return retval;

@@ -1047,5 +1047,14 @@ int dhcp_ipv6_ind(struct dhcp_t* this);
  */
 int dhcp_ipv6_req(struct dhcp_conn_t* conn, void* pack, unsigned len);
 
+#if defined(__FreeBSD__) || defined (__OpenBSD__) || defined (__APPLE__)
+/**
+ * \brief Receive packets from layer 2 socket.
+ * \param this dhcp_t instance
+ * \return 0 if success, -1 otherwise
+ */
+int dhcp_receive(struct dhcp_t *this);
+#endif
+
 #endif	/* !_DHCP_H */
 

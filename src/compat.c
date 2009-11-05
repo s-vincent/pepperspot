@@ -37,7 +37,7 @@
 
 #include "compat.h"
 
-#if !defined(HAVE_CLEARENV) || defined(_POSIX_C_SOURCE)
+#if !defined(HAVE_CLEARENV) || (!defined(_XOPEN_SOURCE))
 
 /* code from miredo */
 #ifdef __APPLE__

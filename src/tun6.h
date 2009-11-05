@@ -47,11 +47,11 @@
  ***********************************************************************/
 
 #ifndef LIBTUN6_TUN6_H
-# define LIBTUN6_TUN6_H
+#define LIBTUN6_TUN6_H
 
-# include <stddef.h> /* NULL */
-# include <sys/types.h>
-# include <sys/select.h>
+#include <stddef.h> /* NULL */
+#include <sys/types.h>
+#include <sys/select.h>
 
 #include <netinet/in.h>
 #include <net/if.h>
@@ -59,35 +59,16 @@
 #define IFNAMSIZ IF_NAMESIZE /**< Maximum interface name size */
 #endif
 
-# define LIBTUN6_ERRBUF_SIZE 4096 /**< Buffer for tun6 error message */
+#define LIBTUN6_ERRBUF_SIZE 4096 /**< Buffer for tun6 error message */
 
-# if __STDC_VERSION__ < 199901L
-#  ifndef inline
-#   define inline
-#  endif
-#  ifndef restrict
-#   define restrict
-#  endif
-# endif
+#if __STDC_VERSION__ < 199901L
+#ifndef inline
+#define inline
+#endif
 
-#if 0 /* not used anymore */
-# ifdef __GNUC__
-#  define LIBTUN6_NONNULL __attribute__ ((nonnull))
-#  if __GNUC__ >= 3
-#   define LIBTUN6_PURE __attribute__ ((pure))
-#  else
-#   define LIBTUN6_PURE
-#  endif
-#  if __GNUC__ >= 4
-#   define LIBTUN6_WARN_UNUSED __attribute__ ((warn_unused_result))
-#  else
-#   define LIBTUN6_WARN_UNUSED
-#  endif
-# else
-#  define LIBTUN6_NONNULL
-#  define LIBTUN6_WARN_UNUSED
-#  define LIBTUN6_PURE
-# endif
+#ifndef restrict
+#define restrict
+#endif
 #endif
 
 struct ip6_hdr;
@@ -128,8 +109,8 @@ typedef struct tun6_t
   int ifindex; /**< Interface index */
   struct in6_addr addrv6; /**< Our IPv6 address */
   uint8_t prefixlen; /**< Prefix length of the IPv6 address (64 by default) */
-  int addrsv6;             /**< Number of allocated IP addresses */
-  int routesv6;            /**< One if we allocated an automatic route */
+  int addrsv6; /**< Number of allocated IP addresses */
+  int routesv6; /**< One if we allocated an automatic route */
   char devnamev6[IFNAMSIZ]; /**< Name of the IPv6 tun device */
   int (*cb_indv6)(struct tun6_t* tun, void* pack, unsigned len); /**< Callback when receiving IPv6 packet */
   struct tun6* device; /**< The tun6 device */
@@ -199,7 +180,6 @@ int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *ga
  */
 int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void *pack, unsigned len));
 
-
 /**
  * \brief Set an IPv6 address on the interface.
  * \param tun the tun6_t instance
@@ -218,10 +198,10 @@ int tun6_runscript(struct tun6_t *tun, char* script);
 int tun6_sifflags(struct tun6_t *this, int flags);
 
 #if 0
-# ifdef __cplusplus
+#ifdef __cplusplus
 extern "C"
-{
-# endif
+{ /* } */
+#endif
   int tun6_driver_diagnose (char *errbuf) LIBTUN6_NONNULL;
 
   /*
@@ -259,7 +239,7 @@ extern "C"
   int tun6_send (tun6 *restrict t, const void *packet, size_t len)
   LIBTUN6_NONNULL;
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 }
 # endif /* C++ */
 #endif
