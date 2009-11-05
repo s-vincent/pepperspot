@@ -10,7 +10,7 @@
 
 #ifdef __cplusplus
 extern "C"
-{
+{ /* } */
 #endif /* __cplusplus */
 
 #ifndef CMDLINE_PARSER_PACKAGE

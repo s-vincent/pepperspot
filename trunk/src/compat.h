@@ -34,8 +34,7 @@
 
 #ifdef __cplusplus
 extern "C"
-{
-  /* } */
+{ /* } */
 #endif
 
 #if defined (__FreeBSD__)  || defined (__APPLE__) || defined(__NetBSD__) || defined(__OpenBSD__)
@@ -45,7 +44,7 @@ extern "C"
   typedef unsigned char u_char;
 #endif
 
-#if !defined(HAVE_CLEARENV) || defined(_POSIX_C_SOURCE)
+#if (!defined(HAVE_CLEARENV) && !defined(_XOPEN_SOURCE)) || defined(__APPLE__) 
 
   /**
    * \brief clearenv replacement function (non POSIX).
@@ -57,7 +56,7 @@ extern "C"
 
 #endif
 
-#if !defined(HAVE_DAEMON) || defined(_POSIX_C_SOURCE)
+#if !defined(HAVE_DAEMON) && !defined(_XOPEN_SOURCE)
 
   /**
    * \brief daemon replacement function (non POSIX).

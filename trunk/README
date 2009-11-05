@@ -500,13 +500,11 @@ OR check the SVN source:
 # make
 # make install
 
-Note for Mac OS X users:
+Important notes for Mac OS X users:
 
-Mac OS X has old "/usr/include" files, so to compile PepperSpot on this system, edit src/Makefile.am 
-and add -D_DARWIN_C_SOURCE to the AM_CFLAGS instead off -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600.
-
-You should have a line like this:
-AM_CFLAGS = -D_DARWIN_C_SOURCE -fno-builtin -DSBINDIR='"$(sbindir)"' -Wall -Wextra -pedantic -std=c99 -Wstrict-prototypes -Wredundant-decls
+Mac OS X has deprecated daemon() function (raise warning) and we want to keep -Werror (each warnings
+is considered as an error). So to compile PepperSpot on this system, edit src/Makefile.am and uncomment 
+CFLAGS += -Wno-deprecated-declarations line
 
 Copy some configuration files:
 # cp extra/pepper.conf /etc/

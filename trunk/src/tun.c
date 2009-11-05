@@ -124,6 +124,7 @@
 #error  "Unknown platform!"
 #endif
 
+#include "compat.h"
 #include "syserr.h"
 
 #if defined(__linux__)

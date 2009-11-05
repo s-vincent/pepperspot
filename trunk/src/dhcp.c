@@ -753,7 +753,7 @@ static int dhcp_open_eth(char const *ifname, uint16_t protocol, int promisc,
  * \param macaddr MAC address will be filled in it
  * \return 0 if success, -1 otherwise
  */
-static int dhcp_getmac(const char *ifname, unsigned char *macaddr)
+int dhcp_getmac(const char *ifname, unsigned char *macaddr)
 {
   struct ifaddrs *ifap = NULL;
   struct ifaddrs *ifa = NULL;
