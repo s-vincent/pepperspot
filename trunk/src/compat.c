@@ -52,7 +52,7 @@
 /**
  * \brief environ variable which contains
  * environment variable.
- * 
+ *
  * This variable is "extern" of this software.
  */
 extern char** environ;
@@ -93,7 +93,7 @@ int daemon(int nochdir, int noclose)
     if(!noclose)
     {
       /* open /dev/null */
-      int fd = -1; 
+      int fd = -1;
       if((fd = open("/dev/null", O_RDWR, 0)) != -1)
       {
         /* redirect stdin, stdout and stderr to /dev/null */

@@ -11,18 +11,11 @@
 # make
 # make install
 
-find . -exec chmod go-w '{}' \;
-
 aclocal
 autoheader
 touch config.h.in
 automake
 autoconf
-./configure
-make clean
 
-rm config.status
-rm libtool
-rm -r autom4te.cache/
-
+echo "Done"
 

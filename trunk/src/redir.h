@@ -101,7 +101,8 @@
  * \struct redir_conn_t
  * \brief Redirection connection.
  */
-struct redir_conn_t {
+struct redir_conn_t
+{
 
   /* Parameters from HTTP request */
   int type; /**< REDIR_LOGOUT, LOGIN, PRELOGIN, CHALLENGE, MSDOWNLOAD */
@@ -114,7 +115,7 @@ struct redir_conn_t {
   uint8_t uamchal[REDIR_MD5LEN]; /**< Challenge as sent to web server */
   int uamtime; /**< UAM time */
 
-  int authenticated;           /**< 1 if user was authenticated */  
+  int authenticated;           /**< 1 if user was authenticated */
   struct sockaddr_storage nasip; /**< Address of NAS */
   uint32_t nasport; /**< Port of NAS */
   uint8_t hismac[REDIR_ETH_ALEN];    /**< His MAC address */
@@ -135,7 +136,7 @@ struct redir_conn_t {
   char replybuf[RADIUS_ATTR_VLEN+1];
   char *reply; /**< Reply message */
   uint8_t statebuf[RADIUS_ATTR_VLEN+1];
-  int statelen; 
+  int statelen;
   uint8_t classbuf[RADIUS_ATTR_VLEN+1];
   int classlen;
   int bandwidthmaxup; /**< Maximum upload bandwith */
@@ -156,7 +157,8 @@ struct redir_conn_t {
  * \struct redir_t
  * \brief Redirection manager.
  */
-struct redir_t {
+struct redir_t
+{
   int fd;   /**< File descriptor */
   int fdv6; /**< File descriptor for IPv6 */
   int debug; /**< Print debug information or not */
@@ -183,13 +185,13 @@ struct redir_t {
   char* radiuslocationname; /**< Location name */
   int radiusnasporttype; /**< NAS port type of NAS */
   int starttime; /**< Start time */
-  
+
   /**
    * \brief Callback to retrieve state of an IPv4 connection.
    */
   int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
-      struct redir_conn_t *conn);
-  
+                      struct redir_conn_t *conn);
+
   /* [SV] */
   /**
    * \brief Callback to retrieve state of an IPv6 connection.
@@ -201,7 +203,8 @@ struct redir_t {
  * \struct redir_msg_t
  * \brief Redirection message (passed via message queue).
  */
-struct redir_msg_t {
+struct redir_msg_t
+{
   long int type; /**< Type of message */
   long int interim_interval; /**< Interval */
   long int sessiontimeout; /**< Session timeout */
@@ -235,7 +238,7 @@ struct redir_msg_t {
  * \return 0 if success, -1 otherwise
  */
 int redir_new(struct redir_t **redir,
-    struct in_addr *addr, struct in6_addr* addrv6, int port);
+              struct in_addr *addr, struct in6_addr* addrv6, int port);
 
 /**
  * \brief Release redirection manager.
@@ -268,15 +271,15 @@ int redir_free(struct redir_t *redir);
  * \param radiusnasporttype type of NAS port
  */
 void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int prefixlen,
-    char *url, char* url6, char *homepage, char* secret,
-    struct sockaddr_storage *radiuslisten, 
-    struct sockaddr_storage *radiusserver0,
-    struct sockaddr_storage *radiusserver1,
-    uint16_t radiusauthport, uint16_t radiusacctport,
-    char* radiussecret, char* radiusnasid,
-    struct sockaddr_storage *radiusnasip, char* radiuscalled,
-    char* radiuslocationid, char* radiuslocationname,
-    int radiusnasporttype);
+               char *url, char* url6, char *homepage, char* secret,
+               struct sockaddr_storage *radiuslisten,
+               struct sockaddr_storage *radiusserver0,
+               struct sockaddr_storage *radiusserver1,
+               uint16_t radiusauthport, uint16_t radiusacctport,
+               char* radiussecret, char* radiusnasid,
+               struct sockaddr_storage *radiusnasip, char* radiuscalled,
+               char* radiuslocationid, char* radiuslocationname,
+               int radiusnasporttype);
 
 /**
  * \brief Accept connection and redirect URL.
@@ -322,8 +325,8 @@ int redir_set_cb_getstatev6(struct redir_t* redir, int (*cb_getstatev6)(struct r
  * \return 0
  */
 int redir_set_cb_getstate(struct redir_t *redir,
-    int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
-      struct redir_conn_t *conn));
+                          int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
+                                              struct redir_conn_t *conn));
 
 #endif	/* !_REDIR_H */
 

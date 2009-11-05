@@ -78,7 +78,7 @@
 #endif
 
 #define PACKET_MAX      8196 /**< Maximum packet size we receive */
-#define TUN_ADDRSIZE     128 /**< Maximum ascii address size */ 
+#define TUN_ADDRSIZE     128 /**< Maximum ascii address size */
 
 #ifdef __linux__
 #define TUN_NLBUFSIZE   1024 /**< maximum netlink message size */
@@ -88,7 +88,8 @@
  * \struct tun_packet_t
  * \brief Describe an IPv4 packet.
  */
-struct tun_packet_t {
+struct tun_packet_t
+{
   unsigned int ver:4; /**< IPv4 version */
   unsigned int ihl:4; /**< Internet header length */
   unsigned int dscp:6; /**< DSCP field */
@@ -110,10 +111,11 @@ struct tun_packet_t {
  *************************************************************/
 
 /**
- * \struct tun_t 
+ * \struct tun_t
  * \brief IPv4 tunnel interface information.
  */
-struct tun_t {
+struct tun_t
+{
   int fd;                /**< File descriptor to tun interface */
   struct in_addr addr;   /**< Main IPv4 address */
   struct in_addr dstaddr; /**< Destination address */
@@ -161,9 +163,9 @@ int tun_encaps(struct tun_t *tun, void *pack, unsigned len);
  * \param dstaddr IPv4 destination address
  * \param netmask IPv4 network mask
  * \return 0 if success, -1 otherwise
- */ 
+ */
 int tun_addaddr(struct tun_t *this, struct in_addr *addr,
-    struct in_addr *dstaddr, struct in_addr *netmask);
+                struct in_addr *dstaddr, struct in_addr *netmask);
 
 /**
  * \brief Set address on tun interface
@@ -173,8 +175,8 @@ int tun_addaddr(struct tun_t *this, struct in_addr *addr,
  * \param net_mask IPv4 network mask
  * \return 0 if success, -1 otherwise
  */
-int tun_setaddr(struct tun_t *this, struct in_addr *our_adr, 
-    struct in_addr *his_adr, struct in_addr *net_mask);
+int tun_setaddr(struct tun_t *this, struct in_addr *our_adr,
+                struct in_addr *his_adr, struct in_addr *net_mask);
 
 /**
  * \brief Add a route for tun interface
@@ -184,8 +186,8 @@ int tun_setaddr(struct tun_t *this, struct in_addr *our_adr,
  * \param mask IPv4 network mask
  * \return 0 if success, -1 otherwise
  */
-int tun_addroute(struct tun_t *this, struct in_addr *dst, 
-    struct in_addr *gateway, struct in_addr *mask);
+int tun_addroute(struct tun_t *this, struct in_addr *dst,
+                 struct in_addr *gateway, struct in_addr *mask);
 
 /**
  * \brief Set callback for receiving a packet from tun interface
@@ -193,8 +195,8 @@ int tun_addroute(struct tun_t *this, struct in_addr *dst,
  * \param cb_ind callback
  * \return 0
  */
-int tun_set_cb_ind(struct tun_t *this, 
-    int (*cb_ind) (struct tun_t *tun, void *pack, unsigned len));
+int tun_set_cb_ind(struct tun_t *this,
+                   int (*cb_ind) (struct tun_t *tun, void *pack, unsigned len));
 
 /**
  * \brief Run script.

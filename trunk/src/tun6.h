@@ -95,7 +95,7 @@ struct in6_addr;
 
 /* typedef struct tun6 tun6; */
 
-/* [SV] : do similar struct as tun.h 
+/* [SV] : do similar struct as tun.h
  * in two word : makes wrapper for the libtun6
  * that match function name of tun.h.
  */
@@ -118,7 +118,7 @@ struct tun6_packet_t
 };
 
 /**
- * \struct tun6_t 
+ * \struct tun6_t
  * \brief IPv6 tunnel interface information.
  * \author Sebastien Vincent
  */
@@ -133,7 +133,7 @@ typedef struct tun6_t
   char devnamev6[IFNAMSIZ]; /**< Name of the IPv6 tun device */
   int (*cb_indv6)(struct tun6_t* tun, void* pack, unsigned len); /**< Callback when receiving IPv6 packet */
   struct tun6* device; /**< The tun6 device */
-}tun6_t;
+} tun6_t;
 
 /**
  * \brief Create a tun6_t instance
@@ -187,7 +187,7 @@ int tun6_setaddr(struct tun6_t *this, struct in6_addr *addr, uint8_t prefixlen);
  * \param prefixlen prefix length of the address
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
- */ 
+ */
 int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *gateway, uint8_t prefixlen);
 
 /**
@@ -196,7 +196,7 @@ int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *ga
  * \param cb_ind callbacl when receiving packet
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
- */ 
+ */
 int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void *pack, unsigned len));
 
 
@@ -206,7 +206,7 @@ int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void
  * \param script path of the script
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
- */ 
+ */
 int tun6_runscript(struct tun6_t *tun, char* script);
 
 /**
@@ -219,7 +219,8 @@ int tun6_sifflags(struct tun6_t *this, int flags);
 
 #if 0
 # ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 # endif
   int tun6_driver_diagnose (char *errbuf) LIBTUN6_NONNULL;
 
@@ -238,25 +239,25 @@ extern "C" {
   int tun6_setState (tun6 *t, int up) LIBTUN6_NONNULL;
 
   int tun6_addAddress (tun6 *restrict t, const struct in6_addr *restrict addr,
-      unsigned prefix_len) LIBTUN6_NONNULL;
+                       unsigned prefix_len) LIBTUN6_NONNULL;
   int tun6_delAddress (tun6 *restrict t, const struct in6_addr *restrict addr,
-      unsigned prefix_len) LIBTUN6_NONNULL;
+                       unsigned prefix_len) LIBTUN6_NONNULL;
 
   int tun6_setMTU (tun6 *t, unsigned mtu) LIBTUN6_NONNULL;
 
   int tun6_addRoute (tun6 *restrict t, const struct in6_addr *restrict addr,
-      unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
+                     unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
   int tun6_delRoute (tun6 *restrict t, const struct in6_addr *restrict addr,
-      unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
+                     unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
 
   int tun6_registerReadSet (const tun6 *restrict t, fd_set *restrict readset)
-    LIBTUN6_NONNULL LIBTUN6_PURE;
+  LIBTUN6_NONNULL LIBTUN6_PURE;
 
   int tun6_recv (tun6 *restrict t, const fd_set *restrict readset,
-      void *buf, size_t len) LIBTUN6_NONNULL;
+                 void *buf, size_t len) LIBTUN6_NONNULL;
   int tun6_wait_recv (tun6 *restrict t, void *buf, size_t len) LIBTUN6_NONNULL;
   int tun6_send (tun6 *restrict t, const void *packet, size_t len)
-    LIBTUN6_NONNULL;
+  LIBTUN6_NONNULL;
 
 # ifdef __cplusplus
 }
