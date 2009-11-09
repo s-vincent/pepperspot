@@ -71,18 +71,19 @@
 #ifndef _RADIUS_PEPPERSPOT_H
 #define _RADIUS_PEPPERSPOT_H
 
-#define RADIUS_VENDOR_PEPPERSPOT                      14559
-#define	RADIUS_ATTR_PEPPERSPOT_MAX_INPUT_OCTETS           1 /* integer */
-#define	RADIUS_ATTR_PEPPERSPOT_MAX_OUTPUT_OCTETS          2 /* integer */
-#define	RADIUS_ATTR_PEPPERSPOT_MAX_TOTAL_OCTETS           3 /* integer */
-#define	RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_UP	          4 /* integer */
-#define	RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_DOWN         5 /* integer */
+#define RADIUS_VENDOR_PEPPERSPOT                           14559 /**< ChilliSpot/PepperSpot vendor-specific code */
 
-#define	RADIUS_ATTR_PEPPERSPOT_UAM_ALLOWED              100 /* integer */
-#define	RADIUS_ATTR_PEPPERSPOT_MAC_ALLOWED              101 /* integer */
-#define	RADIUS_ATTR_PEPPERSPOT_INTERVAL                 102 /* integer */
+#define	RADIUS_ATTR_PEPPERSPOT_MAX_INPUT_OCTETS                1 /**< integer */
+#define	RADIUS_ATTR_PEPPERSPOT_MAX_OUTPUT_OCTETS               2 /**< integer */
+#define	RADIUS_ATTR_PEPPERSPOT_MAX_TOTAL_OCTETS                3 /**< integer */
+#define	RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_UP	               4 /**< integer */
+#define	RADIUS_ATTR_PEPPERSPOT_BANDWIDTH_MAX_DOWN              5 /**< integer */
 
-#define	RADIUS_SERVICE_TYPE_PEPPERSPOT_AUTHORIZE_ONLY 0x38df0001 /* integer */
+#define	RADIUS_ATTR_PEPPERSPOT_UAM_ALLOWED                   100 /**< integer */
+#define	RADIUS_ATTR_PEPPERSPOT_MAC_ALLOWED                   101 /**< integer */
+#define	RADIUS_ATTR_PEPPERSPOT_INTERVAL                      102 /**< integer */
+
+#define	RADIUS_SERVICE_TYPE_PEPPERSPOT_AUTHORIZE_ONLY 0x38df0001 /**< integer */
 
 #endif	/* !_RADIUS_PEPPERSPOT_H */
 

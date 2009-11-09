@@ -78,7 +78,6 @@
 /* Create new address pool hash */
 int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize)
 {
-
   int i = 0;
 
   if(!(*this = calloc(sizeof(struct ippool_t), 1)))
@@ -108,7 +107,6 @@ int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize)
 
   for(i = 0; i < listsize; i++)
   {
-
     (*this)->member[i].inuse = 1; /* TODO */
     ippool_hashadd(*this, &(*this)->member[i]);
   }
@@ -119,7 +117,6 @@ int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize)
 /* Create new address pool hash */
 int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize)
 {
-
   int i = 0;
 
   if(!(*this = calloc(sizeof(struct ippool_t), 1)))
@@ -149,7 +146,6 @@ int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize)
 
   for(i = 0; i < listsize; i++)
   {
-
     (*this)->member[i].inuse = 1; /* TODO */
     ippool_hashadd6(*this, &(*this)->member[i]);
   }

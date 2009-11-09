@@ -115,7 +115,6 @@ char credits[] =
   "especially those mentioned at "
   "<a href=\"http://www.pepperspot.info/credits.html\">http://www.pepperspot.info/credits.html</a>."; /**< Credits for PepperSpot */
 
-
 /**
  * \brief Redir signal handler.
  * \param signum Signal code
@@ -149,7 +148,6 @@ static int redir_challenge(unsigned char *dst)
 {
   FILE *file = NULL;
 
-
   if((file = fopen("/dev/urandom", "r")) == NULL)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
@@ -168,7 +166,6 @@ static int redir_challenge(unsigned char *dst)
   return 0;
 }
 
-
 /**
  * \brief Convert 32 + 1 bytes ASCII hex string to 16 octet unsigned char.
  * \param src hex string to convert
@@ -177,7 +174,6 @@ static int redir_challenge(unsigned char *dst)
  */
 static int redir_hextochar(char *src, unsigned char * dst)
 {
-
   char x[3];
   int n = 0;
   int y = 0;
@@ -206,7 +202,6 @@ static int redir_hextochar(char *src, unsigned char * dst)
  */
 static int redir_chartohex(unsigned char *src, char *dst)
 {
-
   char x[3];
   int n = 0;
 
@@ -230,7 +225,6 @@ static int redir_chartohex(unsigned char *src, char *dst)
  */
 static int redir_urlencode( char *src, int srclen, char *dst, int dstsize)
 {
-
   char x[3];
   int n = 0;
   int i = 0;
@@ -280,7 +274,6 @@ static int redir_urlencode( char *src, int srclen, char *dst, int dstsize)
  */
 static int redir_urldecode(  char *src, int srclen, char *dst, unsigned int dstsize)
 {
-
   char x[3];
   int n = 0;
   unsigned int i = 0;
@@ -625,7 +618,6 @@ static int redir_reply(struct redir_t *redir, int fd,
 
   if(resp)
   {
-
     /* [SV] */
     if(conn->ipv6)
     {
@@ -749,7 +741,6 @@ static int redir_reply(struct redir_t *redir, int fd,
 int redir_new(struct redir_t **redir,
               struct in_addr *addr, struct in6_addr* addrv6, int port)
 {
-
   struct sockaddr_in address;
   struct sockaddr_in6 addressv6;
   int optval = 1;
@@ -904,7 +895,6 @@ int redir_new(struct redir_t **redir,
   return 0;
 }
 
-
 /* Free instance of redir */
 int redir_free(struct redir_t *redir)
 {
@@ -934,7 +924,6 @@ int redir_free(struct redir_t *redir)
   return 0;
 }
 
-
 /* Set redir parameters */
 void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int prefixlen,
                char *url, char* url6, char *homepage, char* secret,
@@ -946,7 +935,6 @@ void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int pr
                char* radiuslocationid, char* radiuslocationname,
                int radiusnasporttype)
 {
-
   optionsdebug = 1; /* TODO: Do not change static variable from instance */
 
   redir->debug = debug;
@@ -974,7 +962,6 @@ void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int pr
   return;
 }
 
-
 /**
  * \brief Get the path of an HTTP request (GET).
  * \param redir redir_t instance
@@ -985,7 +972,6 @@ void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int pr
  */
 static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsize)
 {
-
   char *p1 = NULL;
   char *p2 = NULL;
   char *p3 = NULL;
@@ -1050,7 +1036,6 @@ static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsiz
   printf("The path is: %s\n", dst);
 
   return 0;
-
 }
 
 /**
@@ -1058,7 +1043,6 @@ static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsiz
  */
 static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize)
 {
-
   char *p1 = NULL;
   char *p3 = NULL;
   char *peol = NULL;
@@ -1128,19 +1112,22 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
   if(optionsdebug) printf("Userurl: %s\n", dst);
 
   return 0;
-
 }
-
 
 /**
  * \brief Get a parameter of an HTTP request. Parameter is url decoded.
+ * \param redir redir_t instance
+ * \param src source buffer
+ * \param param parameter name
+ * \param dst parameter destination buffer
+ * \param dstsize length of dst C-string
+ * \return 0 if found, -1 otherwise (not found, malformed HTTP response)
  */
 /* TODO: Should be merged with other parsers */
 static int redir_getparam(struct redir_t *redir, char *src,
                           char *param,
                           char *dst, int dstsize)
 {
-
   char *p1 = NULL;
   char *p2 = NULL;
   char *p3 = NULL;
@@ -1155,7 +1142,6 @@ static int redir_getparam(struct redir_t *redir, char *src,
 
   if(!(peol = strstr(src, "\n"))) /* End of the first line */
     return -1;
-
 
   if(strncmp("GET ", src, 4))
   {
@@ -1202,7 +1188,6 @@ static int redir_getparam(struct redir_t *redir, char *src,
   printf("The parameter is: %s\n", dst);
 
   return 0;
-
 }
 
 /**
@@ -1214,7 +1199,6 @@ static int redir_getparam(struct redir_t *redir, char *src,
  */
 static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn)
 {
-
   int maxfd = 0;	        /* For select() */
   fd_set fds;			/* For select() */
   struct timeval idleTime;	/* How long to select() */
@@ -1370,7 +1354,6 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
                                      struct radius_packet_t *pack,
                                      struct radius_packet_t *pack_req, void *cbp)
 {
-
   struct radius_attr_t *interimattr = NULL;
   struct radius_attr_t *stateattr = NULL;
   struct radius_attr_t *classattr = NULL;
@@ -1386,7 +1369,6 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   /* To avoid unused parameter warning */
   radius = NULL;
   pack_req = NULL;
-
 
   if(optionsdebug)
     printf("Received access request confirmation from radius server\n");
@@ -1470,7 +1452,6 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
     conn->classlen = 0;
   }
 
-
   /* Session timeout */
   if(!radius_getattr(pack, &attr, RADIUS_ATTR_SESSION_TIMEOUT,
                       0, 0, 0))
@@ -1532,7 +1513,6 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   {
     conn->interim_interval = 0;
   }
-
 
   /* Redirection URL */
   if(!radius_getattr(pack, &attr, RADIUS_ATTR_VENDOR_SPECIFIC,
@@ -1695,10 +1675,14 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
 
   conn->response = REDIR_SUCCESS;
   return 0;
-
 }
 
-/* Send radius Access-Request and wait for answer */
+/**
+ * \brief Send radius Access-Request and wait for answer.
+ * \param redir redir_t instance
+ * \param addr peer address
+ * \param conn redir connection
+ */
 static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
                         struct redir_conn_t *conn)
 {
@@ -1813,9 +1797,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
     memcpy(idv6.s6_addr, (void *)&suf, 8);
 
     (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_INTERFACE_ID, 0, 0, idv6, NULL, 8);
-
   }
-
 
   /* Include his MAC address */
   snprintf(mac, REDIR_MACSTRLEN + 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
@@ -1835,10 +1817,8 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
                    (uint8_t*) redir->radiusnasid,
                    strlen(redir->radiusnasid)); /* WISPr_V1.0 */
 
-
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_ACCT_SESSION_ID, 0, 0, 0,
                  (uint8_t*) conn->sessionid, REDIR_SESSIONID_LEN - 1);
-
 
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_PORT_TYPE, 0, 0,
                  redir->radiusnasporttype, NULL, 0);
@@ -1882,7 +1862,6 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 
   while((redir->starttime + REDIR_RADIUS_MAX_TIME) > time(NULL))
   {
-
     FD_ZERO(&fds);
     if(radius->fd != -1) FD_SET(radius->fd, &fds);
     if(radius->proxyfd != -1) FD_SET(radius->proxyfd, &fds);
@@ -1928,7 +1907,6 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
       radius_free(radius);
       return 0;
     }
-
   }
   return 0;
 }
@@ -1969,7 +1947,6 @@ static void redir_memcopy(int msg_type, unsigned char *challenge, char *hexchal,
 
 int redir_accept(struct redir_t *redir, int ipv6)
 {
-
   int new_socket = -1;
   struct sockaddr_in address;
   /* [SV] */
@@ -2006,7 +1983,6 @@ int redir_accept(struct redir_t *redir, int ipv6)
   memcpy(&address, (struct sockaddr_in*)&addrstorage, sizeof(struct sockaddr_in));
   memcpy(&addressv6, (struct sockaddr_in6*)&addrstorage, sizeof(struct sockaddr_in6));
 
-
   /* This forks a new process. The child really should close all
      unused file descriptors and free memory allocated. This however
      is performed when the process exits, so currently we don't
@@ -2018,7 +1994,6 @@ int redir_accept(struct redir_t *redir, int ipv6)
             "fork() returned -1!");
     return 0;
   }
-
 
   if(status > 0)   /* Parent */
   {
@@ -2042,7 +2017,6 @@ int redir_accept(struct redir_t *redir, int ipv6)
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
             "setitimer() failed!");
   }
-
 
   redir->starttime = time(NULL);
 
@@ -2094,7 +2068,6 @@ int redir_accept(struct redir_t *redir, int ipv6)
 
   if(conn.type == REDIR_LOGIN)
   {
-
     /* Was client was already logged on? */
     if(state == 1)
     {
@@ -2359,7 +2332,6 @@ int redir_set_cb_getstate(struct redir_t *redir,
                           int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
                                               struct redir_conn_t *conn))
 {
-
   redir->cb_getstate = cb_getstate;
   return 0;
 }

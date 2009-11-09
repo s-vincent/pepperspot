@@ -8,9 +8,22 @@
   we make no copyright claims on it.
 */
 
+/**
+ * \file cmdline.c
+ * \brief Parser.
+ */
+
 /* If we use autoconf.  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+#ifndef CMDLINE_PARSER_PACKAGE
+#define CMDLINE_PARSER_PACKAGE PACKAGE
+#endif
+
+#ifndef CMDLINE_PARSER_VERSION
+#define CMDLINE_PARSER_VERSION VERSION
 #endif
 
 #include <stdio.h>
@@ -1310,14 +1323,16 @@ cmdline_parser2 (int argc, char * const *argv, struct gengetopt_args_info *args_
   return result;
 }
 
+#if 0
 int
 cmdline_parser_required (struct gengetopt_args_info *args_info, const char *prog_name)
 {
-  /* To avoid unused parameter warning */
+  /* To avoid unused parameters warning */
   args_info = NULL;
   prog_name = NULL;
   return EXIT_SUCCESS;
 }
+#endif
 
 int
 cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_info *args_info, int override, int initialize, int check_required, const char *additional_error)

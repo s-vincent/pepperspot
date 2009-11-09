@@ -215,7 +215,6 @@ int tun_addaddr(struct tun_t *this,
                 struct in_addr *dstaddr,
                 struct in_addr *netmask)
 {
-
 #if defined(__linux__)
   struct
   {
@@ -384,7 +383,6 @@ int tun_addaddr(struct tun_t *this,
 #else
 #error  "Unknown platform!"
 #endif
-
 }
 
 int tun_setaddr(struct tun_t *this,
@@ -515,7 +513,6 @@ static int tun_route(struct tun_t *this,
                      struct in_addr *mask,
                      int delete)
 {
-
   /* To avoid unused parameter warning */
   this = NULL;
 
@@ -635,7 +632,6 @@ static int tun_route(struct tun_t *this,
 #else
 #error  "Unknown platform!"
 #endif
-
 }
 
 int tun_addroute(struct tun_t *this,
@@ -662,10 +658,8 @@ static int tun_delroute(struct tun_t *this,
   return tun_route(this, dst, gateway, mask, 1);
 }
 
-
 int tun_new(struct tun_t **tun)
 {
-
 #if defined(__linux__)
   struct ifreq ifr;
   int on = 1;
@@ -841,12 +835,10 @@ int tun_new(struct tun_t **tun)
 #else
 #error  "Unknown platform!"
 #endif
-
 }
 
 int tun_free(struct tun_t *tun)
 {
-
   if(tun->routes)
   {
     tun_delroute(tun, &tun->dstaddr, &tun->addr, &tun->netmask);
@@ -862,7 +854,6 @@ int tun_free(struct tun_t *tun)
   free(tun);
   return 0;
 }
-
 
 int tun_set_cb_ind(struct tun_t *this,
                    int (*cb_ind) (struct tun_t *tun, void *pack, unsigned len))
@@ -914,12 +905,10 @@ int tun_decaps(struct tun_t *this)
   return 0;
 
 #endif
-
 }
 
 int tun_encaps(struct tun_t *tun, void *pack, unsigned len)
 {
-
 #if defined (__OpenBSD__)
 
   unsigned char buffer[PACKET_MAX + 4];

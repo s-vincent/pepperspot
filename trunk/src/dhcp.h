@@ -214,7 +214,6 @@ struct dhcp_ippacket_t
   uint8_t payload[DHCP_IP_PLEN]; /**< Data */
 } __attribute__((packed));
 
-
 /* [SV] */
 /**
  * \def DHCP_IPV6_PLEN
@@ -278,7 +277,6 @@ struct dhcp_tcphdr_t
   uint8_t options[1]; /**< TCP Options (TODO). */
 };
 
-
 /* Length constants for DHCP packet */
 #define DHCP_CHADDR_LEN    16    /**< Length of client hardware address */
 #define DHCP_SNAME_LEN     64    /**< Length of server host name */
@@ -337,7 +335,6 @@ struct dhcp_packet_t   /* From RFC 2131 */
                                         of defined options.*/
 } __attribute__((packed));
 
-
 /**
  * \struct dhcp_fullpacket_t
  * \brief Complete DHCP packet including ethernet and
@@ -350,7 +347,6 @@ struct dhcp_fullpacket_t
   struct dhcp_udphdr_t udph; /**< UDP header */
   struct dhcp_packet_t dhcp; /**< DHCP packet */
 } __attribute__((packed));
-
 
 #define DHCP_ARP_REQUEST 1 /**< ARP request code */
 #define DHCP_ARP_REPLY   2 /**< ARP reply code */
@@ -445,8 +441,8 @@ struct dhcp_t; /* Forward declaration */
 #define DHCP_AUTH_NONE        0 /**< None state */
 #define DHCP_AUTH_DROP        1 /**< Drop all packet */
 #define DHCP_AUTH_PASS        2 /**< Authorized, packet pass */
-#define DHCP_AUTH_UNAUTH_TOS  3 /**< ??? */
-#define DHCP_AUTH_AUTH_TOS    4 /**< ??? */
+#define DHCP_AUTH_UNAUTH_TOS  3 /**< Type of service */
+#define DHCP_AUTH_AUTH_TOS    4 /**< Type of service */
 #define DHCP_AUTH_DNAT        5 /**< Packet are redirected to UAM server */
 
 #define DHCP_DOMAIN_LEN      30 /**< DNS domain name length */
@@ -494,7 +490,6 @@ struct dhcp_conn_t
   /*  uint16_t mtu;                 Maximum transfer unit */
 };
 
-
 #define DHCP_EAPOL_TAG_VLEN 255        /**< Tag value always shorter than this */
 
 /**
@@ -533,7 +528,6 @@ struct dhcp_eap_t
   uint8_t  type; /**< EAP type */
   uint8_t payload[DHCP_EAP_PLEN]; /**< Data */
 } __attribute__((packed));
-
 
 /**
  * \struct dhcp_dot1xpacket_t
@@ -686,7 +680,6 @@ struct dhcp_t
    */
   int (*cb_disconnectv6) (struct dhcp_conn_t *conn); /**< Callback after */
 };
-
 
 /* External API functions */
 
