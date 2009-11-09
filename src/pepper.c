@@ -92,10 +92,10 @@
 #include <netinet/in.h>
 #include <net/if_tun.h>
 #ifndef EIDRM
-#define EIDRM   EINVAL
+#define EIDRM EINVAL
 #endif
 #ifndef ENOMSG
-#define ENOMSG  EAGAIN
+#define ENOMSG EAGAIN
 #endif
 #endif
 
@@ -104,7 +104,7 @@
 #include <net/if_tun.h>
 #endif
 
-#if defined(__FreeBSD__)
+#if defined (__FreeBSD__)
 #include <netinet/in.h>
 #endif
 
@@ -139,6 +139,11 @@
 #include "compat.h"
 
 #ifndef DEBUG_REDIR
+/**
+ * \def DEBUG_REDIR
+ * \brief Activate or not debug in 
+ * redir module.
+ */
 #define DEBUG_REDIR 1
 #endif
 
@@ -308,7 +313,6 @@ static int leaky_bucket(struct app_conn_t *conn, int octetsup, int octetsdown)
 
   if(conn->bandwidthmaxup)
   {
-
     /* Subtract what the leak since last time we visited */
     if(conn->bucketup > ((timediff * conn->bandwidthmaxup) / 8000000))
     {
@@ -475,7 +479,6 @@ static int set_envv6(char *name, char *value, unsigned int len, struct in6_addr 
   }
   return 0;
 }
-
 
 /**
  * \brief Run external script for a client.
@@ -1060,7 +1063,6 @@ static int process_options(int argc, char **argv, int firsttime)
   /* interval */
   options.interval = args_info.interval_arg;
 
-
   /* Currently we do not need statedir for pepper                   */
 
   /* dhcpif */
@@ -1078,7 +1080,7 @@ static int process_options(int argc, char **argv, int firsttime)
   if(!args_info.dhcpmac_arg)
   {
     memset(options.dhcpmac, 0, DHCP_ETH_ALEN);
-    options.dhcpusemac  = 0;
+    options.dhcpusemac = 0;
   }
   else
   {
@@ -1110,7 +1112,7 @@ static int process_options(int argc, char **argv, int firsttime)
 
     for(i = 0; i < DHCP_ETH_ALEN; i++)
       options.dhcpmac[i] = temp[i];
-    options.dhcpusemac  = 1;
+    options.dhcpusemac = 1;
   }
 
   /* lease                                                           */
@@ -1349,7 +1351,6 @@ static int process_options(int argc, char **argv, int firsttime)
       unsigned int j = 0;
       for(rp = res; rp != NULL; rp = rp->ai_next)
       {
-
         if((rp->ai_family == AF_INET6 && options.uamserverlen6 >= UAMSERVER_MAX) || (rp->ai_family == AF_INET && options.uamserverlen >= UAMSERVER_MAX))
         {
           sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1378,7 +1379,6 @@ static int process_options(int argc, char **argv, int firsttime)
 
   /* uamsecret                                                    */
   options.uamsecret = args_info.uamsecret_arg;
-
 
   /* uamlisten6                                                   */
   if(!args_info.uamlisten_arg)
@@ -1417,7 +1417,6 @@ static int process_options(int argc, char **argv, int firsttime)
   /* uamanydns                                                    */
   options.uamanydns = args_info.uamanydns_flag;
 
-
   /* dynip                                                        */
   options.allowdyn = 1;
   if(!args_info.dynip_arg)
@@ -1455,7 +1454,6 @@ static int process_options(int argc, char **argv, int firsttime)
   {
     options.allowstat = 0;
   }
-
 
   /* dns1                                                         */
   /* Store dns1 as in_addr                                        */
@@ -1508,7 +1506,6 @@ static int process_options(int argc, char **argv, int firsttime)
   /* Domain                                                       */
   options.domain = args_info.domain_arg;
 
-
   /* ipup */
   options.ipup = args_info.ipup_arg;
 
@@ -1533,7 +1530,6 @@ static int process_options(int argc, char **argv, int firsttime)
   /* Do hostname lookup to translate hostname to IP address       */
   if(args_info.radiuslisten_arg)
   {
-
     if((err = getaddrinfo( args_info.radiuslisten_arg, NULL, &hints, &res)) != 0)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -1830,7 +1826,6 @@ static int process_options(int argc, char **argv, int firsttime)
   /* coanoipcheck                                                */
   options.coanoipcheck = args_info.coanoipcheck_flag;
 
-
   /* proxylisten                                                  */
   /* If no listen option is specified listen to any local port    */
   /* Do hostname lookup to translate hostname to IP address       */
@@ -1889,7 +1884,6 @@ static int process_options(int argc, char **argv, int firsttime)
   /* proxyport                                                   */
   options.proxyport = args_info.proxyport_arg;
 
-
   /* proxyclient */
   /* Store proxyclient as in_addr net and mask                       */
   if(args_info.proxyclient_arg)
@@ -1937,7 +1931,6 @@ static int process_options(int argc, char **argv, int firsttime)
   options.macsuffix = args_info.macsuffix_arg;
   options.macpasswd = args_info.macpasswd_arg;
 
-
   /* Radius remote configuration management */
   options.confusername = args_info.confusername_arg;
   options.confpassword = args_info.confpassword_arg;
@@ -1980,7 +1973,6 @@ static int process_options(int argc, char **argv, int firsttime)
 
   /* pidfile */
   options.pidfile = args_info.pidfile_arg;
-
 
   return 0;
 }
@@ -2088,7 +2080,6 @@ static void free_options(void)
   if(options.radiuscalled) free(options.radiuscalled);
 }
 
-
 /* A few functions to manage connections */
 
 /**
@@ -2100,11 +2091,10 @@ static int initconn(void)
 {
   int n = 0;
   g_firstusedconn = NULL; /* Redundant */
-  g_lastusedconn  = NULL; /* Redundant */
+  g_lastusedconn = NULL; /* Redundant */
 
   gettimeofday(&checktime, NULL);
   gettimeofday(&rereadtime, NULL);
-
 
   for(n = 0; n < (2 * APP_NUM_CONN); n++)
   {
@@ -2123,7 +2113,7 @@ static int initconn(void)
     if(n == ((2 * APP_NUM_CONN) - 1))
     {
       g_connection[n].next = NULL; /* Redundant */
-      g_lastfreeconn  = &g_connection[n];
+      g_lastfreeconn = &g_connection[n];
     }
   }
 
@@ -2296,7 +2286,7 @@ static int getconn_username(struct app_conn_t **conn, char *username,
 }
 
 /**
- * \brief TODO
+ * \brief Terminate downlink connection.
  * \param appconn connection
  * \return 0 if success, -1 otherwise
  */
@@ -2499,6 +2489,11 @@ static int maccmp(unsigned char *mac)
   return -1;
 }
 
+/** 
+ * \brief Send a radius request for a MAC address authentication.
+ * \param appconn connection 
+ * \return 0 if success, -1 otherwise
+ */
 static int macauth_radius(struct app_conn_t *appconn)
 {
   struct radius_packet_t radius_pack;
@@ -2587,7 +2582,10 @@ static int macauth_radius(struct app_conn_t *appconn)
   return radius_req(radius, &radius_pack, appconn);
 }
 
-
+/**
+ * \brief Configure radius stuff.
+ * \return 0 if successfully configured, -1 otherwise
+ */
 static int config_radius()
 {
   struct radius_packet_t radius_pack;
@@ -2643,7 +2641,6 @@ static int config_radius()
   return radius_req(radius, &radius_pack, NULL);
 }
 
-
 /*********************************************************
  *
  * radius proxy functions
@@ -2651,7 +2648,11 @@ static int config_radius()
  *
  *********************************************************/
 
-/* Reply with an access reject */
+/**
+ * \brief Reply with an access reject.
+ * \param conn connection
+ * \return 0 if success, -1 otherwise
+ */
 static int radius_access_reject(struct app_conn_t *conn)
 {
   struct radius_packet_t radius_pack;
@@ -2668,7 +2669,11 @@ static int radius_access_reject(struct app_conn_t *conn)
   return 0;
 }
 
-/* Reply with an access challenge */
+/**
+ * \brief Reply with an access challenge.
+ * \param conn connection
+ * \return 0 if success, -1 otherwise
+ */
 static int radius_access_challenge(struct app_conn_t *conn)
 {
   struct radius_packet_t radius_pack;
@@ -2716,8 +2721,11 @@ static int radius_access_challenge(struct app_conn_t *conn)
   return 0;
 }
 
-/* Send off an access accept */
-
+/**
+ * \brief Send off an access accept.
+ * \param conn connection 
+ * \return 0 if success, -1 otherwise
+ */
 static int radius_access_accept(struct app_conn_t *conn)
 {
   struct radius_packet_t radius_pack;
@@ -2781,7 +2789,6 @@ static int radius_access_accept(struct app_conn_t *conn)
   return 0;
 }
 
-
 /*********************************************************
  *
  * radius accounting functions
@@ -2789,6 +2796,12 @@ static int radius_access_accept(struct app_conn_t *conn)
  *
  *********************************************************/
 
+/**
+ * \brief Used to send acccount request to radius server.
+ * \param conn connection
+ * \param status_type status
+ * \return 0 if success, -1 otherwise
+ */
 static int acct_req(struct app_conn_t *conn, int status_type)
 {
   struct radius_packet_t radius_pack;
@@ -2840,7 +2853,6 @@ static int acct_req(struct app_conn_t *conn, int status_type)
                   conn->hismac[0], conn->hismac[1],
                   conn->hismac[2], conn->hismac[3],
                   conn->hismac[4], conn->hismac[5]);
-
 
   (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_CALLING_STATION_ID, 0, 0, 0,
                         (uint8_t*) mac, MACSTRLEN);
@@ -2897,14 +2909,11 @@ static int acct_req(struct app_conn_t *conn, int status_type)
     memcpy(idv6.s6_addr, (void *)&suf, 8);
 
     (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_INTERFACE_ID, 0, 0, idv6, NULL, 8);
-
-
   }
 
   /*
      (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_FRAMED_MTU, 0, 0,
      conn->mtu, NULL, 0);*/
-
 
   (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_ACCT_SESSION_ID, 0, 0, 0,
                         (uint8_t*) conn->sessionid, REDIR_SESSIONID_LEN - 1);
@@ -2912,7 +2921,6 @@ static int acct_req(struct app_conn_t *conn, int status_type)
   if((status_type == RADIUS_STATUS_TYPE_STOP) ||
       (status_type == RADIUS_STATUS_TYPE_INTERIM_UPDATE))
   {
-
     (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_ACCT_INPUT_OCTETS, 0, 0,
                           (uint32_t) conn->input_octets, NULL, 0);
     (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_ACCT_OUTPUT_OCTETS, 0, 0,
@@ -2945,7 +2953,6 @@ static int acct_req(struct app_conn_t *conn, int status_type)
                           (uint8_t*) options.radiuslocationname,
                           strlen(options.radiuslocationname));
 
-
   if(status_type == RADIUS_STATUS_TYPE_STOP)
   {
     (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_ACCT_TERMINATE_CAUSE,
@@ -2960,13 +2967,10 @@ static int acct_req(struct app_conn_t *conn, int status_type)
     }
   }
 
-
   (void) radius_req(radius, &radius_pack, conn);
 
   return 0;
 }
-
-
 
 /***********************************************************
  *
@@ -2975,6 +2979,11 @@ static int acct_req(struct app_conn_t *conn, int status_type)
  *
  ***********************************************************/
 
+/**
+ * \brief Reject client authentication.
+ * \param appconn client connection
+ * \return 0
+ */
 static int dnprot_reject(struct app_conn_t *appconn)
 {
   struct dhcp_conn_t* dhcpconn = NULL;
@@ -3011,8 +3020,8 @@ static int dnprot_reject(struct app_conn_t *appconn)
                   "Failed allocate dynamic IP address");
           return 0;
         }
-        memcpy(&appconn->hisipv6, &ipm->addrv6, sizeof(struct in6_addr));
 
+        memcpy(&appconn->hisipv6, &ipm->addrv6, sizeof(struct in6_addr));
         memcpy(&appconn->ouripv6, &options.ip6listen, sizeof(struct in6_addr));
       }
       else
@@ -3053,6 +3062,12 @@ static int dnprot_reject(struct app_conn_t *appconn)
   }
 }
 
+
+/**
+ * \brief Challenge for the authentication with radius protocol.
+ * \param appconn client connection
+ * \return 0
+ */
 static int dnprot_challenge(struct app_conn_t *appconn)
 {
   struct dhcp_conn_t* dhcpconn = NULL;
@@ -3080,6 +3095,11 @@ static int dnprot_challenge(struct app_conn_t *appconn)
   return 0;
 }
 
+/**
+ * \brief Accept authentication of the client
+ * \param appconn client connection
+ * \return 0
+ */
 static int dnprot_accept(struct app_conn_t *appconn)
 {
   struct dhcp_conn_t* dhcpconn = NULL;
@@ -3248,7 +3268,6 @@ static int dnprot_accept(struct app_conn_t *appconn)
 
   return 0;
 }
-
 
 /*********************************************************
  *
@@ -3542,7 +3561,6 @@ static int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr,
     return 1;
   else
     return 0;
-
 }
 
 /*********************************************************
@@ -3551,7 +3569,12 @@ static int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr,
  *
  *********************************************************/
 
-/* Handle an accounting request */
+/**
+ * \brief Handle an accounting request.
+ * \param pack radius packet
+ * \param peer address of the peer
+ * \return 0 if success, -1 otherwise
+ */
 int accounting_request(struct radius_packet_t *pack,
                        struct sockaddr_storage *peer)
 {
@@ -3597,7 +3620,6 @@ int accounting_request(struct radius_packet_t *pack,
     (void) radius_resp(radius, &radius_pack, peer, pack->authenticator);
     return 0;
   }
-
 
   /* NAS IP */
   if(!radius_getattr(pack, &nasipattr, RADIUS_ATTR_NAS_IP_ADDRESS, 0, 0, 0))
@@ -3744,7 +3766,12 @@ int accounting_request(struct radius_packet_t *pack,
   return 0;
 }
 
-
+/**
+ * \brief request an access for a client.
+ * \param pack radius packet
+ * \param peer peer address
+ * \return 0 if success, -1 otherwise
+ */
 int access_request(struct radius_packet_t *pack,
                    struct sockaddr_storage *peer)
 {
@@ -3910,7 +3937,6 @@ int access_request(struct radius_packet_t *pack,
     }
   }
 
-
   if(hisipattr)   /* Find user based on IP address */
   {
     if(ippool_getip(ippool, &ipm, &hisip))
@@ -3928,7 +3954,7 @@ int access_request(struct radius_packet_t *pack,
     appconn = (struct app_conn_t*) ipm->peer;
     dhcpconn = (struct dhcp_conn_t*) appconn->dnlink;
   }
-  else if(hismacattr)   /* Look for mac address. If not found allocate new */
+  else if(hismacattr) /* Look for mac address. If not found allocate new */
   {
     if(dhcp_hashget(dhcp, &dhcpconn, hismac))
     {
@@ -4009,7 +4035,6 @@ int access_request(struct radius_packet_t *pack,
   }
   while(eapattr);
 
-
   /* Passwd or EAP must be given in request */
   if((!pwdattr) && (!resplen))
   {
@@ -4030,7 +4055,6 @@ int access_request(struct radius_packet_t *pack,
   /* If allready logged in send back accept message with username */
   /* TODO ? Should this be a reject: Dont login twice ? */
 
-
   /* Reject if trying to login with another username */
   if((appconn->authenticated == 1) &&
       ((appconn->userlen != uidattr->l - 2) ||
@@ -4038,7 +4062,6 @@ int access_request(struct radius_packet_t *pack,
   {
     return radius_resp(radius, &radius_pack, peer, pack->authenticator);
   }
-
 
   /* NAS PORT */
   if(!radius_getattr(pack, &nasportattr, RADIUS_ATTR_NAS_PORT, 0, 0, 0))
@@ -4102,7 +4125,6 @@ int access_request(struct radius_packet_t *pack,
     (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_MESSAGE_AUTHENTICATOR,
                           0, 0, 0, NULL, RADIUS_MD5LEN);
 
-
   /* Include his MAC address */
   (void) snprintf(mac, MACSTRLEN + 1, "%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
                   appconn->proxyhismac[0], appconn->proxyhismac[1],
@@ -4134,18 +4156,22 @@ int access_request(struct radius_packet_t *pack,
   return radius_req(radius, &radius_pack, appconn);
 }
 
-
 /*********************************************************
  *
  * radius proxy callback functions (request from radius server)
  *
  *********************************************************/
 
-/* Radius callback when radius request has been received */
+/**
+ * \brief Radius callback when radius request has been received.
+ * \param rp radius_t instance
+ * \param pack radius packet
+ * \param peer peer address
+ * \return 0 if success, -1 otherwise
+ */
 int cb_radius_ind(struct radius_t *rp, struct radius_packet_t *pack,
                   struct sockaddr_storage *peer)
 {
-
   if(rp != radius)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -4173,7 +4199,6 @@ int cb_radius_ind(struct radius_t *rp, struct radius_packet_t *pack,
   }
 }
 
-
 /***********************************************************
  *
  * Functions handling uplink protocol authentication.
@@ -4181,6 +4206,14 @@ int cb_radius_ind(struct radius_t *rp, struct radius_packet_t *pack,
  *
  ***********************************************************/
 
+/**
+ * \brief Allocate IPv4 address for the client or
+ * get the one already obtained (UAM case).
+ * \param appconn uplink connection
+ * \param hisip IPv4 address of client that will be filled
+ * \param statip use static IPv4 addressing
+ * \return 0 if success, -1 otherwise
+ */
 int upprot_getip(struct app_conn_t *appconn,
                  struct in_addr *hisip, int statip)
 {
@@ -4194,7 +4227,6 @@ int upprot_getip(struct app_conn_t *appconn,
   if(appconn->uplink)
   {
     ipm = (struct ippoolm_t*) appconn->uplink;
-
   }
   else
   {
@@ -4227,13 +4259,19 @@ int upprot_getip(struct app_conn_t *appconn,
     appconn->ourip.s_addr = htonl((ntohl(options.net.s_addr) + 1));
 
     appconn->uplink = ipm;
-    ipm->peer   = appconn;
+    ipm->peer = appconn;
   }
 
   return dnprot_accept(appconn);
-
 }
 
+/**
+ * \brief Allocate IPv6 address for the client or
+ * get the one already obtained (UAM case).
+ * \param appconn uplink connection
+ * \param hisip IPv6 address of client that will be filled
+ * \return 0 if success, -1 otherwise
+ */
 int upprot_getipv6(struct app_conn_t *appconn,
                    struct in6_addr *hisip)
 {
@@ -4271,18 +4309,15 @@ int upprot_getipv6(struct app_conn_t *appconn,
         return dnprot_reject(appconn);
       }
     }
+
     memcpy(&appconn->hisipv6, &ipm->addrv6, sizeof(struct in6_addr));;
-
     memcpy(&appconn->ouripv6, &options.ip6listen, sizeof(struct in6_addr));
-
     appconn->uplink = ipm;
-    ipm->peer   = appconn;
+    ipm->peer = appconn;
   }
 
   return dnprot_accept(appconn);
-
 }
-
 
 /*********************************************************
  *
@@ -4290,12 +4325,17 @@ int upprot_getipv6(struct app_conn_t *appconn,
  *
  *********************************************************/
 
-/* Radius handler for configuration management */
+/**
+ * \brief Radius handler for configuration management 
+ * \param radius_obj radius_t instance
+ * \param pack radius packet
+ * \param pack_req packet for request
+ * \return 0 if success, -1 otherwise
+ */
 int radius_conf(struct radius_t *radius_obj,
                 struct radius_packet_t *pack,
                 struct radius_packet_t *pack_req)
 {
-
   struct radius_attr_t *attr = NULL;
 
   /* To avoid unused parameter warning */
@@ -4305,8 +4345,7 @@ int radius_conf(struct radius_t *radius_obj,
   if(options.debug)
     printf("Received configuration management message from radius server\n");
 
-
-  if(!pack)   /* Timeout */
+  if(!pack) /* Timeout */
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Radius request timed out");
@@ -4377,7 +4416,6 @@ int radius_conf(struct radius_t *radius_obj,
     if(options.interval < 0) options.interval = 0;
   }
 
-
   /* Reinit DHCP parameters */
   (void) dhcp_set(dhcp, (options.debug & DEBUG_DHCP),
                   options.uamserver, options.uamserverlen, options.uamanydns,
@@ -4409,7 +4447,15 @@ int radius_conf(struct radius_t *radius_obj,
   return 0;
 }
 
-/* Radius callback when access accept/reject/challenge has been received */
+/**
+ * \brief Radius callback when access accept/reject/challenge 
+ * has been received. 
+ * \param radius_obj radius_t instance
+ * \param pack radius packet
+ * \param pack_req packet for request
+ * \param cbp pointer for radius callback
+ * \return 0 if success, -1 otherwise
+ */
 int cb_radius_auth_conf(struct radius_t *radius_obj,
                         struct radius_packet_t *pack,
                         struct radius_packet_t *pack_req, void *cbp)
@@ -4461,7 +4507,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
   appconn->recvlen  = 0;
   appconn->lmntlen  = 0;
 
-  if(!pack)   /* Timeout */
+  if(!pack) /* Timeout */
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
             "Radius request timed out");
@@ -4874,7 +4920,7 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     if(radius_keydecode(radius_obj, appconn->recvkey, RADIUS_ATTR_VLEN,
                          &appconn->recvlen, (uint8_t*) &recvattr->v.t,
                          recvattr->l - 2, pack_req->authenticator,
-                         radius->secret, radius->secretlen) )
+                         radius->secret, radius->secretlen))
     {
       sys_err(LOG_INFO, __FILE__, __LINE__, 0,
               "radius_keydecode() failed!");
@@ -4887,7 +4933,6 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
                       RADIUS_VENDOR_MS,
                       RADIUS_ATTR_MS_CHAP_MPPE_KEYS, 0))
   {
-
     /* TODO: Check length of vendor attributes */
     if(radius_pwdecode(radius_obj, appconn->lmntkeys, RADIUS_MPPEKEYSSIZE,
                         &appconn->lmntlen, (uint8_t*) &lmntattr->v.t,
@@ -4915,7 +4960,6 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
   {
     appconn->types = ntohl(typesattr->v.i);
   }
-
 
   /* Get MS_Chap_v2 SUCCESS */
   if(!radius_getattr(pack, &succattr, RADIUS_ATTR_VENDOR_SPECIFIC,
@@ -4986,8 +5030,13 @@ int cb_radius_auth_conf(struct radius_t *radius_obj,
     return upprot_getip(appconn, hisip, statip);
 }
 
-
-/* Radius callback when coa or disconnect request has been received */
+/**
+ * \brief Radius callback when coa or disconnect request has been received 
+ * \param radius_obj radius_t instance
+ * \param pack radius packet
+ * \param peer peer address
+ * \return 0 if success, -1 otherwise
+ */
 int cb_radius_coa_ind(struct radius_t *radius_obj, struct radius_packet_t *pack,
                       struct sockaddr_storage *peer)
 {
@@ -5049,7 +5098,6 @@ int cb_radius_coa_ind(struct radius_t *radius_obj, struct radius_packet_t *pack,
 
   return 0;
 }
-
 
 /***********************************************************
  *
@@ -5165,7 +5213,7 @@ static int cb_dhcp_requestv6(struct dhcp_conn_t *conn, struct in6_addr *addr)
   {
     return -1;
   }
-  else if((options.macauth) && (appconn->dnprot == DNPROT_DHCP_NONE) )
+  else if((options.macauth) && (appconn->dnprot == DNPROT_DHCP_NONE))
   {
     appconn->dnprot = DNPROT_MAC;
     (void) macauth_radius(appconn);
@@ -5190,7 +5238,7 @@ static int cb_dhcp_requestv6(struct dhcp_conn_t *conn, struct in6_addr *addr)
   memcpy(&appconn->ouripv6, &conn->ouripv6, sizeof(struct in6_addr));
 
   appconn->uplink =  ipm;
-  ipm->peer   = appconn;
+  ipm->peer = appconn;
   appconn->ipv6 = 1;
 
   (void) dhcp_set_addrsv6(conn, &ipm->addrv6, &appconn->ouripv6,
@@ -5232,9 +5280,9 @@ static int cb_dhcp_connectv6(struct dhcp_conn_t *conn)
   }
 
   appconn->ipv6 = 1;
-  appconn->dnlink =  conn;
-  appconn->dnprot =  DNPROT_DHCP_NONE;
-  conn->peer  = appconn;
+  appconn->dnlink = conn;
+  appconn->dnprot = DNPROT_DHCP_NONE;
+  conn->peer = appconn;
 
   memcpy(appconn->hismac, conn->hismac, DHCP_ETH_ALEN);
   memcpy(appconn->ourmac, conn->ourmac, DHCP_ETH_ALEN);
@@ -5337,7 +5385,7 @@ static int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr)
   {
     return -1;
   }
-  else if((options.macauth) && (appconn->dnprot == DNPROT_DHCP_NONE) )
+  else if((options.macauth) && (appconn->dnprot == DNPROT_DHCP_NONE))
   {
     appconn->dnprot = DNPROT_MAC;
     (void) macauth_radius(appconn);
@@ -5378,7 +5426,7 @@ static int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr)
     appconn->ourip.s_addr = htonl((ntohl(options.net.s_addr) + 1));
     appconn->ipv6 = 0;
     appconn->uplink =  ipm;
-    ipm->peer   = appconn;
+    ipm->peer = appconn;
   }
 
   (void) dhcp_set_addrs(conn, &ipm->addr, &options.mask, &appconn->ourip,
@@ -5418,9 +5466,9 @@ static int cb_dhcp_connect(struct dhcp_conn_t *conn)
     return 0;
   }
 
-  appconn->dnlink =  conn;
-  appconn->dnprot =  DNPROT_DHCP_NONE;
-  conn->peer  = appconn;
+  appconn->dnlink = conn;
+  appconn->dnprot = DNPROT_DHCP_NONE;
+  conn->peer = appconn;
   appconn->ipv6 = 0;
 
   appconn->net.s_addr = options.net.s_addr;
@@ -5439,7 +5487,6 @@ static int cb_dhcp_connect(struct dhcp_conn_t *conn)
 
   return 0;
 }
-
 
 /**
  * \brief Callback when a dhcp connection is deleted.
@@ -5675,14 +5722,12 @@ static int cb_dhcp_eap_ind(struct dhcp_conn_t *conn, void *pack, unsigned int le
   (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_PORT, 0, 0,
                         appconn->unit, NULL, 0);
 
-
   if(options.radiusnasip.ss_family == AF_INET)
     (void) radius_addattr(radius, &radius_pack, RADIUS_ATTR_NAS_IP_ADDRESS, 0, 0,
                           ntohl(((struct sockaddr_in *)&options.radiusnasip)->sin_addr.s_addr), NULL, 0);
   else
     (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_NAS_IPV6_ADDRESS, 0, 0,
                             ((struct sockaddr_in6 *)&options.radiusnasip)->sin6_addr, NULL, 0);
-
 
   /* Include NAS-Identifier if given in configuration options */
   if(options.radiusnasid)
@@ -5693,16 +5738,22 @@ static int cb_dhcp_eap_ind(struct dhcp_conn_t *conn, void *pack, unsigned int le
   return radius_req(radius, &radius_pack, appconn);
 }
 
-
 /***********************************************************
  *
  * uam message handling functions
  *
  ***********************************************************/
 
+/**
+ * \brief Handler of message coming from UAM server.
+ * 
+ * Typically message could be login/logout message of 
+ * clients.
+ * \param msg message
+ * \return 0 if success, -1 otherwise
+ */
 static int uam_msg(struct redir_msg_t *msg)
 {
-
   struct ippoolm_t *ipm = NULL;
   struct app_conn_t *appconn = NULL;
   struct dhcp_conn_t* dhcpconn = NULL;
@@ -5733,7 +5784,6 @@ static int uam_msg(struct redir_msg_t *msg)
 
   if(msg->type == REDIR_LOGIN)
   {
-
     if(appconn->uamabort)
     {
       sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
@@ -5752,10 +5802,10 @@ static int uam_msg(struct redir_msg_t *msg)
 
     /* Initialise */
     appconn->statelen = 0;
-    appconn->challen  = 0;
-    appconn->sendlen  = 0;
-    appconn->recvlen  = 0;
-    appconn->lmntlen  = 0;
+    appconn->challen = 0;
+    appconn->sendlen = 0;
+    appconn->recvlen = 0;
+    appconn->lmntlen = 0;
 
     /* Store user name for accounting records */
     strncpy(appconn->user, msg->username, USERNAMESIZE);
@@ -5810,7 +5860,6 @@ static int uam_msg(struct redir_msg_t *msg)
   }
   else if(msg->type == REDIR_LOGOUT)
   {
-
     sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
             "Received UAM logoff from username=%s IP=%s",
             appconn->user, msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntop(AF_INET, &appconn->hisip, buf, sizeof(buf)));
@@ -5857,7 +5906,6 @@ static int uam_msg(struct redir_msg_t *msg)
   }
   else if(msg->type == REDIR_ABORT)
   {
-
     sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
             "Received UAM abort from IP=%s", msg->ipv6 ? inet_ntop(AF_INET6, &appconn->hisipv6, buf, sizeof(buf)) : inet_ntop(AF_INET, &appconn->hisip, buf, sizeof(buf)));
 
@@ -5952,7 +6000,6 @@ int main(int argc, char **argv)
     cmdline_parser_free(&args_info);
     exit(EXIT_FAILURE);
   }
-
 
   if(ipv4 || dual)
   {
@@ -6206,7 +6253,6 @@ int main(int argc, char **argv)
             options.radiuslocationid, options.radiuslocationname,
             options.radiusnasporttype);
 
-
   if(ipv4 || dual)
     (void) redir_set_cb_getstate(redir, cb_redir_getstate);
   if(ipv6 || dual)
@@ -6241,14 +6287,12 @@ int main(int argc, char **argv)
   if(options.debug)
     printf("Waiting for client request...\n");
 
-
   /******************************************************************/
   /* Main select loop                                               */
   /******************************************************************/
 
   while(g_keep_going)
   {
-
     if(g_do_timeouts)
     {
       /*if(options.debug) printf("Do timeouts!\n");*/
@@ -6330,7 +6374,6 @@ int main(int argc, char **argv)
 
     if(status > 0)
     {
-
       if(ipv4 || dual)
       {
         if(tun->fd != -1 && FD_ISSET(tun->fd, &fds) && tun_decaps(tun) < 0)

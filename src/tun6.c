@@ -512,7 +512,6 @@ static void plen_to_mask(unsigned plen, struct in6_addr *mask)
     mask->s6_addr[i++] = 0;
 }
 
-
 static void plen_to_sin6(unsigned plen, struct sockaddr_in6 *sin6)
 {
   memset(sin6, 0, sizeof(struct sockaddr_in6));
@@ -631,7 +630,6 @@ static int tun6_addAddress(struct tun6 *t, const struct in6_addr *addr, unsigned
   if((res == 0)
       && (if_indextoname(t->id, ifname) != NULL))
   {
-
     char proc_path[24 + IFNAMSIZ + 16 + 1] = "/proc/sys/net/ipv6/conf/";
 #if 0
     /* Disable Autoconfiguration */
@@ -858,7 +856,6 @@ static int tun6_addroutegw(struct tun6* this, struct in6_addr* dst, struct in6_a
   memcpy(&rtm->rtmsg_dst, dst, sizeof(struct in6_addr));
   memcpy(&rtm->rtmsg_gateway, gateway, sizeof(struct in6_addr));
 
-
   code = ioctl(this->reqfd, SIOCADDRT, rtm);
 
   return code!=-1 ? 0 : -1;
@@ -1028,7 +1025,6 @@ int tun6_new(struct tun6_t** tun)
   (*tun)->cb_indv6 = NULL;
   (*tun)->addrsv6 = 0;
   (*tun)->routesv6 = 0;
-
 
   if(!((*tun)->device = tun6_create(NULL)))
   {

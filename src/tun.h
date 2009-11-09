@@ -105,7 +105,6 @@ struct tun_packet_t
   unsigned int dst:32; /**< IPv4 destination address */
 };
 
-
 /* ***********************************************************
  * Information storage for each tun_t instance
  *************************************************************/

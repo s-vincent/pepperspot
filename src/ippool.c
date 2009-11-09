@@ -132,7 +132,6 @@ int ippool_hashadd6(struct ippool_t *this, struct ippoolm_t *member)
     p_prev->nexthash = member;
   }
   return 0; /* Always OK to insert */
-
 }
 
 int ippool_hashadd(struct ippool_t *this, struct ippoolm_t *member)
@@ -216,7 +215,6 @@ int ippool_hashdel(struct ippool_t *this, struct ippoolm_t *member)
   return 0;
 }
 
-
 unsigned long int ippool_hash4(struct in_addr *addr)
 {
   return lookup((unsigned char*) &addr->s_addr, sizeof(addr->s_addr), 0);
@@ -271,7 +269,6 @@ void ippool_getv6suffix(struct in6_addr *suffix, struct in6_addr *addr, int mask
 int ippool_aton(struct in_addr *addr, struct in_addr *mask,
                 char *pool, int number)
 {
-
   /* Parse only first instance of network for now */
   /* Eventually "number" will indicate the token which we want to parse */
 
@@ -335,7 +332,6 @@ int ippool_aton(struct in_addr *addr, struct in_addr *mask,
 int ippool_atonv6(struct in6_addr *prefix, int *prefixlen,  int *mask,
                   char *pool)
 {
-
   char *addr = NULL;
   char *ptr = NULL;
   unsigned int m = 0;
@@ -365,7 +361,6 @@ int ippool_atonv6(struct in6_addr *prefix, int *prefixlen,  int *mask,
 int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
                int allowdyn, int allowstat, int flags)
 {
-
   /* Parse only first instance of pool for now */
 
   int i = 0;
@@ -475,7 +470,6 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
 
   for(i = 0; i < dynsize; i++)
   {
-
     if(flags & IPPOOL_NOGATEWAY)
       (*this)->member[i].addr.s_addr = htonl(ntohl(addr.s_addr) + i + 2);
     else if(flags & IPPOOL_NONETWORK)
@@ -506,7 +500,6 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
   (*this)->laststat = NULL;
   for(i = dynsize; i < (listsize - ipv6size); i++)
   {
-
     (*this)->member[i].addr.s_addr = 0;
     (*this)->member[i].inuse = 0;
     memset(&(*this)->member[i].addrv6, 0x00, sizeof(struct in6_addr));
@@ -551,7 +544,6 @@ int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
   return 0;
 }
 
-
 /* Delete existing address pool */
 int ippool_free(struct ippool_t *this)
 {
@@ -584,7 +576,6 @@ int ippool_getip6(struct ippool_t *this, struct ippoolm_t **member, struct in6_a
   return -1;
 }
 
-
 /* Find an IP address in the pool */
 int ippool_getip(struct ippool_t *this, struct ippoolm_t **member,
                  struct in_addr *addr)
@@ -606,7 +597,6 @@ int ippool_getip(struct ippool_t *this, struct ippoolm_t **member,
   sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Address could not be found");
   return -1;
 }
-
 
 int ippool_newip6(struct ippool_t* this, struct ippoolm_t** member, struct in6_addr* addr)
 {
@@ -803,10 +793,8 @@ int ippool_newip(struct ippool_t *this, struct ippoolm_t **member,
   return -1; /* Should never get here. TODO: Bad code */
 }
 
-
 int ippool_freeip(struct ippool_t *this, struct ippoolm_t *member)
 {
-
   if(0) (void)ippool_printaddr(this);
 
   if(!member->inuse)

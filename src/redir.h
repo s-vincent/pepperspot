@@ -103,7 +103,6 @@
  */
 struct redir_conn_t
 {
-
   /* Parameters from HTTP request */
   int type; /**< REDIR_LOGOUT, LOGIN, PRELOGIN, CHALLENGE, MSDOWNLOAD */
   char username[REDIR_USERNAMESIZE]; /**< User name */
@@ -115,13 +114,13 @@ struct redir_conn_t
   uint8_t uamchal[REDIR_MD5LEN]; /**< Challenge as sent to web server */
   int uamtime; /**< UAM time */
 
-  int authenticated;           /**< 1 if user was authenticated */
+  int authenticated; /**< 1 if user was authenticated */
   struct sockaddr_storage nasip; /**< Address of NAS */
   uint32_t nasport; /**< Port of NAS */
-  uint8_t hismac[REDIR_ETH_ALEN];    /**< His MAC address */
-  uint8_t ourmac[REDIR_ETH_ALEN];    /**< Our MAC address */
-  struct in_addr ourip;        /**< IP address to listen to */
-  struct in_addr hisip;        /**< Client IP address */
+  uint8_t hismac[REDIR_ETH_ALEN]; /**< His MAC address */
+  uint8_t ourmac[REDIR_ETH_ALEN]; /**< Our MAC address */
+  struct in_addr ourip; /**< IP address to listen to */
+  struct in_addr hisip; /**< Client IP address */
   struct in6_addr ouripv6; /**< IPv6 address to listen to */
   struct in6_addr hisipv6; /**< Client IPv6 address */
   int ipv6; /**< If connection is IPv6 */
@@ -130,24 +129,24 @@ struct redir_conn_t
   long int sessiontimeout; /**< Session timeout */
   long int idletimeout; /**< Idle timeout */
   long int interim_interval;  /**< Interim accounting */
-  char redirurlbuf[RADIUS_ATTR_VLEN+1];
+  char redirurlbuf[RADIUS_ATTR_VLEN + 1]; /**< Redirection URL obtained from radius server */
   int redirurllen; /**< Length of redirurl */
-  char *redirurl; /**< Redirection URL */
-  char replybuf[RADIUS_ATTR_VLEN+1];
-  char *reply; /**< Reply message */
-  uint8_t statebuf[RADIUS_ATTR_VLEN+1];
-  int statelen;
-  uint8_t classbuf[RADIUS_ATTR_VLEN+1];
-  int classlen;
+  char *redirurl; /**< Redirection URL (point on redirurlbuf) */
+  char replybuf[RADIUS_ATTR_VLEN + 1]; /**< Reply message */
+  char *reply; /**< Reply message (point on replybuf) */
+  uint8_t statebuf[RADIUS_ATTR_VLEN + 1]; /**< Radius state */
+  int statelen; /**< Length of state */
+  uint8_t classbuf[RADIUS_ATTR_VLEN + 1]; /**< Radius class received from server and used in Accounting-Request packet */
+  int classlen; /**< Length of classbuf */
   int bandwidthmaxup; /**< Maximum upload bandwith */
   int bandwidthmaxdown; /**< Maximum download bandwith */
   int maxinputoctets;  /**< Maximum output bytes that can be received */
   int maxoutputoctets; /**< Maximum output bytes that can be sent */
   int maxtotaloctets; /**< Maximum bytes allowed */
-  time_t sessionterminatetime;
-  char filteridbuf[RADIUS_ATTR_VLEN+1];
-  int filteridlen;
-  char *filterid;
+  time_t sessionterminatetime; /**< Time when session terminate */
+  char filteridbuf[RADIUS_ATTR_VLEN + 1]; /**< Filter ID */
+  int filteridlen; /**< Length of filter ID */
+  char *filterid; /**< Radius filter ID */
   uint64_t input_octets;     /**< Transferred in callback */
   uint64_t output_octets;    /**< Transferred in callback */
   struct timeval start_time; /**< Transferred in callback */
@@ -159,10 +158,10 @@ struct redir_conn_t
  */
 struct redir_t
 {
-  int fd;   /**< File descriptor */
+  int fd; /**< File descriptor */
   int fdv6; /**< File descriptor for IPv6 */
   int debug; /**< Print debug information or not */
-  int msgid;             /**< Message Queue ID */
+  int msgid; /**< Message Queue ID */
   struct in_addr addr; /**< Listen IPv4 address */
   struct in6_addr addrv6; /**< IPv6 address */
   struct in6_addr prefix; /**< IPv6 prefix */
@@ -214,18 +213,18 @@ struct redir_msg_t
   char username[REDIR_USERNAMESIZE]; /**< User name */
   char userurl[REDIR_USERURLSIZE]; /**< Requested user URL */
   uint8_t uamchal[REDIR_MD5LEN]; /**< UAM challenge */
-  uint8_t statebuf[RADIUS_ATTR_VLEN+1];
-  int statelen;
-  uint8_t classbuf[RADIUS_ATTR_VLEN+1];
-  int classlen;
+  uint8_t statebuf[RADIUS_ATTR_VLEN + 1]; /**< Radius state */
+  int statelen; /**< Length of state */
+  uint8_t classbuf[RADIUS_ATTR_VLEN + 1]; /**< Radius class received from server and used in Accounting-Request packet */
+  int classlen; /**< Length of class */
   int bandwidthmaxup; /**< Maximum upload bandwidth */
   int bandwidthmaxdown; /**< Maximum download bandwidth */
   int maxinputoctets; /**< Maximum bytes that can be received */
   int maxoutputoctets; /**< Maximum bytes that can be sent */
   int maxtotaloctets; /**< Maximum bytes allowed */
   int sessionterminatetime; /**< Time when session terminate */
-  char filteridbuf[RADIUS_ATTR_VLEN+1];
-  int filteridlen;
+  char filteridbuf[RADIUS_ATTR_VLEN + 1]; /**< Filter ID */
+  int filteridlen; /**< Length of filter ID */
   int ipv6; /**< If connection use IPv6 */
 };
 
