@@ -729,7 +729,7 @@ static int get_namepart6(char *src, char *host, int *port)
  * \brief Allow a FQDN, address to be accessed without
  * restrictions.
  * \param uamallowed FQDN or address
- * \param len length of uamallowed paramter
+ * \param len length of uamallowed parameter
  * \return 0 if success, -1 otherwise
  */
 static int set_uamallowed(char *uamallowed, int len)
@@ -767,6 +767,7 @@ static int set_uamallowed(char *uamallowed, int len)
   {
     *p2 = '\0';
   }
+  
   while(p1)
   {
     if(strchr(p1, '/') && !strchr(p1, ':'))
@@ -801,7 +802,7 @@ static int set_uamallowed(char *uamallowed, int len)
         free(p3);
         return -1;
       }
-      if(ippool_atonv6(&options.uamokaddr6[options.uamoknetlen6],NULL,
+      if(ippool_atonv6(&options.uamokaddr6[options.uamoknetlen6], NULL,
                         &mask6,
                         NULL))
       {
@@ -827,20 +828,21 @@ static int set_uamallowed(char *uamallowed, int len)
       {
         for(rp = res; rp != NULL; rp = rp->ai_next)
         {
-          sfd = socket(rp->ai_family, rp->ai_socktype,
-                       rp->ai_protocol);
+          sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
           if(sfd == -1)
             continue;
 
           if(rp->ai_family == AF_INET)
           {
             addr = (struct sockaddr_in *)rp->ai_addr;
+            
             if(options.debug & DEBUG_CONF)
             {
               printf("Uamallowed IP address %d: %s\n",
                      options.uamokiplen,
                      inet_ntop(AF_INET, &addr->sin_addr, buf, INET_ADDRSTRLEN));
             }
+
             if(options.uamokiplen >= UAMOKIP_MAX)
             {
               sys_err(LOG_ERR, __FILE__, __LINE__, 0,
@@ -862,10 +864,11 @@ static int set_uamallowed(char *uamallowed, int len)
             if(options.debug & DEBUG_CONF)
             {
               printf("Uamallowed IPv6 address %d: %s\n",
-                     options.uamokiplen,
+                     options.uamokiplen6,
                      inet_ntop(AF_INET6, &addrv6->sin6_addr, buf, INET6_ADDRSTRLEN));
             }
-            if(options.uamokiplen >= UAMOKIP_MAX)
+
+            if(options.uamokiplen6 >= UAMOKIP_MAX)
             {
               sys_err(LOG_ERR, __FILE__, __LINE__, 0,
                       "Too many domains or IPv6s in uamallowed %s!",
@@ -876,7 +879,6 @@ static int set_uamallowed(char *uamallowed, int len)
             }
             else
             {
-              printf("Ici, IPv6\n");
               memcpy(&options.uamokip6[options.uamokiplen6], &addrv6->sin6_addr, 16);
               options.uamokiplen6++;
             }
@@ -884,10 +886,10 @@ static int set_uamallowed(char *uamallowed, int len)
           }
           close(sfd);
           break;
-          close(sfd);
         }
       }
     }
+
     if(p2)
     {
       p1 = p2 + 1;
@@ -901,6 +903,7 @@ static int set_uamallowed(char *uamallowed, int len)
       p1 = NULL;
     }
   }
+
   freeaddrinfo(res);
   free(p3);
   return 0;
@@ -1401,7 +1404,12 @@ static int process_options(int argc, char **argv, int firsttime)
   memset(options.uamokaddr, 0, sizeof(options.uamokaddr));
   memset(options.uamokmask, 0, sizeof(options.uamokmask));
   options.uamoknetlen = 0;
-
+  memset(options.uamokip6, 0, sizeof(options.uamokip6));
+  options.uamokiplen6 = 0;
+  memset(options.uamokaddr6, 0, sizeof(options.uamokaddr6));
+  memset(options.uamokmask6, 0, sizeof(options.uamokmask6));
+  options.uamoknetlen6 = 0;
+  
   for(numargs = 0; numargs < args_info.uamallowed_given; ++numargs)
   {
     if(options.debug & DEBUG_CONF)
@@ -2030,15 +2038,19 @@ static void reprocess_options(int argc, char **argv)
 
   /* Reinit DHCP parameters */
   if(!strncmp(options.ipversion, "ipv4", 4))
+  {
     (void) dhcp_set(dhcp, options.debug,
                     options.uamserver, options.uamserverlen, options.uamanydns,
                     options.uamokip, options.uamokiplen,
                     options.uamokaddr, options.uamokmask, options.uamoknetlen);
+  }
   else if(!strncmp(options.ipversion, "ipv6", 4))
+  {
     (void) dhcp_setv6(dhcp, (options.debug & DEBUG_DHCP),
                       options.uamserver6, options.uamserverlen, options.uamanydns,
                       options.uamokip6, options.uamokiplen6,
                       options.uamokaddr6, options.uamokmask6, options.uamoknetlen6);
+  }
   else /* dual */
   {
     (void) dhcp_set(dhcp, (options.debug & DEBUG_DHCP),
@@ -4417,20 +4429,20 @@ int radius_conf(struct radius_t *radius_obj,
   }
 
   /* Reinit DHCP parameters */
-  (void) dhcp_set(dhcp, (options.debug & DEBUG_DHCP),
-                  options.uamserver, options.uamserverlen, options.uamanydns,
-                  options.uamokip, options.uamokiplen,
-                  options.uamokaddr, options.uamokmask, options.uamoknetlen);
   if(!strncmp(options.ipversion, "ipv4", 4))
+  {
     (void) dhcp_set(dhcp, (options.debug & DEBUG_DHCP),
                     options.uamserver, options.uamserverlen, options.uamanydns,
                     options.uamokip, options.uamokiplen,
                     options.uamokaddr, options.uamokmask, options.uamoknetlen);
+  }
   else if(!strncmp(options.ipversion, "ipv6", 4))
+  {
     (void) dhcp_setv6(dhcp, (options.debug & DEBUG_DHCP),
                       options.uamserver6, options.uamserverlen, options.uamanydns,
                       options.uamokip6, options.uamokiplen6,
                       options.uamokaddr6, options.uamokmask6, options.uamoknetlen6);
+  }
   else
   {
     (void) dhcp_set(dhcp, (options.debug & DEBUG_DHCP),

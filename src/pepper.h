@@ -342,14 +342,14 @@ struct options_t
   struct in_addr uamlisten;      /**< IP address of local authentication */
   struct in6_addr uamlisten6;    /**< IPv6 address of local authentication */
   int uamport;                   /**< TCP port to listen to */
-  struct in6_addr uamokip6[UAMOKIP_MAX]; /**< List of allowed IP addresses */
   struct in_addr uamokip[UAMOKIP_MAX]; /**< List of allowed IP addresses */
+  struct in6_addr uamokip6[UAMOKIP_MAX]; /**< List of allowed IPv6 addresses */
   int uamokiplen;                /**< Number of allowed IP addresses */
   int uamokiplen6;               /**< Number of allowed IP addresses */
-  struct in6_addr uamokaddr6[UAMOKNET_MAX]; /**< List of allowed network IP */
-  struct in6_addr uamokmask6[UAMOKNET_MAX]; /**< List of allowed network mask */
-  struct in_addr uamokaddr[UAMOKNET_MAX]; /**< List of allowed network IP */
+  struct in_addr uamokaddr[UAMOKNET_MAX]; /**< List of allowed network IPv4 */
   struct in_addr uamokmask[UAMOKNET_MAX]; /**< List of allowed network mask */
+  struct in6_addr uamokaddr6[UAMOKNET_MAX]; /**< List of allowed network IPv6 */
+  struct in6_addr uamokmask6[UAMOKNET_MAX]; /**< List of allowed network IPv6 prefix */
   int uamoknetlen;               /**< Number of networks */
   int uamoknetlen6;              /**< Number of networks */
   int uamanydns;                 /**< Allow client to use any DNS server */
