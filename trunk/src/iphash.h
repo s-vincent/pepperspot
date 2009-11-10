@@ -102,5 +102,5 @@ int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize);
  */
 int iphash_free(struct ippool_t *this);
 
-#endif	/* !_IPHASH_H */
+#endif  /* !_IPHASH_H */
 

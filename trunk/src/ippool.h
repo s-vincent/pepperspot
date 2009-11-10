@@ -280,5 +280,5 @@ int ippool_hashdel(struct ippool_t *this, struct ippoolm_t *member);
  */
 int ippool_hashdel6(struct ippool_t *this, struct ippoolm_t *member);
 
-#endif	/* !_IPPOOL_H */
+#endif  /* !_IPPOOL_H */
 

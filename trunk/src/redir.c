@@ -1199,9 +1199,9 @@ static int redir_getparam(struct redir_t *redir, char *src,
  */
 static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn)
 {
-  int maxfd = 0;	        /* For select() */
-  fd_set fds;			/* For select() */
-  struct timeval idleTime;	/* How long to select() */
+  int maxfd = 0; /* For select() */
+  fd_set fds;  /* For select() */
+  struct timeval idleTime; /* How long to select() */
   int status = 0;
   char buffer[REDIR_MAXBUFFER];
   int buflen = 0;
@@ -1349,6 +1349,11 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
 
 /**
  * \brief Radius callback when access accept/reject/challenge has been received.
+ * \param radius radius_t instance
+ * \param pack radius packet
+ * \param pack_req original radius request packet
+ * \param cbp pointer for callback
+ * \return 0
  */
 static int redir_cb_radius_auth_conf(struct radius_t *radius,
                                      struct radius_packet_t *pack,
@@ -1688,9 +1693,9 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
 {
   struct radius_t *radius = NULL;      /* Radius client instance */
   struct radius_packet_t radius_pack;
-  int maxfd = 0;	        /* For select() */
-  fd_set fds;			/* For select() */
-  struct timeval idleTime;	/* How long to select() */
+  int maxfd = 0;          /* For select() */
+  fd_set fds;      /* For select() */
+  struct timeval idleTime;  /* How long to select() */
   int status = 0;
   unsigned char chap_password[REDIR_MD5LEN + 1];
   unsigned char chap_challenge[REDIR_MD5LEN];

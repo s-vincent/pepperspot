@@ -165,12 +165,12 @@ struct gengetopt_args_info args_info;
 
 extern struct sock icmp6_sock;
 
-static struct tun_t *tun = NULL; 			  /**< TUN instance */
-static struct tun6_t* tunv6 = NULL; 		/**< TUN6 instance */
+static struct tun_t *tun = NULL;         /**< TUN instance */
+static struct tun6_t* tunv6 = NULL;     /**< TUN6 instance */
 static struct ippool_t *ippool = NULL;  /**< Pool of IP addresses */
-static struct radius_t *radius = NULL;	/**< Radius client instance */
-static struct dhcp_t *dhcp = NULL;			/**< DHCP instance */
-static struct redir_t *redir = NULL;		/**< Redir instance */
+static struct radius_t *radius = NULL;  /**< Radius client instance */
+static struct dhcp_t *dhcp = NULL;      /**< DHCP instance */
+static struct redir_t *redir = NULL;    /**< Redir instance */
 
 static struct timeval checktime; /**< Last time of connection checks */
 static struct timeval rereadtime; /**< Time to reread configuration */
@@ -1088,7 +1088,7 @@ static int process_options(int argc, char **argv, int firsttime)
   else
   {
     unsigned int temp[DHCP_ETH_ALEN];
-    int	i = 0;
+    int i = 0;
     char macstr[RADIUS_ATTR_VLEN];
     int macstrlen = 0;
 
@@ -1533,7 +1533,7 @@ static int process_options(int argc, char **argv, int firsttime)
   hints.ai_protocol = 0;
 
   /* radiuslisten                                                 */
-  /* Check if it's an IPv6 or an IPv4 address					  */
+  /* Check if it's an IPv6 or an IPv4 address            */
   /* If no listen option is specified listen to any local port    */
   /* Do hostname lookup to translate hostname to IP address       */
   if(args_info.radiuslisten_arg)
@@ -1547,7 +1547,7 @@ static int process_options(int argc, char **argv, int firsttime)
     }
     else
     {
-      printf("%s\n", 	args_info.radiuslisten_arg);
+      printf("%s\n",   args_info.radiuslisten_arg);
 
       for(rp = res; rp != NULL; rp = rp->ai_next)
       {
@@ -3603,7 +3603,7 @@ int accounting_request(struct radius_packet_t *pack,
   char macstr[RADIUS_ATTR_VLEN];
   int macstrlen = 0;
   unsigned int temp[DHCP_ETH_ALEN];
-  int	i = 0;
+  int i = 0;
   struct sockaddr_storage nasip;
   uint32_t nasport = 0;
 
@@ -3810,7 +3810,7 @@ int access_request(struct radius_packet_t *pack,
   char macstr[RADIUS_ATTR_VLEN];
   int macstrlen = 0;
   unsigned int temp[DHCP_ETH_ALEN];
-  int	i = 0;
+  int i = 0;
   char mac[MACSTRLEN + 1];
 
   struct app_conn_t *appconn = NULL;
@@ -5960,9 +5960,9 @@ static int uam_msg(struct redir_msg_t *msg)
  */
 int main(int argc, char **argv)
 {
-  int maxfd = 0;	                /* For select() */
-  fd_set fds;			/* For select() */
-  struct timeval idleTime;	/* How long to select() */
+  int maxfd = 0; /* For select() */
+  fd_set fds; /* For select() */
+  struct timeval idleTime; /* How long to select() */
   int status = 0;
   int msgresult = 0;
   /* Stack mode of client connections */

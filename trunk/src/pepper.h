@@ -87,7 +87,7 @@
 
 #define MACSTRLEN 17 /**< Length of MAC address in string format */
 
-#define MS2SUCCSIZE 40	/**< MS-CHAPv2 authenticator response as ASCII */
+#define MS2SUCCSIZE 40  /**< MS-CHAPv2 authenticator response as ASCII */
 
 #define DATA_LEN 1500 /**< Max we allow */
 
@@ -146,7 +146,8 @@ struct app_conn_t
 
   /* Radius authentication stuff */
   /* Parameters are initialised whenever a reply to an access request
-     is received. */
+   *  is received.
+   */
   uint8_t chal[EAP_LEN];      /**< EAP challenge */
   int challen;                /**< Length of EAP challenge */
   uint8_t sendkey[RADIUS_ATTR_VLEN]; /**< Key used to encode message to send */
@@ -337,7 +338,7 @@ struct options_t
   char* uamurl;                  /**< URL of authentication server */
   char* uamurl6;                 /**< URL of authentication IPv6 server */
   char* uamhomepage;             /**< URL of redirection homepage */
-  int uamhomepageport;		       /**< Port of redirection homepage */
+  int uamhomepageport;           /**< Port of redirection homepage */
 
   struct in_addr uamlisten;      /**< IP address of local authentication */
   struct in6_addr uamlisten6;    /**< IPv6 address of local authentication */

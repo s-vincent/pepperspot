@@ -17,8 +17,8 @@
 
 IPTABLES="/sbin/iptables"
 EBTABLES="/sbin/ebtables"
-EXTIF4="eth1"
-INTIF="ath0"
+EXTIF4="eth0"
+INTIF="wlan0"
 
 #Flush all rules
 $IPTABLES -F 
@@ -32,8 +32,8 @@ $IPTABLES -P FORWARD ACCEPT
 $IPTABLES -P OUTPUT ACCEPT
 
 #Allow ping
-$IPTABLES -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
-$IPTABLES -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+$IPTABLES -A INPUT -p icmp --icmp-type echo-request -i $INTIF -j ACCEPT
+$IPTABLES -A INPUT -p icmp --icmp-type echo-reply -i $INTIF -j ACCEPT
 
 
 #Allow DNS query
@@ -45,7 +45,7 @@ $IPTABLES -A FORWARD -p udp -m udp --sport 53 -j ACCEPT
 #Allow related and established on all interfaces (input)
 $IPTABLES -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
-#Allow releated, established and ssh on $-i $EXTIF4. Reject everything else.
+#Allow related, established and ssh on $-i $EXTIF4. Reject everything else.
 $IPTABLES -A INPUT -i $EXTIF4 -p tcp -m tcp --dport 22 --syn -j ACCEPT
 $IPTABLES -A INPUT -i $EXTIF4 -j REJECT
 

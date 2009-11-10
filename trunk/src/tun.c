@@ -218,8 +218,8 @@ int tun_addaddr(struct tun_t *this,
 #if defined(__linux__)
   struct
   {
-    struct nlmsghdr 	n;
-    struct ifaddrmsg 	i;
+    struct nlmsghdr   n;
+    struct ifaddrmsg   i;
     char buf[TUN_NLBUFSIZE];
   } req;
 
