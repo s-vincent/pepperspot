@@ -106,14 +106,15 @@ static int keep_going = 1;   /**< OK as global variable for child process */
 
 static int termstate = REDIR_TERM_INIT;    /**< When we were terminated */
 
+/**
+ * \brief Credits for PepperSpot.
+ */
 char credits[] =
-  "<H1>PepperSpot " VERSION "</H1><p>Copyright 2008 ULP</p><p> "
+  "<H1>PepperSpot " VERSION "</H1><p>Copyright 2008-2009 University of Strasbourg</p><p> "
   "PepperSpot is an Open Source captive portal or wireless LAN access point "
   "controller developed by the community at "
   "<a href=\"http://www.pepperspot.info\">www.pepperspot.info</a> and licensed "
-  "under the GPL.</p><p>PepperSpot acknowledges all community members, "
-  "especially those mentioned at "
-  "<a href=\"http://www.pepperspot.info/credits.html\">http://www.pepperspot.info/credits.html</a>."; /**< Credits for PepperSpot */
+  "under the GPL.</p><p>PepperSpot acknowledges all community members and original Chillispot contributors</p>";
 
 /**
  * \brief Redir signal handler.
