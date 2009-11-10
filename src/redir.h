@@ -327,5 +327,5 @@ int redir_set_cb_getstate(struct redir_t *redir,
                           int (*cb_getstate) (struct redir_t *redir, struct in_addr *addr,
                                               struct redir_conn_t *conn));
 
-#endif	/* !_REDIR_H */
+#endif  /* !_REDIR_H */
 

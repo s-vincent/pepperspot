@@ -320,7 +320,7 @@ struct radius_t
 struct radiusm_t
 {
   struct in_addr addr;           /**< IP address of this member */
-  struct in6_addr addrv6;		     /**< IPv6 address of this member */
+  struct in6_addr addrv6;        /**< IPv6 address of this member */
   int inuse;                     /**< 0=available; 1= inuse */
   struct RADIUSm_t *nexthash;    /**< Linked list part of hash table */
   struct RADIUSm_t *prev;        /**< Previous member (for double linked list of available members) */
@@ -681,5 +681,5 @@ int radius_timeout(struct radius_t *this);
  */
 int radius_timeleft(struct radius_t *this, struct timeval *timeout);
 
-#endif	/* !_RADIUS_H */
+#endif  /* !_RADIUS_H */
 

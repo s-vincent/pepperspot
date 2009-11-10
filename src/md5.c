@@ -42,7 +42,7 @@
  * \brief MD5 algorithm.
  */
 
-#include <string.h>		/* for memcpy() */
+#include <string.h>    /* for memcpy() */
 #include "md5.h"
 
 /**
@@ -93,10 +93,10 @@ void MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
 
   t = ctx->bits[0];
   if((ctx->bits[0] = t + ((uint32_t) len << 3)) < t)
-    ctx->bits[1]++;		/* Carry from low to high */
+    ctx->bits[1]++;    /* Carry from low to high */
   ctx->bits[1] += len >> 29;
 
-  t = (t >> 3) & 0x3f;	/* Bytes already in shsInfo->data */
+  t = (t >> 3) & 0x3f;  /* Bytes already in shsInfo->data */
 
   /* Handle any leading odd-sized chunks */
 
@@ -176,7 +176,7 @@ void MD5Final(unsigned char digest[16], struct MD5Context *ctx)
   MD5Transform(ctx->buf, (uint32_t *) ctx->in);
   byteReverse((unsigned char *) ctx->buf, 4);
   memcpy(digest, ctx->buf, 16);
-  memset(ctx, 0, sizeof(ctx));	/* In case it's sensitive */
+  memset(ctx, 0, sizeof(ctx));  /* In case it's sensitive */
 }
 
 /* The four core functions - F1 is optimized somewhat */

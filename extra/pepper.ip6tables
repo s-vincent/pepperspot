@@ -18,7 +18,7 @@
 
 IP6TABLES="/sbin/ip6tables"
 EXTIF6="eth0"
-INTIF="ath0"
+INTIF="wlan0"
 
 
 ##
@@ -40,8 +40,10 @@ $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type neighbor-advertisement -j ACCEPT
 $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type neighbor-solicitation -j ACCEPT
 $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
 $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type router-solicitation -j ACCEPT
-$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
-$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-reply -j ACCEPT
+
+#Allow ping6
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-request -i $INTIF -j ACCEPT
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-reply -i $INTIF -j ACCEPT
 
 #Allow RIPNg if the server is also a router
 $IP6TABLES -A INPUT -p udp --sport 521 --dport 521 -j ACCEPT

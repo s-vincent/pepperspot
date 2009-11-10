@@ -205,5 +205,5 @@ int tun_set_cb_ind(struct tun_t *this,
  */
 int tun_runscript(struct tun_t *tun, char* script);
 
-#endif	/* !_TUN_H */
+#endif  /* !_TUN_H */
 

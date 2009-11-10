@@ -85,5 +85,5 @@
  */
 unsigned long int lookup(register unsigned char *k, register unsigned long int length, register unsigned long int level);
 
-#endif	/* !_LOOKUP_H */
+#endif  /* !_LOOKUP_H */
 

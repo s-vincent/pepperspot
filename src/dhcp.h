@@ -1049,5 +1049,5 @@ int dhcp_ipv6_req(struct dhcp_conn_t* conn, void* pack, unsigned len);
 int dhcp_receive(struct dhcp_t *this);
 #endif
 
-#endif	/* !_DHCP_H */
+#endif  /* !_DHCP_H */
 
