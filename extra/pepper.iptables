@@ -34,6 +34,8 @@ $IPTABLES -P OUTPUT ACCEPT
 #Allow ping
 $IPTABLES -A INPUT -p icmp --icmp-type echo-request -i $INTIF -j ACCEPT
 $IPTABLES -A INPUT -p icmp --icmp-type echo-reply -i $INTIF -j ACCEPT
+$IPTABLES -A INPUT -p icmp --icmp-type echo-request -i $EXTIF4 -j ACCEPT
+$IPTABLES -A INPUT -p icmp --icmp-type echo-reply -i $EXTIF4 -j ACCEPT
 
 
 #Allow DNS query
