@@ -44,6 +44,8 @@ $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type router-solicitation -j ACCEPT
 #Allow ping6
 $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-request -i $INTIF -j ACCEPT
 $IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-reply -i $INTIF -j ACCEPT
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-request -i $EXTIF6 -j ACCEPT
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-reply -i $EXTIF6 -j ACCEPT
 
 #Allow RIPNg if the server is also a router
 $IP6TABLES -A INPUT -p udp --sport 521 --dport 521 -j ACCEPT
