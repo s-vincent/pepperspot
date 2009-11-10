@@ -165,7 +165,7 @@ struct gengetopt_args_info args_info;
 
 extern struct sock icmp6_sock;
 
-static struct tun_t *tun = NULL;         /**< TUN instance */
+static struct tun_t *tun = NULL;        /**< TUN instance */
 static struct tun6_t* tunv6 = NULL;     /**< TUN6 instance */
 static struct ippool_t *ippool = NULL;  /**< Pool of IP addresses */
 static struct radius_t *radius = NULL;  /**< Radius client instance */
@@ -5988,9 +5988,9 @@ int main(int argc, char **argv)
   if(options.debug)
     printf("PepperSpot version %s started.\n", VERSION);
 
-  syslog(LOG_INFO, "PepperSpot %s. Copyright 2002-2005 Mondru AB. Licensed under GPL.\n"
-         "Copyright 2008 Thibault Vancon <thibault.vancon@pepperspot.info> and Sebastien Vincent <sebastien.vincent@pepperspot.info>.\n Licensed under GPL.\n"
-         "See http://www.pepperspot.info/ for credits.", VERSION);
+  syslog(LOG_INFO, "PepperSpot %s Copyright 2008-2009 Thibault Vancon <thibault.vancon@pepperspot.info> and Sebastien Vincent <sebastien.vincent@pepperspot.info>.\n"
+                   "Copyright 2002-2005 Mondru AB. Licensed under GPL.\n"
+                   "See http://www.pepperspot.info/ for credits.", VERSION);
 
   if(options.debug) printf("IPVERSION: %s\n", options.ipversion);
 
