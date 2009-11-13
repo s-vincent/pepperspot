@@ -594,7 +594,7 @@ int ippool_getip(struct ippool_t *this, struct ippoolm_t **member,
     }
   }
   if(member) *member = NULL;
-  sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Address could not be found");
+  /* sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Address could not be found"); */
   return -1;
 }
 
