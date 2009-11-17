@@ -2809,7 +2809,7 @@ static int radius_access_accept(struct app_conn_t *conn)
  *********************************************************/
 
 /**
- * \brief Used to send acccount request to radius server.
+ * \brief Used to send accounting request to radius server.
  * \param conn connection
  * \param status_type status
  * \return 0 if success, -1 otherwise
