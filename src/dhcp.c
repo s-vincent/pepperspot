@@ -170,7 +170,7 @@ static int dhcp_ip_check(struct dhcp_ippacket_t *pack)
   {
     sum += ((uint16_t*) &pack->iph)[i];
   }
-  while(sum>>16)
+  while(sum >> 16)
     sum = (sum & 0xFFFF) + (sum >> 16);
   pack->iph.check = ~sum;
   return 0;
@@ -217,7 +217,7 @@ static int dhcp_udp_check(struct dhcp_fullpacket_t *pack)
   }
 
   /* Sum both protocol and udp_len (again) */
-  sum = sum + pack->udph.len + ((pack->iph.protocol<<8)&0xFF00);
+  sum = sum + pack->udph.len + ((pack->iph.protocol << 8) & 0xFF00);
 
   while(sum >> 16)
     sum = (sum & 0xFFFF) + (sum >> 16);
@@ -270,7 +270,7 @@ static int dhcp_tcp_checkv6(struct dhcp_ipv6packet_t *pack, int length)
   }
 
   /* Sum both protocol and tcp_len */
-  sum = sum + htons(tcp_len) + ((pack->ip6h.next_header<<8)&0xFF00);
+  sum = sum + htons(tcp_len) + ((pack->ip6h.next_header << 8) & 0xFF00);
 
   while(sum >> 16)
     sum = (sum & 0xFFFF) + (sum >> 16);
@@ -324,7 +324,7 @@ static int dhcp_udp_checkv6(struct dhcp_ipv6packet_t *pack, int length)
   /* Sum both protocol and udp_len (again) */
   sum = sum + udph->len + ((pack->ip6h.next_header << 8) & 0xFF00);
 
-  while(sum>>16)
+  while(sum >> 16)
     sum = (sum & 0xFFFF) + (sum >> 16);
 
   udph->check = ~sum;
@@ -378,9 +378,9 @@ static int dhcp_tcp_check(struct dhcp_ippacket_t *pack, int length)
   }
 
   /* Sum both protocol and tcp_len */
-  sum = sum + htons(tcp_len) + ((pack->iph.protocol<<8)&0xFF00);
+  sum = sum + htons(tcp_len) + ((pack->iph.protocol << 8) & 0xFF00);
 
-  while(sum>>16)
+  while(sum >> 16)
     sum = (sum & 0xFFFF) + (sum >> 16);
 
   tcph->check = ~sum;

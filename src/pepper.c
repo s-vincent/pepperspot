@@ -6433,7 +6433,7 @@ int main(int argc, char **argv)
       if(ipv6 || dual)
       {
         /* [SV] : hey we saw an IPv6 packet check it out!! */
-        if(dhcp && FD_ISSET(dhcp->ipv6_fd, &fds) && dhcp_ipv6_ind(dhcp) <0)
+        if(dhcp && FD_ISSET(dhcp->ipv6_fd, &fds) && dhcp_ipv6_ind(dhcp) < 0)
         {
           if(errno != EINTR)
             sys_err(LOG_ERR, __FILE__, __LINE__, 0, "dhcp_ipv6_ind() failed!");
@@ -6480,7 +6480,7 @@ int main(int argc, char **argv)
 
       if(ipv6 || dual)
       {
-        if(redir->fdv6 !=-1 && FD_ISSET(redir->fdv6, &fds) && redir_accept(redir, 1) <0)
+        if(redir->fdv6 !=-1 && FD_ISSET(redir->fdv6, &fds) && redir_accept(redir, 1) < 0)
         {
           sys_err(LOG_ERR, __FILE__, __LINE__, 0, "redir_accept6() failed!");
         }

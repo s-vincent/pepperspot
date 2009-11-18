@@ -132,8 +132,8 @@ struct ippoolm_t
   void *peer;                    /**< Pointer to peer protocol handler */
 };
 
-/* The above structures require approximately 20+4 = 24 bytes for
-   each address (IPv4). For IPv6 the corresponding value is 32+4 = 36
+/* The above structures require approximately 20 + 4 = 24 bytes for
+   each address (IPv4). For IPv6 the corresponding value is 32 + 4 = 36
    bytes for each address. */
 
 /**
