@@ -268,15 +268,15 @@ cmdline_parser_print_help (void)
   printf("%s\n","  -c, --conf=STRING             Read configuration file  \n                                  (default=`/etc/pepper.conf')");
   printf("%s\n","      --interval=INT            Re-read configuration file at this interval  \n                                  (default=`3600')");
   printf("%s\n","      --pidfile=STRING          Filename of process id file  \n                                  (default=`/var/run/pepper.pid')");
-  printf("%s\n","      --ipversion=STRING		     Allowed version of Internet Protocol \n							(default=`ipv6`)");
+  printf("%s\n","      --ipversion=STRING         Allowed version of Internet Protocol \n              (default=`ipv6`)");
   printf("%s\n","      --statedir=STRING         Directory of nonvolatile data  \n                                  (default=`/var/lib/pepper/')");
   printf("%s\n","  -n, --net=STRING              Network  (default=`192.168.182.0/24')");
   printf("%s\n","      --dynip=STRING            Dynamic IP address pool");
   printf("%s\n","      --statip=STRING           Static IP address pool");
   printf("%s\n","      --dns1=STRING             Primary DNS server IP address");
   printf("%s\n","      --dns2=STRING             Secondary DNS server IP address");
-  printf("%s\n","      --staticipv6=STRING       IPv6 adress to listen to	(default='2001:db8:1::1234')");
-  printf("%s\n","	     --ipv6prefix=STRING		   IPv6 prefix		(default='2001:db8:1::/64')");
+  printf("%s\n","      --staticipv6=STRING       IPv6 adress to listen to  (default='2001:db8:1::1234')");
+  printf("%s\n","       --ipv6prefix=STRING       IPv6 prefix    (default='2001:db8:1::/64')");
   printf("%s\n","      --domain=STRING           Domain to use for DNS lookups  \n                                  (default=`key.pepperspot.info')");
   printf("%s\n","      --ipup=STRING             Script to run after link-up");
   printf("%s\n","      --ipdown=STRING           Script to run after link-down");
@@ -1337,7 +1337,7 @@ cmdline_parser_required (struct gengetopt_args_info *args_info, const char *prog
 int
 cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_info *args_info, int override, int initialize, int check_required, const char *additional_error)
 {
-  int c;	/* Character of the parsed option.  */
+  int c;  /* Character of the parsed option.  */
   char *multi_token, *multi_next; /* for multiple options */
 
   int i;        /* Counter */
@@ -1366,76 +1366,76 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
       char *stop_char;
 
       static struct option long_options[] = {
-        { "help",	0, NULL, 'h' },
-        { "version",	0, NULL, 'V' },
-        { "fg",	0, NULL, 'f' },
-        { "debug",	0, NULL, 'd' },
-        { "debugfacility",	1, NULL, 0 },
-        { "conf",	1, NULL, 'c' },
-        { "interval",	1, NULL, 0 },
-        { "pidfile",	1, NULL, 0 },
+        { "help",  0, NULL, 'h' },
+        { "version",  0, NULL, 'V' },
+        { "fg",  0, NULL, 'f' },
+        { "debug",  0, NULL, 'd' },
+        { "debugfacility",  1, NULL, 0 },
+        { "conf",  1, NULL, 'c' },
+        { "interval",  1, NULL, 0 },
+        { "pidfile",  1, NULL, 0 },
         { "ipversion", 1, NULL, 0 },
-        { "statedir",	1, NULL, 0 },
-        { "net",	1, NULL, 'n' },
-        { "dynip",	1, NULL, 0 },
-        { "statip",	1, NULL, 0 },
-        { "dns1",	1, NULL, 0 },
-        { "dns2",	1, NULL, 0 },
+        { "statedir",  1, NULL, 0 },
+        { "net",  1, NULL, 'n' },
+        { "dynip",  1, NULL, 0 },
+        { "statip",  1, NULL, 0 },
+        { "dns1",  1, NULL, 0 },
+        { "dns2",  1, NULL, 0 },
         { "staticipv6", 1, NULL, 0 }, 
         { "ipv6prefix", 1, NULL, 0 }, 
-        { "domain",	1, NULL, 0 },
-        { "ipup",	1, NULL, 0 },
-        { "ipdown",	1, NULL, 0 },
-        { "conup",	1, NULL, 0 },
-        { "condown",	1, NULL, 0 },
-        { "radiuslisten",	1, NULL, 0 },
-        { "radiusserver1",	1, NULL, 0 },
-        { "radiusserver2",	1, NULL, 0 },
-        { "radiusauthport",	1, NULL, 0 },
-        { "radiusacctport",	1, NULL, 0 },
-        { "radiussecret",	1, NULL, 0 },
-        { "radiusnasid",	1, NULL, 0 },
-        { "radiusnasip",	1, NULL, 0 },
-        { "radiuscalled",	1, NULL, 0 },
-        { "radiuslocationid",	1, NULL, 0 },
-        { "radiuslocationname",	1, NULL, 0 },
-        { "radiusnasporttype",	1, NULL, 0 },
-        { "coaport",	1, NULL, 0 },
-        { "coanoipcheck",	0, NULL, 0 },
-        { "proxylisten",	1, NULL, 0 },
-        { "proxyport",	1, NULL, 0 },
-        { "proxyclient",	1, NULL, 0 },
-        { "proxysecret",	1, NULL, 0 },
-        { "confusername",	1, NULL, 0 },
-        { "confpassword",	1, NULL, 0 },
-        { "dhcpif",	1, NULL, 0 },
-        { "dhcpmac",	1, NULL, 0 },
-        { "dhcplisten",	1, NULL, 0 },
-        { "lease",	1, NULL, 0 },
-        { "eapolenable",	0, NULL, 0 },
-        { "uamserver",	1, NULL, 0 },
+        { "domain",  1, NULL, 0 },
+        { "ipup",  1, NULL, 0 },
+        { "ipdown",  1, NULL, 0 },
+        { "conup",  1, NULL, 0 },
+        { "condown",  1, NULL, 0 },
+        { "radiuslisten",  1, NULL, 0 },
+        { "radiusserver1",  1, NULL, 0 },
+        { "radiusserver2",  1, NULL, 0 },
+        { "radiusauthport",  1, NULL, 0 },
+        { "radiusacctport",  1, NULL, 0 },
+        { "radiussecret",  1, NULL, 0 },
+        { "radiusnasid",  1, NULL, 0 },
+        { "radiusnasip",  1, NULL, 0 },
+        { "radiuscalled",  1, NULL, 0 },
+        { "radiuslocationid",  1, NULL, 0 },
+        { "radiuslocationname",  1, NULL, 0 },
+        { "radiusnasporttype",  1, NULL, 0 },
+        { "coaport",  1, NULL, 0 },
+        { "coanoipcheck",  0, NULL, 0 },
+        { "proxylisten",  1, NULL, 0 },
+        { "proxyport",  1, NULL, 0 },
+        { "proxyclient",  1, NULL, 0 },
+        { "proxysecret",  1, NULL, 0 },
+        { "confusername",  1, NULL, 0 },
+        { "confpassword",  1, NULL, 0 },
+        { "dhcpif",  1, NULL, 0 },
+        { "dhcpmac",  1, NULL, 0 },
+        { "dhcplisten",  1, NULL, 0 },
+        { "lease",  1, NULL, 0 },
+        { "eapolenable",  0, NULL, 0 },
+        { "uamserver",  1, NULL, 0 },
         { "uamserver6", 1, NULL, 0 },
-        { "uamhomepage",	1, NULL, 0 },
-        { "uamsecret",	1, NULL, 0 },
-        { "uamlisten",	1, NULL, 0 },
-        { "uamport",	1, NULL, 0 },
-        { "uamallowed",	1, NULL, 0 },
-        { "uamanydns",	0, NULL, 0 },
-        { "macauth",	0, NULL, 0 },
-        { "macallowed",	1, NULL, 0 },
-        { "macsuffix",	1, NULL, 0 },
-        { "macpasswd",	1, NULL, 0 },
-        { NULL,	0, NULL, 0 }
+        { "uamhomepage",  1, NULL, 0 },
+        { "uamsecret",  1, NULL, 0 },
+        { "uamlisten",  1, NULL, 0 },
+        { "uamport",  1, NULL, 0 },
+        { "uamallowed",  1, NULL, 0 },
+        { "uamanydns",  0, NULL, 0 },
+        { "macauth",  0, NULL, 0 },
+        { "macallowed",  1, NULL, 0 },
+        { "macsuffix",  1, NULL, 0 },
+        { "macpasswd",  1, NULL, 0 },
+        { NULL,  0, NULL, 0 }
       };
 
       stop_char = 0;
       c = getopt_long (argc, argv, "hVfdc:n:", long_options, &option_index);
 
-      if (c == -1) break;	/* Exit from `while (1)' loop.  */
+      if (c == -1) break;  /* Exit from `while (1)' loop.  */
 
       switch (c)
         {
-        case 'h':	/* Print help and exit.  */
+        case 'h':  /* Print help and exit.  */
           cmdline_parser_print_help ();
           cmdline_parser_free (&local_args_info);
           
@@ -1445,7 +1445,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
           }
           exit (EXIT_SUCCESS);
 
-        case 'V':	/* Print version and exit.  */
+        case 'V':  /* Print version and exit.  */
           cmdline_parser_print_version ();
           cmdline_parser_free (&local_args_info);
 
@@ -1455,7 +1455,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
           }
           exit (EXIT_SUCCESS);
 
-        case 'f':	/* Run in foreground.  */
+        case 'f':  /* Run in foreground.  */
           if (local_args_info.fg_given)
             {
               fprintf (stderr, "%s: `--fg' (`-f') option given more than once%s\n", argv[0], (additional_error ? additional_error : ""));
@@ -1468,7 +1468,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
           args_info->fg_flag = !(args_info->fg_flag);
           break;
 
-        case 'd':	/* Run in debug mode.  */
+        case 'd':  /* Run in debug mode.  */
           if (local_args_info.debug_given)
             {
               fprintf (stderr, "%s: `--debug' (`-d') option given more than once%s\n", argv[0], (additional_error ? additional_error : ""));
@@ -1481,7 +1481,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
           args_info->debug_flag = !(args_info->debug_flag);
           break;
 
-        case 'c':	/* Read configuration file.  */
+        case 'c':  /* Read configuration file.  */
           if (local_args_info.conf_given)
             {
               fprintf (stderr, "%s: `--conf' (`-c') option given more than once%s\n", argv[0], (additional_error ? additional_error : ""));
@@ -1499,7 +1499,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
           args_info->conf_orig = gengetopt_strdup (optarg);
           break;
 
-        case 'n':	/* Network.  */
+        case 'n':  /* Network.  */
           if (local_args_info.net_given)
             {
               fprintf (stderr, "%s: `--net' (`-n') option given more than once%s\n", argv[0], (additional_error ? additional_error : ""));
@@ -1518,7 +1518,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
           break;
 
 
-        case 0:	/* Long option with no short option */
+        case 0:  /* Long option with no short option */
           /* Which modules to print debug messages for.  */
           if (strcmp (long_options[option_index].name, "debugfacility") == 0)
           {
@@ -1689,7 +1689,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
           /* Static ipv6 to listen to */
           else if (strcmp (long_options[option_index].name, "staticipv6") == 0)
           {
-          	if (local_args_info.staticipv6_given)
+            if (local_args_info.staticipv6_given)
               {
                 fprintf (stderr, "%s: `--staticipv6' option given more than once%s\n", argv[0], (additional_error ? additional_error : ""));
                 goto failure;
@@ -1708,7 +1708,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
          /* IPv6 prefix */
          else if (strcmp (long_options[option_index].name, "ipv6prefix") == 0)
           {
-          	if (local_args_info.ipv6prefix_given)
+            if (local_args_info.ipv6prefix_given)
               {
                 fprintf (stderr, "%s: `--ipv6prefix' option given more than once%s\n", argv[0], (additional_error ? additional_error : ""));
                 goto failure;
@@ -2506,11 +2506,11 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
           }
           
           break;
-        case '?':	/* Invalid option.  */
+        case '?':  /* Invalid option.  */
           /* `getopt_long' already printed an error message.  */
           goto failure;
 
-        default:	/* bug: option not considered.  */
+        default:  /* bug: option not considered.  */
           fprintf (stderr, "%s: option unknown: %c%s\n", CMDLINE_PARSER_PACKAGE, c, (additional_error ? additional_error : ""));
           abort ();
         } /* switch */

@@ -1762,7 +1762,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   else if(conn->chap == 1)
   {
     chap_password[0] = 0; /* Chap ident */
-    memcpy(chap_password +1, conn->chappassword, REDIR_MD5LEN);
+    memcpy(chap_password + 1, conn->chappassword, REDIR_MD5LEN);
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_CHAP_CHALLENGE, 0, 0, 0,
                    chap_challenge, REDIR_MD5LEN);
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_CHAP_PASSWORD, 0, 0, 0,
