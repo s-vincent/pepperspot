@@ -62,9 +62,9 @@ install: build
 	# Add here commands to install the package into debian/pepperspot.
 	$(MAKE) install prefix=$(CURDIR)/debian/pepperspot/usr
 
-	install -m 644 -o root -g root doc/pepper.conf $(CURDIR)/debian/pepperspot/etc/
-	install -m 744 -o root -g root doc/pepper.ip6tables $(CURDIR)/debian/pepperspot/etc/
-	install -m 744 -o root -g root doc/pepper.iptables $(CURDIR)/debian/pepperspot/etc/
+	install -m 644 -o root -g root extra/pepper.conf $(CURDIR)/debian/pepperspot/etc/
+	install -m 744 -o root -g root extra/pepper.ip6tables $(CURDIR)/debian/pepperspot/etc/
+	install -m 744 -o root -g root extra/pepper.iptables $(CURDIR)/debian/pepperspot/etc/
 
 # Build architecture-independent files here.
 binary-indep: build install
