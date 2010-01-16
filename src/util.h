@@ -49,14 +49,14 @@
  * \brief All nodes multicast address (FF02::1).
  */
 #define IN6ADDR_ALL_NODES_MC_INIT \
-  { { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x1 } } }
+  { { { 0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x1 } } }
 
 /**
  * \def IN6ADDR_ALL_ROUTERS_MC_INIT
  * \brief All routers multicast address (FF02::2).
  */
 #define IN6ADDR_ALL_ROUTERS_MC_INIT \
-  { { { 0xff,0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0x2 } } }
+  { { { 0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x2 } } }
 
 /* Following 4 routines are taken from include/net/ipv6.h */
 

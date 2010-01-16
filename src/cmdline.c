@@ -1531,7 +1531,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
               continue;
             local_args_info.debugfacility_given = 1;
             args_info->debugfacility_given = 1;
-            args_info->debugfacility_arg = strtol (optarg,&stop_char,0);
+            args_info->debugfacility_arg = strtol (optarg, &stop_char, 0);
             if (args_info->debugfacility_orig)
               free (args_info->debugfacility_orig); /* free previous string */
             args_info->debugfacility_orig = gengetopt_strdup (optarg);
@@ -1548,7 +1548,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
               continue;
             local_args_info.interval_given = 1;
             args_info->interval_given = 1;
-            args_info->interval_arg = strtol (optarg,&stop_char,0);
+            args_info->interval_arg = strtol (optarg, &stop_char, 0);
             if (args_info->interval_orig)
               free (args_info->interval_orig); /* free previous string */
             args_info->interval_orig = gengetopt_strdup (optarg);
@@ -1888,7 +1888,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
               continue;
             local_args_info.radiusauthport_given = 1;
             args_info->radiusauthport_given = 1;
-            args_info->radiusauthport_arg = strtol (optarg,&stop_char,0);
+            args_info->radiusauthport_arg = strtol (optarg, &stop_char, 0);
             if (args_info->radiusauthport_orig)
               free (args_info->radiusauthport_orig); /* free previous string */
             args_info->radiusauthport_orig = gengetopt_strdup (optarg);
@@ -1905,7 +1905,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
               continue;
             local_args_info.radiusacctport_given = 1;
             args_info->radiusacctport_given = 1;
-            args_info->radiusacctport_arg = strtol (optarg,&stop_char,0);
+            args_info->radiusacctport_arg = strtol (optarg, &stop_char, 0);
             if (args_info->radiusacctport_orig)
               free (args_info->radiusacctport_orig); /* free previous string */
             args_info->radiusacctport_orig = gengetopt_strdup (optarg);
@@ -2036,7 +2036,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
               continue;
             local_args_info.radiusnasporttype_given = 1;
             args_info->radiusnasporttype_given = 1;
-            args_info->radiusnasporttype_arg = strtol (optarg,&stop_char,0);
+            args_info->radiusnasporttype_arg = strtol (optarg, &stop_char, 0);
             if (args_info->radiusnasporttype_orig)
               free (args_info->radiusnasporttype_orig); /* free previous string */
             args_info->radiusnasporttype_orig = gengetopt_strdup (optarg);
@@ -2053,7 +2053,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
               continue;
             local_args_info.coaport_given = 1;
             args_info->coaport_given = 1;
-            args_info->coaport_arg = strtol (optarg,&stop_char,0);
+            args_info->coaport_arg = strtol (optarg, &stop_char, 0);
             if (args_info->coaport_orig)
               free (args_info->coaport_orig); /* free previous string */
             args_info->coaport_orig = gengetopt_strdup (optarg);
@@ -2103,7 +2103,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
               continue;
             local_args_info.proxyport_given = 1;
             args_info->proxyport_given = 1;
-            args_info->proxyport_arg = strtol (optarg,&stop_char,0);
+            args_info->proxyport_arg = strtol (optarg, &stop_char, 0);
             if (args_info->proxyport_orig)
               free (args_info->proxyport_orig); /* free previous string */
             args_info->proxyport_orig = gengetopt_strdup (optarg);
@@ -2253,7 +2253,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
               continue;
             local_args_info.lease_given = 1;
             args_info->lease_given = 1;
-            args_info->lease_arg = strtol (optarg,&stop_char,0);
+            args_info->lease_arg = strtol (optarg, &stop_char, 0);
             if (args_info->lease_orig)
               free (args_info->lease_orig); /* free previous string */
             args_info->lease_orig = gengetopt_strdup (optarg);
@@ -2379,7 +2379,7 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
               continue;
             local_args_info.uamport_given = 1;
             args_info->uamport_given = 1;
-            args_info->uamport_arg = strtol (optarg,&stop_char,0);
+            args_info->uamport_arg = strtol (optarg, &stop_char, 0);
             if (args_info->uamport_orig)
               free (args_info->uamport_orig); /* free previous string */
             args_info->uamport_orig = gengetopt_strdup (optarg);

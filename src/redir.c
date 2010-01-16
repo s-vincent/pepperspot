@@ -515,7 +515,7 @@ static int redir_xmlreply(struct redir_t *redir, struct redir_conn_t *conn,
                        timeleft);
         }
         redir_stradd(dst, dstsize, "<Acct-Session-Time>%d</Acct-Session-Time>\r\n", sessiontime);
-        redir_stradd(dst, dstsize, "<Start-Time>%d</Start-Time>\r\n" , conn->start_time);
+        redir_stradd(dst, dstsize, "<Start-Time>%d</Start-Time>\r\n", conn->start_time);
         redir_stradd(dst, dstsize, "<Acct-Input-Octets>%d</Acct-Input-Octets>\r\n",
                      conn->input_octets);
         redir_stradd(dst, dstsize, "<Acct-Output-Octets>%d</Acct-Output-Octets>\r\n",
@@ -770,7 +770,7 @@ int redir_new(struct redir_t **redir,
 #endif
     (*redir)->addr = *addr;
 
-    if(((*redir)->fd  = socket(AF_INET ,SOCK_STREAM ,0)) < 0)
+    if(((*redir)->fd  = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "socket() failed");
       return -1;
