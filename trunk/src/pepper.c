@@ -707,8 +707,16 @@ static int get_namepart6(char *src, char *host, int *port)
   }
 
   croch = strstr(src, "[");
+
+  if(croch == NULL)
+    return -1;
+  
   croch += 1;
   croch2 = strstr(src, "]");
+  
+  if(croch2 == NULL)
+    return -1;
+  
   croch2 += 1;
   colon = strstr(croch2, ":");
 
