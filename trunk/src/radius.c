@@ -268,7 +268,7 @@ static int radius_queue_in(struct radius_t *this, struct radius_packet_t *pack,
   pack->id = this->next;
 
   /* If packet contains message authenticator: Calculate it! */
-  if(!radius_getattr(pack, &ma, RADIUS_ATTR_MESSAGE_AUTHENTICATOR, 0,0,0))
+  if(!radius_getattr(pack, &ma, RADIUS_ATTR_MESSAGE_AUTHENTICATOR, 0, 0, 0))
   {
     radius_hmac_md5(this, pack, ma->v.t);
   }
@@ -867,7 +867,7 @@ int radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack,
       if(type == RADIUS_ATTR_FRAMED_IPV6_PREFIX)  /* this attribute has a reserved and prefix-length field */
       {
         vlen += 2;
-        memset(&a->v.i,0,vlen + 2);
+        memset(&a->v.i, 0, vlen + 2);
         int val = (dlen - 2) * 8;
         memcpy(((char *)&a->v.i) + 1, &val, 1); /* cast with (char *) to avoid use of void* in arithmetic warning */
         memcpy(((char *)&a->v.i) + 2, &value.s6_addr, vlen);
@@ -1430,7 +1430,7 @@ int radius_new(struct radius_t **this,
 
   /* Radius parameters */
   if(listen_addr->ss_family == AF_INET)
-    memcpy(&(*this)->ouraddr,listen_addr, sizeof(struct sockaddr_in));
+    memcpy(&(*this)->ouraddr, listen_addr, sizeof(struct sockaddr_in));
   else
     memcpy(&(*this)->ouraddr, listen_addr, sizeof(struct sockaddr_in6));
   (*this)->ourport = port;
@@ -1754,7 +1754,7 @@ int radius_resp(struct radius_t *this,
   memcpy(pack->authenticator, req_auth, RADIUS_AUTHLEN);
 
   /* If packet contains message authenticator: Calculate it! */
-  if(!radius_getattr(pack, &ma, RADIUS_ATTR_MESSAGE_AUTHENTICATOR, 0,0,0))
+  if(!radius_getattr(pack, &ma, RADIUS_ATTR_MESSAGE_AUTHENTICATOR, 0, 0, 0))
   {
     radius_hmac_md5(this, pack, ma->v.t);
   }
@@ -1786,7 +1786,7 @@ int radius_coaresp(struct radius_t *this,
   memcpy(pack->authenticator, req_auth, RADIUS_AUTHLEN);
 
   /* If packet contains message authenticator: Calculate it! */
-  if(!radius_getattr(pack, &ma, RADIUS_ATTR_MESSAGE_AUTHENTICATOR, 0,0,0))
+  if(!radius_getattr(pack, &ma, RADIUS_ATTR_MESSAGE_AUTHENTICATOR, 0, 0, 0))
   {
     radius_hmac_md5(this, pack, ma->v.t);
   }
@@ -1857,7 +1857,7 @@ static int radius_authcheck(struct radius_t *this, struct radius_packet_t *pack,
 int radius_acctcheck(struct radius_t *this, struct radius_packet_t *pack)
 {
   uint8_t auth[RADIUS_AUTHLEN];
-  uint8_t padd[RADIUS_AUTHLEN] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  uint8_t padd[RADIUS_AUTHLEN] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   MD5_CTX context;
 
   MD5Init(&context);

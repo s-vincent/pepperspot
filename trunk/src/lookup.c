@@ -77,7 +77,7 @@
  * \param b second value
  * \param c third value
  */
-#define mix(a,b,c) \
+#define mix(a, b, c) \
   { \
     a -= b; a -= c; a ^= (c >> 13); \
     b -= c; b -= a; b ^= (a << 8); \
@@ -90,7 +90,7 @@
     c -= a; c -= b; c ^= (b >> 15); \
   }
 
-unsigned long int lookup(register unsigned char* k,register unsigned long int length, register unsigned long int level)
+unsigned long int lookup(register unsigned char* k, register unsigned long int length, register unsigned long int level)
 {
   typedef  unsigned long  int  ub4;   /* unsigned 4-byte quantities */
   typedef  unsigned       char ub1;   /* unsigned 1-byte quantities */
@@ -107,7 +107,7 @@ unsigned long int lookup(register unsigned char* k,register unsigned long int le
     a += (k[0] + ((ub4)k[1] << 8) + ((ub4)k[2] << 16) + ((ub4)k[3] << 24));
     b += (k[4] + ((ub4)k[5] << 8) + ((ub4)k[6] << 16) + ((ub4)k[7] << 24));
     c += (k[8] + ((ub4)k[9] << 8) + ((ub4)k[10] << 16) + ((ub4)k[11] << 24));
-    mix(a,b,c);
+    mix(a, b, c);
     k += 12;
     len -= 12;
   }
@@ -141,7 +141,7 @@ unsigned long int lookup(register unsigned char* k,register unsigned long int le
       a += k[0];
       /* case 0: nothing left to add */
   }
-  mix(a,b,c);
+  mix(a, b, c);
   /*-------------------------------------------- report the result */
   return c;
 }

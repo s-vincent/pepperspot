@@ -527,11 +527,11 @@ static int runscript(struct app_conn_t *appconn, char* script)
 
   if(appconn->ipv6)
   {
-    set_envv6("ADDR", NULL, 0, &appconn->ouripv6,NULL, NULL);
+    set_envv6("ADDR", NULL, 0, &appconn->ouripv6, NULL, NULL);
   }
   else
   {
-    set_env("ADDR", NULL, 0, &appconn->ourip,NULL, NULL);
+    set_env("ADDR", NULL, 0, &appconn->ourip, NULL, NULL);
   }
 
   set_env("USER_NAME", appconn->proxyuser, 0, NULL, NULL, NULL);
@@ -1165,9 +1165,9 @@ static int process_options(int argc, char **argv, int firsttime)
   }
   /* Set DHCP server IP address */
   /* if(args_info.dhcplisten_arg)
-     memcpy(&options.dhcplisten.s_addr,args_info.dhcplisten_arg, sizeof(struct in_addr));
+     memcpy(&options.dhcplisten.s_addr, args_info.dhcplisten_arg, sizeof(struct in_addr));
      else
-     memcpy(&options.dhcplisten.s_addr,args_info.dhcplisten_arg, sizeof(struct in_addr));
+     memcpy(&options.dhcplisten.s_addr, args_info.dhcplisten_arg, sizeof(struct in_addr));
      */
   /* IPv6 Prefix                                                         */
   /* Store prefix as in_addr6 prefix and mask                            */
@@ -2258,7 +2258,7 @@ static int getconn(struct app_conn_t **conn, struct sockaddr_storage nasip, uint
       sys_err(LOG_ERR, __FILE__, __LINE__, 0,
               "Connection with inuse == 0!");
     }
-    if(!memcmp(&appconn->nasip,&nasip,sizeof(nasip)) && (appconn->nasport == nasport))
+    if(!memcmp(&appconn->nasip, &nasip, sizeof(nasip)) && (appconn->nasport == nasport))
     {
       *conn = appconn;
       return 0;
@@ -2982,7 +2982,7 @@ static int acct_req(struct app_conn_t *conn, int status_type)
     if(options.condown)
     {
       if(options.debug)
-        printf("Calling connection down script: %s\n",options.condown);
+        printf("Calling connection down script: %s\n", options.condown);
       (void) runscript(conn, options.condown);
     }
   }
@@ -3487,7 +3487,7 @@ static int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
   conn->authenticated = appconn->authenticated;
   memcpy(conn->uamchal, appconn->uamchal, REDIR_MD5LEN);
   conn->uamtime = appconn->uamtime;
-  memcpy(&conn->nasip,&options.radiuslisten, sizeof(struct sockaddr_storage));
+  memcpy(&conn->nasip, &options.radiuslisten, sizeof(struct sockaddr_storage));
   conn->nasport = appconn->unit;
   memcpy(conn->hismac, dhcpconn->hismac, DHCP_ETH_ALEN);
   memcpy(conn->ourmac, dhcpconn->ourmac, DHCP_ETH_ALEN);
@@ -3692,7 +3692,7 @@ int accounting_request(struct radius_packet_t *pack,
               "Wrong length of called station ID");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
     }
-    memcpy(macstr,hismacattr->v.t, macstrlen);
+    memcpy(macstr, hismacattr->v.t, macstrlen);
     macstr[macstrlen] = 0;
 
     /* Replace anything but hex with space */
@@ -3858,7 +3858,7 @@ int access_request(struct radius_packet_t *pack,
               "Wrong length of framed IP address");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
     }
-    memcpy(&hisip.s_addr,&hisipattr->v.i, sizeof(struct in_addr));
+    memcpy(&hisip.s_addr, &hisipattr->v.i, sizeof(struct in_addr));
   }
 
   /* Framed IPv6 prefix (Conditional) */
@@ -3912,7 +3912,7 @@ int access_request(struct radius_packet_t *pack,
               "Wrong length of called station ID");
       return radius_resp(radius, &radius_pack, peer, pack->authenticator);
     }
-    memcpy(macstr,hismacattr->v.t, macstrlen);
+    memcpy(macstr, hismacattr->v.t, macstrlen);
     macstr[macstrlen] = 0;
 
     /* Replace anything but hex with space */
@@ -5284,7 +5284,7 @@ static int cb_dhcp_connectv6(struct dhcp_conn_t *conn)
   struct app_conn_t *appconn = NULL;
 
   sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
-          "New IPv6 request from MAC=%.2X-%.2X-%.2X-%.2X-%.2X-%.2X" ,
+          "New IPv6 request from MAC=%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
           conn->hismac[0], conn->hismac[1],
           conn->hismac[2], conn->hismac[3],
           conn->hismac[4], conn->hismac[5]);
@@ -5436,7 +5436,7 @@ static int cb_dhcp_request(struct dhcp_conn_t *conn, struct in_addr *addr)
     appconn->hisip.s_addr = ipm->addr.s_addr;
 
     sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
-            "Client MAC=%.2X-%.2X-%.2X-%.2X-%.2X-%.2X assigned IP %s" ,
+            "Client MAC=%.2X-%.2X-%.2X-%.2X-%.2X-%.2X assigned IP %s",
             conn->hismac[0], conn->hismac[1],
             conn->hismac[2], conn->hismac[3],
             conn->hismac[4], conn->hismac[5],
@@ -5471,7 +5471,7 @@ static int cb_dhcp_connect(struct dhcp_conn_t *conn)
   struct app_conn_t *appconn = NULL;
 
   sys_err(LOG_NOTICE, __FILE__, __LINE__, 0,
-          "New DHCP request from MAC=%.2X-%.2X-%.2X-%.2X-%.2X-%.2X" ,
+          "New DHCP request from MAC=%.2X-%.2X-%.2X-%.2X-%.2X-%.2X",
           conn->hismac[0], conn->hismac[1],
           conn->hismac[2], conn->hismac[3],
           conn->hismac[4], conn->hismac[5]);

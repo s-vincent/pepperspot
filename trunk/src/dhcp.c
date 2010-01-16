@@ -719,7 +719,7 @@ static int dhcp_open_eth(char const *ifname, uint16_t protocol, int promisc,
   /* Set interface in promisc mode */
   if(promisc)
   {
-    memset(&mr,0,sizeof(mr));
+    memset(&mr, 0, sizeof(mr));
     mr.mr_ifindex = ifr.ifr_ifindex;
     mr.mr_type =  PACKET_MR_PROMISC;
     if(setsockopt(fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP,
@@ -956,7 +956,7 @@ static int dhcp_send(struct dhcp_t *this,
   memcpy (dest.sll_addr, hismac, DHCP_ETH_ALEN);
 
   if(sendto(fd, packet, (length), 0,
-             (struct sockaddr *)&dest ,sizeof(dest)) < 0)
+             (struct sockaddr *)&dest, sizeof(dest)) < 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
             "sendto(fd=%d, len=%d) failed",
@@ -1729,7 +1729,7 @@ int dhcp_new(struct dhcp_t **dhcp, int numconn, char *interface,
     return -1;
   }
 
-  if(!strncmp(ipversion, "ipv4",4) || !strncmp(ipversion, "dual", 4))
+  if(!strncmp(ipversion, "ipv4", 4) || !strncmp(ipversion, "dual", 4))
   {
     (*dhcp)->numconn = numconn;
 
@@ -1755,9 +1755,9 @@ int dhcp_new(struct dhcp_t **dhcp, int numconn, char *interface,
     }
   }
 
-  if(!strncmp(ipversion, "ipv4",4))
+  if(!strncmp(ipversion, "ipv4", 4))
     dhcp_initconn(*dhcp);
-  else if(!strncmp(ipversion, "ipv6",4))
+  else if(!strncmp(ipversion, "ipv6", 4))
     dhcp_initconnv6(*dhcp);
   else
   {
@@ -1774,11 +1774,11 @@ int dhcp_new(struct dhcp_t **dhcp, int numconn, char *interface,
   {
     (void)dhcp_sifflags((*dhcp)->devname, (*dhcp)->devflags | IFF_NOARP);
     memset(&noaddr, 0, sizeof(noaddr));
-    if(!strncmp(ipversion, "ipv4",4) || !strncmp(ipversion, "dual", 4))
+    if(!strncmp(ipversion, "ipv4", 4) || !strncmp(ipversion, "dual", 4))
       (void)dhcp_setaddr((*dhcp)->devname, &noaddr, NULL, NULL);
   }
 
-  if(!strncmp(ipversion, "ipv4",4) || !strncmp(ipversion, "dual", 4))
+  if(!strncmp(ipversion, "ipv4", 4) || !strncmp(ipversion, "dual", 4))
   {
     if(usemac) memcpy(((*dhcp)->hwaddr), mac, DHCP_ETH_ALEN);
     if(((*dhcp)->fd =
@@ -1966,7 +1966,7 @@ int dhcp_setv6(struct dhcp_t *dhcp, int debug,
     }
     for(i = 0; i < uamokiplen; i++)
     {
-      memcpy(&(dhcp)->iphashm6[i].addrv6,&uamokip[i], sizeof(struct in6_addr));
+      memcpy(&(dhcp)->iphashm6[i].addrv6, &uamokip[i], sizeof(struct in6_addr));
     }
     (void)iphash_new6(&dhcp->iphash6, dhcp->iphashm6, uamokiplen);
   }
@@ -2372,8 +2372,8 @@ static int dhcp_undoDNAT(struct dhcp_conn_t *conn,
   in2.s_addr = pack->iph.daddr;
   printf("dhcp_undoDNAT\nsource:%s\n", inet_ntop(AF_INET, &in1, buf, sizeof(buf)));
   printf("dest:%s\n", inet_ntop(AF_INET, &in2, buf, sizeof(buf)));
-  printf("portsrc:%d\n",ntohs(tcph->src));
-  printf("portdest:%d\n",ntohs(tcph->dst));
+  printf("portsrc:%d\n", ntohs(tcph->src));
+  printf("portdest:%d\n", ntohs(tcph->dst));
   /* Was it a DNS reply? */
   if(((this->anydns) ||
        (pack->iph.saddr == conn->dns1.s_addr) ||
@@ -3104,7 +3104,7 @@ int dhcp_set_addrsv6(struct dhcp_conn_t *conn,
                      char *domain)
 {
   conn->ipv6 = 1;
-  memcpy(conn->hisipv6.s6_addr, hisip->s6_addr,sizeof(struct in6_addr));
+  memcpy(conn->hisipv6.s6_addr, hisip->s6_addr, sizeof(struct in6_addr));
   memcpy(conn->ouripv6.s6_addr, ourip->s6_addr, sizeof(struct in6_addr));
   if(domain)
   {
@@ -3208,7 +3208,7 @@ static int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack
       if(icmpv6->type == 135 /* NS */)
       {
         char buf[INET6_ADDRSTRLEN];
-        printf("NS received\nouripv6:%s\n",inet_ntop(AF_INET6, this->ouripv6.s6_addr, buf, sizeof(buf)));
+        printf("NS received\nouripv6:%s\n", inet_ntop(AF_INET6, this->ouripv6.s6_addr, buf, sizeof(buf)));
         if(ndisc_send_na(this->ipv6_ifindex, &this->ouripv6, &src, &this->ouripv6, 0x40000000 | 0x20000000) /* OVERRIDE +  SOLICITATION */ == -1)
         {
           printf("NA failed\n");
