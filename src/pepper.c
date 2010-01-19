@@ -1381,8 +1381,8 @@ static int process_options(int argc, char **argv, int firsttime)
           }
           j++;
         }
-
       }
+      freeaddrinfo(res);
     }
 
     options.uamhomepage = args_info.uamhomepage_arg;
