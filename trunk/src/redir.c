@@ -168,18 +168,19 @@ static int redir_challenge(unsigned char *dst)
 }
 
 /**
- * \brief Convert 32 + 1 bytes ASCII hex string to 16 octet unsigned char.
+ * \brief Convert len octet ASCII hex string to len / 2 octet unsigned char.
  * \param src hex string to convert
  * \param dst destination to store result
  * \return 0 if success, -1 otherwise
  */
-static int redir_hextochar(char *src, unsigned char * dst)
+static int redir_hextochar(char *src, int len, unsigned char * dst)
 {
   char x[3];
   int n = 0;
   int y = 0;
+  int nb = len / 2;
 
-  for(n = 0; n < REDIR_MD5LEN; n++)
+  for(n = 0 ; n < nb ; n++)
   {
     x[0] = src[n * 2 + 0];
     x[1] = src[n * 2 + 1];
@@ -196,23 +197,23 @@ static int redir_hextochar(char *src, unsigned char * dst)
 }
 
 /**
- * \brief Convert 16 bytes unsigned char to 32 + 1 octet ASCII hex string.
+ * \brief Convert len octet unsigned char to 2*len + 1 octet ASCII hex string.
  * \param src source to convert
  * \param dst destination to store result
  * \return 0
  */
-static int redir_chartohex(unsigned char *src, char *dst)
+static int redir_chartohex(unsigned char *src, int len, char *dst)
 {
   char x[3];
   int n = 0;
 
-  for(n = 0; n < REDIR_MD5LEN; n++)
+  for(n = 0; n < len; n++)
   {
     snprintf(x, 3, "%.2x", src[n]);
     dst[n * 2 + 0] = x[0];
     dst[n * 2 + 1] = x[1];
   }
-  dst[REDIR_MD5LEN * 2] = 0;
+  dst[len * 2] = 0;
   return 0;
 }
 
@@ -1286,14 +1287,17 @@ static int redir_getreq(struct redir_t *redir, int fd, struct redir_conn_t *conn
     if(!redir_getparam(redir, buffer, "response",
                         resp, sizeof(resp)))
     {
-      (void)redir_hextochar(resp, conn->chappassword);
+      (void)redir_hextochar(resp, 2 * REDIR_MD5LEN, conn->chappassword);
       conn->chap = 1;
       conn->password[0] = 0;
     }
     else if(!redir_getparam(redir, buffer, "password",
                              resp, sizeof(resp)))
     {
-      (void)redir_hextochar(resp, conn->password);
+      int len = strlen(resp);
+      len = (len > REDIR_MAXCHAR) ? REDIR_MAXCHAR : len;
+      (void)redir_hextochar(resp, len, conn->password);
+      conn->passwordlen = len;
       conn->chap = 0;
       conn->chappassword[0] = 0;
 
@@ -1700,7 +1704,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   int status = 0;
   unsigned char chap_password[REDIR_MD5LEN + 1];
   unsigned char chap_challenge[REDIR_MD5LEN];
-  unsigned char user_password[REDIR_MD5LEN + 1];
+  unsigned char user_password[REDIR_MAXCHAR + 1];
   uint64_t suf = 0;
   struct in6_addr idv6;
   char buf[INET6_ADDRSTRLEN];
@@ -1738,29 +1742,67 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   radius_addattr(radius, &radius_pack, RADIUS_ATTR_USER_NAME, 0, 0, 0,
                  (uint8_t*) conn->username, strlen(conn->username));
 
-  if(redir->secret)
-  {
-    /* Get MD5 hash on challenge and uamsecret */
-    MD5Init(&context);
-    MD5Update(&context, conn->uamchal, REDIR_MD5LEN);
-    MD5Update(&context, (uint8_t*) redir->secret, strlen(redir->secret));
-    MD5Final(chap_challenge, &context);
-  }
-  else
-  {
-    memcpy(chap_challenge, conn->uamchal, REDIR_MD5LEN);
-  }
-
   if(conn->chap == 0)
   {
-    for(n = 0; n < REDIR_MD5LEN; n++)
-      user_password[n] = conn->password[n] ^ chap_challenge[n];
-    user_password[REDIR_MD5LEN] = 0;
+    int i = 0;
+    char buff[2 * REDIR_MAXCHAR + 1];
+    int nbSeg = conn->passwordlen / 2 / REDIR_MD5LEN;
+
+    if(optionsdebug) printf("NSEG: %d\n", nbSeg);
+    uint8_t* binCipher = conn->uamchal;
+
+    if(optionsdebug)
+    {
+        redir_chartohex(binCipher, REDIR_MD5LEN, buff);
+        printf("C(%d): [%s]\n", 0, buff);
+    }
+
+    memset(user_password, 0, REDIR_MAXCHAR + 1);
+    for(i = 0 ; i < nbSeg ; i++)
+    {
+        MD5Init(&context);
+        MD5Update(&context, binCipher, REDIR_MD5LEN);
+        MD5Update(&context, (uint8_t*)redir->secret, strlen(redir->secret));
+        MD5Final(chap_challenge, &context);
+
+        if(optionsdebug)
+        {
+            redir_chartohex(chap_challenge, REDIR_MD5LEN, buff);
+            printf("H(%d): [%s]\n", i, buff);
+        }
+
+        binCipher = &(conn->password[i * REDIR_MD5LEN]);
+        
+        if(optionsdebug)
+        {
+            redir_chartohex(binCipher, REDIR_MD5LEN, buff);
+            printf("C(%d): [%s]\n", i + 1, buff);
+        }
+        
+        for(n = 0 ; n < REDIR_MD5LEN ; n++)
+        {
+            user_password[i * REDIR_MD5LEN + n] = binCipher[n] ^ chap_challenge[n];
+        }
+
+        if(optionsdebug)
+        {
+            redir_chartohex(&user_password[i * REDIR_MD5LEN], REDIR_MD5LEN, buff);
+            printf("P(%d): [%s]\n", i, buff);
+        }
+    }
+    
+    if(optionsdebug)
+    {
+        redir_chartohex(user_password, nbSeg * REDIR_MD5LEN, buff);
+        printf("PWD: [%s]\n", buff);
+        printf("PWD: [%s]\n", user_password);
+    }
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_USER_PASSWORD, 0, 0, 0,
                    user_password, strlen((char*)user_password));
   }
   else if(conn->chap == 1)
   {
+    memcpy(chap_challenge, conn->uamchal, REDIR_MD5LEN);
     chap_password[0] = 0; /* Chap ident */
     memcpy(chap_password + 1, conn->chappassword, REDIR_MD5LEN);
     radius_addattr(radius, &radius_pack, RADIUS_ATTR_CHAP_CHALLENGE, 0, 0, 0,
@@ -1792,7 +1834,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   {
     (void) radius_addattrv6(radius, &radius_pack, RADIUS_ATTR_FRAMED_IPV6_PREFIX, 0, 0,
                             redir->prefix, NULL, redir->prefixlen + 2);
-    /* todo : interface id */
+    /* todo: interface id */
 
     ippool_getv6suffix(&idv6, &conn->hisipv6, 64);
 
@@ -1941,7 +1983,7 @@ static void redir_close(int new_socket)
 static void redir_memcopy(int msg_type, unsigned char *challenge, char *hexchal, struct redir_msg_t *msg, struct sockaddr_in address, struct sockaddr_in6 addressv6, struct sockaddr_storage addrstorage)
 {
   redir_challenge(challenge);
-  (void)redir_chartohex(challenge, hexchal);
+  (void)redir_chartohex(challenge, REDIR_MD5LEN, hexchal);
   msg->type = msg_type;
   msg->addr = address.sin_addr;
   memcpy(&msg->addrv6, &addressv6.sin6_addr, sizeof(struct in6_addr));
@@ -2107,7 +2149,7 @@ int redir_accept(struct redir_t *redir, int ipv6)
     termstate = REDIR_TERM_RADIUS;
     if(optionsdebug) printf("Calling radius\n");
 
-    if(optionsdebug) printf("redir_accept: Sending redius request\n");
+    if(optionsdebug) printf("redir_accept: Sending radius request\n");
     redir_radius(redir, &addrstorage, &conn);
 
     termstate = REDIR_TERM_REPLY;
@@ -2284,7 +2326,7 @@ int redir_accept(struct redir_t *redir, int ipv6)
   }
   else
   {
-    (void)redir_chartohex(conn.uamchal, hexchal);
+    (void)redir_chartohex(conn.uamchal, REDIR_MD5LEN, hexchal);
   }
 
   if(redir->homepage)

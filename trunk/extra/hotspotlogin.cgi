@@ -1,7 +1,7 @@
 #!/usr/bin/perl
-
 # pepper - PepperSpot.info. A Wireless LAN Access Point Controller
 # Copyright (C) 2003, 2004 Mondru AB.
+# Copyright (C) 2010 Christophe BORELLY - IUT de Beziers (France)
 #
 # The contents of this file may be used under the terms of the GNU
 # General Public License Version 2, provided that the above copyright
@@ -24,16 +24,15 @@
 
 # Shared secret used to encrypt challenge with. Prevents dictionary attacks.
 # You should change this to your own shared secret.
-$uamsecret = "myradiussecret2";
-
-# Uncomment the following line if you want to use ordinary user-password
-# for radius authentication. Must be used together with $uamsecret.
-#$userpassword=1;
+# Comment the following line if you want to use CHAP
+$uamsecret = "testing234";
 
 # Our own path
 $loginpath = $ENV{'SCRIPT_URL'};
 
 use Digest::MD5  qw(md5 md5_hex md5_base64);
+use POSIX qw(ceil);
+use constant MD5_LEN => 16;
 
 # Make sure that the form parameters are clean
 $OK_CHARS='-a-zA-Z0-9_.@&=%!';
@@ -138,14 +137,30 @@ $password =~s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/seg;
 # If attempt to login
 if ($button =~ /^Login$/) {
     $hexchal  = pack "H32", $challenge;
-    if (defined $uamsecret) {
-	$newchal  = md5($hexchal, $uamsecret);
+    if (defined $uamsecret) { # PAP
+    $len = length $password;
+    #print "Len: $len\n";
+    $nbSeg = ceil $len/MD5_LEN;
+    #print "NbSeg: $nbSeg\n";
+    $normLen = $nbSeg*MD5_LEN;
+    #print "NormLen: $normLen\n";
+    $pass = pack 'a'.$normLen, $password;
+    #print "Pass: ",(unpack "H*",$pass),"\n";
+    $pappassword = '';
+    for ($i = 0 ; $i < $nbSeg ; $i++) {
+        $hash=md5($hexchal, $uamsecret);
+        #print "H($i): ",(unpack "H*",$hash),"\n";
+        $pwd=substr $pass, $i*MD5_LEN, MD5_LEN;
+        #print "P($i): ",(unpack "H*",$pwd),"\n";
+        $hexchal = $hash ^ $pwd;
+        #print "C(",($i+1),"): ",(unpack "H*",$hexchal),"\n";
+        $pappassword .= unpack "H*", $hexchal;
     }
-    else {
-	$newchal  = $hexchal;
+    #print "PAP : $pappassword\n";
     }
-    $response = md5_hex("\0", $password, $newchal);
-    $pappassword = unpack "H32", ($password ^ $newchal);
+    else { # CHAP
+    $response = md5_hex("\0", $password, $hexchal);
+    }
 #sleep 5;
 print "Content-type: text/html\n\n";
 print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
@@ -154,10 +169,10 @@ print "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
   <title>PepperSpot Login</title>
   <meta http-equiv=\"Cache-control\" content=\"no-cache\">
   <meta http-equiv=\"Pragma\" content=\"no-cache\">";
-    if ((defined $uamsecret) && defined($userpassword)) {
-	print "  <meta http-equiv=\"refresh\" content=\"0;url=http://$uamip:$uamport/logon?username=$username&password=$pappassword&userurl=$userurl\">";
+    if (defined $uamsecret) {
+    print "  <meta http-equiv=\"refresh\" content=\"0;url=http://$uamip:$uamport/logon?username=$username&password=$pappassword&userurl=$userurl\">";
     } else {
-	print "  <meta http-equiv=\"refresh\" content=\"0;url=http://$uamip:$uamport/logon?username=$username&response=$response&userurl=$userurl\">";
+    print "  <meta http-equiv=\"refresh\" content=\"0;url=http://$uamip:$uamport/logon?username=$username&response=$response&userurl=$userurl\">";
     }
 print "</head>
 <body bgColor = '#c0d8f4'>";
@@ -176,10 +191,10 @@ print "</head>
 <MessageType>120</MessageType>
 <ResponseCode>201</ResponseCode>
 ";
-    if ((defined $uamsecret) && defined($userpassword)) {
-	print "<LoginResultsURL>http://$uamip:$uamport/logon?username=$username&password=$pappassword</LoginResultsURL>";
+    if (defined $uamsecret) {
+    print "<LoginResultsURL>http://$uamip:$uamport/logon?username=$username&password=$pappassword</LoginResultsURL>";
     } else {
-	print "<LoginResultsURL>http://$uamip:$uamport/logon?username=$username&response=$response&userurl=$userurl</LoginResultsURL>";
+    print "<LoginResultsURL>http://$uamip:$uamport/logon?username=$username&response=$response&userurl=$userurl</LoginResultsURL>";
     }
 print "</AuthenticationReply> 
 </WISPAccessGatewayParam>
@@ -370,14 +385,14 @@ print "Content-type: text/html\n\n
 
 #print "THE INPUT: $input";
 #foreach $key (sort (keys %ENV)) {
-#	print $key, ' = ', $ENV{$key}, "<br>\n";
+#    print $key, ' = ', $ENV{$key}, "<br>\n";
 #}
 
 if ($result == 2) {
     print "
   <h1 style=\"text-align: center;\">PepperSpot Login Failed</h1>";
     if ($reply) {
-	print "<center> $reply </BR></BR></center>";
+    print "<center> $reply </BR></BR></center>";
     }
 }
 
