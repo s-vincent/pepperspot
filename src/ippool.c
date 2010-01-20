@@ -645,7 +645,7 @@ int ippool_newip6(struct ippool_t* this, struct ippoolm_t** member, struct in6_a
 
     return 0; /* success */
   }
-  printf("addrv6 unspec : %p\n", addr);
+  printf("addrv6 unspec: %p\n", addr);
   return -1;
 }
 

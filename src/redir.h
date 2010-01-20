@@ -62,7 +62,7 @@
 #define REDIR_MACSTRLEN 17 /**< MAC address in string format */
 
 /*#define REDIR_MAXCHAR 1024*/
-#define REDIR_MAXCHAR 64 /**< Maximum size for passwords */
+#define REDIR_MAXCHAR 128 /**< Maximum size for passwords */
 
 #define REDIR_MAXBUFFER 4096 /**< Maximum buffer size */
 
@@ -108,9 +108,9 @@ struct redir_conn_t
   char username[REDIR_USERNAMESIZE]; /**< User name */
   char userurl[REDIR_USERURLSIZE]; /**< Original client requested webpage */
   int chap; /**< 0 if using normal password; 1 if using CHAP */
-  uint8_t chappassword[REDIR_MAXCHAR]; /**< CHAP password */
+  uint8_t chappassword[REDIR_MD5LEN]; /**< CHAP password */
   uint8_t password[REDIR_MAXCHAR]; /**< Client password */
-
+  int passwordlen; /**< Client password length */
   uint8_t uamchal[REDIR_MD5LEN]; /**< Challenge as sent to web server */
   int uamtime; /**< UAM time */
 

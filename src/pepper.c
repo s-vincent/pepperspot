@@ -1878,6 +1878,7 @@ static int process_options(int argc, char **argv, int firsttime)
         return -1;
       }
       options.proxylisten.ss_family = res->ai_family;
+      
       if(res->ai_family == AF_INET)
       {
         inet_ntop(res->ai_family, &((struct sockaddr_in *)&options.proxylisten)->sin_addr, buf, sizeof(buf));
@@ -6047,7 +6048,7 @@ int main(int argc, char **argv)
 
   if(ipv6 || dual)
   {
-    /* [SV] : create the ICMPv6 socket */
+    /* [SV]: create the ICMPv6 socket */
     if(icmp6_init() == -1)
     {
       /* error */
@@ -6061,7 +6062,7 @@ int main(int argc, char **argv)
       exit(EXIT_FAILURE);
     }
 
-    /* [SV] : Create an IPv6 tunnel interface */
+    /* [SV]: Create an IPv6 tunnel interface */
     if(tun6_new(&tunv6) != 0)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, 0, "Failed to create tun6");
@@ -6075,7 +6076,7 @@ int main(int argc, char **argv)
       exit(EXIT_FAILURE);
     }
 
-    /* [SV] : IPv6 address */
+    /* [SV]: IPv6 address */
     tun6_setaddr(tunv6, &options.ip6listen, 64); /* we assume that a 64 prefix length to simplify a little bit... :) */
 
     tun6_set_cb_ind(tunv6, cb_tun6_ind);
@@ -6440,7 +6441,7 @@ int main(int argc, char **argv)
 
       if(ipv6 || dual)
       {
-        /* [SV] : hey we saw an IPv6 packet check it out!! */
+        /* [SV]: hey we saw an IPv6 packet check it out!! */
         if(dhcp && FD_ISSET(dhcp->ipv6_fd, &fds) && dhcp_ipv6_ind(dhcp) < 0)
         {
           if(errno != EINTR)

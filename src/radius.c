@@ -1483,7 +1483,7 @@ int radius_new(struct radius_t **this,
             "fopen(/dev/urandom, r) failed");
   }
 
-  /* [SV] : => getnameinfo() */
+  /* [SV]: => getnameinfo() */
 
   /* Initialise radius socket */
   if(((*this)->fd = socket(listen_addr->ss_family, SOCK_DGRAM, 0)) < 0 )

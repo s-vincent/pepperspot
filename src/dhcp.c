@@ -1409,7 +1409,7 @@ int dhcp_newconn6(struct dhcp_t* this, struct dhcp_conn_t** conn, uint8_t* hwadd
 {
   if(this->debug || 1)
   {
-    printf("IPv6 newconn : %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n", hwaddr[0], hwaddr[1], hwaddr[2], hwaddr[3], hwaddr[4], hwaddr[5]);
+    printf("IPv6 newconn: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n", hwaddr[0], hwaddr[1], hwaddr[2], hwaddr[3], hwaddr[4], hwaddr[5]);
   }
 
   if(!this->firstfreeconnv6)
@@ -2138,7 +2138,7 @@ static int dhcp_doDNATv6(struct dhcp_conn_t* conn, struct dhcp_ipv6packet_t* pac
                        (udph->dst == htons(DHCP_DNS))))
     return 0;
 
-  printf("dnat : src %s | dst : %s len=%d\n", inet_ntop(AF_INET6, &pack->ip6h.src_addr, buf, sizeof(buf)), inet_ntop(AF_INET6, &pack->ip6h.dst_addr, buf2, sizeof(buf2)), ntohs(pack->ip6h.payload_length));
+  printf("dnat: src %s | dst: %s len=%d\n", inet_ntop(AF_INET6, &pack->ip6h.src_addr, buf, sizeof(buf)), inet_ntop(AF_INET6, &pack->ip6h.dst_addr, buf2, sizeof(buf2)), ntohs(pack->ip6h.payload_length));
 
   /* was it an ICMPv6 request for us ?
    * if packet is a NS for us, the NA have been already sent
@@ -2186,7 +2186,7 @@ static int dhcp_doDNATv6(struct dhcp_conn_t* conn, struct dhcp_ipv6packet_t* pac
 
     if(pos == -1) /* save for undoing */
     {
-      printf("save dnat for dst : %s port : %d\n", inet_ntop(AF_INET6, &pack->ip6h.dst_addr, buf, sizeof(buf)), tcph->src);
+      printf("save dnat for dst: %s port: %d\n", inet_ntop(AF_INET6, &pack->ip6h.dst_addr, buf, sizeof(buf)), tcph->src);
       memcpy(&conn->dnatipv6[conn->nextdnatv6], pack->ip6h.dst_addr, sizeof(struct in6_addr));
       conn->dnatportv6[conn->nextdnatv6] = tcph->src;
       conn->nextdnatv6 = (conn->nextdnatv6 + 1) % DHCP_DNATV6_MAX;
@@ -2325,7 +2325,7 @@ static int dhcp_undoDNATv6(struct dhcp_conn_t *conn, struct dhcp_ipv6packet_t *p
       if(tcph->dst == conn->dnatportv6[n])
       {
         char buf[64];
-        printf("modify packet src : %s : port : %d\n", inet_ntop(AF_INET6, &conn->dnatipv6[n], buf, sizeof(buf)), DHCP_HTTP);
+        printf("modify packet src: %s: port: %d\n", inet_ntop(AF_INET6, &conn->dnatipv6[n], buf, sizeof(buf)), DHCP_HTTP);
         memcpy(&pack->ip6h.src_addr, &conn->dnatipv6[n], sizeof(struct in6_addr));
         tcph->src = htons(DHCP_HTTP);
         dhcp_tcp_checkv6(pack, len);
@@ -3176,7 +3176,7 @@ static int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack
 
   if((conn->authstate == DHCP_AUTH_NONE))
   {
-    /* [SV] : inform application about the IPv6 address */
+    /* [SV]: inform application about the IPv6 address */
     if(this->cb_requestv6(conn, &conn->hisipv6))
     {
       printf("cb_requestv6 error!\n");
@@ -3186,7 +3186,7 @@ static int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack
 
   gettimeofday(&conn->lasttime, NULL);
 
-  printf("IPv6 conn->authstate : %d\n", conn->authstate);
+  printf("IPv6 conn->authstate: %d\n", conn->authstate);
 
   /* check if there are NS for us.
    * We do it there because in all state PepperSpot have
