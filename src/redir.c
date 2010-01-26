@@ -170,6 +170,7 @@ static int redir_challenge(unsigned char *dst)
 /**
  * \brief Convert len octet ASCII hex string to len / 2 octet unsigned char.
  * \param src hex string to convert
+ * \param len source length
  * \param dst destination to store result
  * \return 0 if success, -1 otherwise
  */
@@ -199,6 +200,7 @@ static int redir_hextochar(char *src, int len, unsigned char * dst)
 /**
  * \brief Convert len octet unsigned char to 2*len + 1 octet ASCII hex string.
  * \param src source to convert
+ * \param len source length
  * \param dst destination to store result
  * \return 0
  */

@@ -1,6 +1,7 @@
 2009-xx-xx  Sebastien Vincent <sebastien.vincent@peppespot.info>
   
-  * Version 0.3   - IPv4/IPv6 authentication unification;
+  * Version 0.3   - IPv4/IPv6 authentication unification (from Simon Geissler);
+									- CAS authentication (from Christophe Borelly);
                   - Fix segfault in IPv4 only mode;
 									- Fix various bugs and valgrind issues;
 									- Put several files from doc/ to extra/ directory;

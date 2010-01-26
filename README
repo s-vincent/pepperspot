@@ -511,6 +511,12 @@ Copy some configuration files:
 # cp extra/hotspotlogin.cgi /usr/lib/cgi-bin/
 # chmod +x /usr/lib/cgi-bin/hotspotlogin.cgi
 
+IMPORTANT NOTES: PepperSpot provides also a PHP version of hotspotlogin.cgi in extra/hsl.php and a internationalized welcome pages
+(for the moment only french and english). Some paranoid system administrators (and others who do not want to enable CGI on their 
+webservers) could use this PHP version. It is also more flexible that CGI ones.
+# cp extra/*.php /path/to/apache2/htdocs/
+# chmod +x /path/to/apache2/htdocs/*.php
+
 For IPv4:
 # cp extra/pepper.iptables /etc/
 # chmod +x /etc/pepper.iptables
@@ -548,7 +554,10 @@ staticipv6 2001:db8:1::1234
 
 - Modify uamserver6 (don't forget the brackets):
 
+If you use the CGI:
 uamserver6 https://[2001:db8:1::1234]/cgi-bin/hotspotlogin.cgi
+Otherwise:
+uamserver6 https://[2001:db8:1::1234]/cgi-bin/hsl.php
 
 The IPv6 address of the url must be the same as staticipv6 (brackets are mandatory when using IPv6 address)
 
@@ -567,7 +576,10 @@ net 192.168.0.1/24
 
 - Modify uamserver:
 
+If you use the CGI:
 uamserver https://192.168.0.1/cgi-bin/hotspotlogin.cgi
+Otherwise:
+uamserver https://192.168.0.1/cgi-bin/hsl.php
 
 Note: the IPv4 address have to be the first address of the network.
 
@@ -596,7 +608,8 @@ By the same way, modify uamsecret with the value you want:
 
 uamsecret testing234
 
-and update $uamsecret in /usr/lib/cgi-bin/hotspotlogin.cgi with the same value.
+and update $uamsecret in /usr/lib/cgi-bin/hotspotlogin.cgi or /path/to/apache2/htdocs/hsl.php (if you use the PHP version)
+with the same value.
 
 Others parameters of the /etc/pepper.conf file are describes on the man, for example radiusnasip, ...
 # man pepper
@@ -623,4 +636,13 @@ In release mode:
 # pepper
 
 Enjoy now with this powerful dual stack captive portal ;).
+
++++++++++++++++++
+7) Contribution +
++++++++++++++++++
+
+Some contributions are located in contrib/ directory. 
+
+Here are a list of contributions:
+- Central Authentication Service support (http://www.jasig.org/cas) by Christophe Borelly.
 
