@@ -91,14 +91,16 @@ Change the ownner of PHP scripts:
 
 1.4) Update /etc/pepper.conf
 ----------------------------
-There are only 3 directives to check.
-These are the default values:
+There are only a few directives to check.
+Here are the default values:
   uamserver https://192.168.182.1/hsl.php
   uamserver6 https://[2001:db8:1::1234]/hsl.php
-  uamsecret ht2eb8ej6s4et3rg1ulp
-It is easy to understand their meaning and change the values according to your architecture. 
-For this to work, your UAM web server must uses SSL (port 443) - See 4.2.
-And the server's certificate should have the subjectAltName set with either IP:192.168.182.1 or IP:2001:db8:1::1234 or both to prevent users to see a security exception in their navigators (See 3.2.2-5).
+  uamsecret testing234
+
+If you want to use CAS, you must be sure that your UAM web server supports SSL (needed for CAS-proxy - see 4.2) and that the certificate you're using has a subjectAltName directive set with either IP:192.168.182.1 or IP:2001:db8:1::1234 or both to prevent users to see a security exception in their navigators (See 3.2.2-5).
+
+Then you have to add the name of your CAS server to the list of allowed address:
+uamallowed cas.pepperspot.info
 
 If you want to introduce PepperSpot's captive portal to your users, you may activate uamhomepage with one of those lines:
     uamhomepage http://192.168.182.1/welcome.php
@@ -271,7 +273,7 @@ If you want to use of AJP, please refer to Tomcat's documentation (http://tomcat
     basicConstraints       = critical,CA:FALSE
     keyUsage               = digitalSignature,nonRepudiation,keyEncipherment
     extendedKeyUsage       = serverAuth
-    subjectAltName         = DNS:localhost,IP:192.168.182.1,IP:2001:db8:1::1234
+    subjectAltName         = DNS:cas.pepperspot.info,IP:192.168.182.1,IP:2001:db8:1::1234
     [ policy_match ]
     organizationName       = match
     commonName             = supplied

@@ -243,7 +243,7 @@ int tun_addaddr(struct tun_t *this,
   req.i.ifa_prefixlen = 32; /* 32 FOR IPv4 */
   req.i.ifa_flags = 0;
   req.i.ifa_scope = RT_SCOPE_HOST; /* TODO or 0 */
-  if(tun_gifindex(this, &req.i.ifa_index))
+  if(tun_gifindex(this, (unsigned int*)&req.i.ifa_index))
   {
     return -1;
   }

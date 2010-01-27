@@ -33,7 +33,7 @@ define('HS_REDIR_TIMEOUT',0);
 ## uamserver https://uam.pepperspot.info/hsl.php
 # Comment HS_HTTPS_TIMEOUT if you want to use the UAM server's default URL
 # even if it is not secure !!!
-#define('HS_HTTPS_TIMEOUT',5);
+define('HS_HTTPS_TIMEOUT',5);
 
 # Shared secret used to encrypt password (PAP).
 # Prevents dictionary attacks.
@@ -41,7 +41,7 @@ define('HS_REDIR_TIMEOUT',0);
 # It must be the same value of uamsecret in pepper.conf
 # Comment this line (AND uamsecret in pepper.conf),
 # if you want to use CHAP method.
-define('HS_UAMSECRET','ht2eb8ej6s4et3rg1ulp');
+define('HS_UAMSECRET','testing234');
 
 # Set HS_LANG (lower case) for messages translations
 # See hsl-msg-*.php files
@@ -60,12 +60,12 @@ define('CAS_URL','');
 # CAS_SERVICE must be the same as "service" in RADIUS raddb/modules/cas.conf
 define('CAS_SERVICE','cas://PepperSpot');
 # Check CAS server's certificate
-#define('CAS_CACERT','/etc/httpd/ca.crt');
+#define('CAS_CACERT','/usr/local/apache2/conf/ca.crt');
 # CAS_PGT_STORAGE must be set on Windows Systems
 define('CAS_PGT_STORAGE','C:/Tmp');
 # Set CAS_AUTO_SUBMIT_TIMEOUT if you want to enable automatic
 # login form submission after the specified time in milliseconds
-##define('CAS_AUTO_SUBMIT_TIMEOUT','1000');
+#define('CAS_AUTO_SUBMIT_TIMEOUT','1000');
 # Set CAS_READONLY to true if you want to enable by default
 # the readonly attribute in the login form
 define('CAS_READONLY',false);
@@ -111,7 +111,7 @@ $HOST_IS_IPv6=preg_match('/^\[[^\[]+\]/',$_SERVER['HTTP_HOST']);
 include_once('hsl-msg-'.HS_LANG.'.php');
 ###############################################################################
 # Check config
-if (USE_CAS&&(!HS_LONG_PWD||!defined('HS_UAMSECRET')))
+if (USE_CAS&&!defined('HS_UAMSECRET'))
 {
   echo('<h1>'.CAS_CONFIG_ERROR.'</h1>'.LF);
   echo('<p>'.CAS_CONFIG_ERROR_TEXT.'</p>'.LF);
@@ -269,28 +269,20 @@ function echoValues()
   echoData('CHAL',$GLOBALS['challenge']);
   if (defined('HS_UAMSECRET')) // Use PAP
   {
-    if (HS_LONG_PWD)
+    echoData('LEN',$GLOBALS['len']);
+    echoData('NSEG',$GLOBALS['nbSeg']);
+    echoData('NLEN',$GLOBALS['normLen']);
+    echoData('BPWD',bin2hex($GLOBALS['binPass']));
+    for ($i=0;$i<$GLOBALS['nbSeg'];$i++)
     {
-      echoData('LEN',$GLOBALS['len']);
-      echoData('NSEG',$GLOBALS['nbSeg']);
-      echoData('NLEN',$GLOBALS['normLen']);
-      echoData('BPWD',bin2hex($GLOBALS['binPass']));
-      for ($i=0;$i<$GLOBALS['nbSeg'];$i++)
-      {
-        echoData('CIPHER ('.$i.')',bin2hex($GLOBALS['binCipher'][$i]));
-        echoData('HASH ('.$i.')',bin2hex($GLOBALS['binHash'][$i]));
-        echoData('PWD ('.$i.')',bin2hex($GLOBALS['binPwd'][$i]));
-      }
       echoData('CIPHER ('.$i.')',bin2hex($GLOBALS['binCipher'][$i]));
+      echoData('HASH ('.$i.')',bin2hex($GLOBALS['binHash'][$i]));
+      echoData('PWD ('.$i.')',bin2hex($GLOBALS['binPwd'][$i]));
     }
-    else
-    {
-      echoData('CIPHER',bin2hex($GLOBALS['binCipher']));
-      echoData('PWD',bin2hex($GLOBALS['binPass']));
-    }
+    echoData('CIPHER ('.$i.')',bin2hex($GLOBALS['binCipher'][$i]));
     echoData('PAP',$GLOBALS['pappassword']);
   }
-  else
+  else // Use CHAP
   {
     echoData('RESP',$GLOBALS['response']);
   }
