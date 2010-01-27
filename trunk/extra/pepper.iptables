@@ -55,6 +55,10 @@ $IPTABLES -A INPUT -i $EXTIF4 -j REJECT
 #This is only needed if authentication server is on same server as pepper
 $IPTABLES -A INPUT -p tcp -m tcp --dport 80 --syn -j ACCEPT
 $IPTABLES -A INPUT -p tcp -m tcp --dport 443 --syn -j ACCEPT
+#Allow https on a local CAS sever
+#$IPTABLES -A INPUT -p tcp -m tcp --dport 8443 --syn -j ACCEPT
+#Allow https on an external CAS sever
+#$IPTABLES -A FORWARD -p tcp -m tcp --dport 8443 --syn -j ACCEPT
 
 #Allow related and established from $INTIF. Drop everything else.
 $IPTABLES -A INPUT -i $INTIF -j DROP

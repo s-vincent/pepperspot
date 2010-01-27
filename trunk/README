@@ -28,7 +28,7 @@ Depending to the mode, the box inwhich will be installed PepperSpot needs to be 
 1.1) Kernel
 -----------
 
-PepperSpot is known to run on Linux kernel > 2.6.24.
+PepperSpot is known to run on Linux kernel > 2.6.17.13.
 
 1.1) IPv6 
 ----------

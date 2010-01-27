@@ -20,7 +20,7 @@ phpCAS::forceAuthentication();
 echo '<h1 >Authentication ok on '.$_SERVER['HTTP_HOST'].' (proxy CAS) !</h1>'.LF;
 echo '<h2 >User : '.phpCAS::getUser().'</h2>'.LF;
 
-$service='http://'.$_SERVER['HTTP_HOST'].'/clientCAS.php';
+$service='http://'.$_SERVER['HTTP_HOST'].'/casClient.php';
 // Call service
 if (phpCAS::serviceWeb($service,$err_code,$output))
 {
