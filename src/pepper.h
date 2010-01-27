@@ -165,7 +165,7 @@ struct app_conn_t
   long int idletimeout; /**< RADIUS idle timeout */
   uint8_t statebuf[RADIUS_ATTR_VLEN + 1]; /**< Radius state */
   int statelen; /**< Length of statebuf */
-  uint8_t classbuf[RADIUS_ATTR_VLEN + 1]; /**< Radius class received from server and used in Accounting-Request packet */
+  uint8_t classbuf[RADIUS_ATTR_VLEN + 1]; /**< Class attribute received from radius server and used in Accounting-Request packet */
   int classlen; /**< Length of classbuf */
   int bandwidthmaxup; /**< Maximum upload bandwith */
   int bandwidthmaxdown; /**< Maximum download bandwidth */

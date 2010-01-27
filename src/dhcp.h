@@ -192,7 +192,7 @@ struct dhcp_iphdr_t
 struct dhcp_ipv6hdr_t
 {
   uint32_t version:4; /**< Version (always 6) */
-  uint32_t class:8; /**< Class field */
+  uint32_t traffic_class:8; /**< Priority field */
   uint32_t flow_label:20; /**< Flow label field */
   uint16_t payload_length; /**< Payload length */
   uint8_t next_header; /**< Next header number (protocol or IPv6 extension) */
