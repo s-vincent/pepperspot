@@ -136,7 +136,7 @@ struct redir_conn_t
   char *reply; /**< Reply message (point on replybuf) */
   uint8_t statebuf[RADIUS_ATTR_VLEN + 1]; /**< Radius state */
   int statelen; /**< Length of state */
-  uint8_t classbuf[RADIUS_ATTR_VLEN + 1]; /**< Radius class received from server and used in Accounting-Request packet */
+  uint8_t classbuf[RADIUS_ATTR_VLEN + 1]; /**< Class attribute received from radius server and used in Accounting-Request packet */
   int classlen; /**< Length of classbuf */
   int bandwidthmaxup; /**< Maximum upload bandwith */
   int bandwidthmaxdown; /**< Maximum download bandwith */
@@ -215,8 +215,8 @@ struct redir_msg_t
   uint8_t uamchal[REDIR_MD5LEN]; /**< UAM challenge */
   uint8_t statebuf[RADIUS_ATTR_VLEN + 1]; /**< Radius state */
   int statelen; /**< Length of state */
-  uint8_t classbuf[RADIUS_ATTR_VLEN + 1]; /**< Radius class received from server and used in Accounting-Request packet */
-  int classlen; /**< Length of class */
+  uint8_t classbuf[RADIUS_ATTR_VLEN + 1]; /**< Radius Class attribute received from server and used in Accounting-Request packet */
+  int classlen; /**< Length of classbuf */
   int bandwidthmaxup; /**< Maximum upload bandwidth */
   int bandwidthmaxdown; /**< Maximum download bandwidth */
   int maxinputoctets; /**< Maximum bytes that can be received */

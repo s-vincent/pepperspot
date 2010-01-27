@@ -89,7 +89,7 @@ struct in6_addr;
 struct tun6_packet_t
 {
   uint32_t version:4; /**< Version of IPv6 (always 6). */
-  uint32_t class:8; /**< Class field. */
+  uint32_t traffic_class:8; /**< Priority field. */
   uint32_t flow_label:20; /**< Flow label for QoS. */
   uint16_t payload_length; /**< Payload length. */
   uint8_t next_header; /**< Next header (protocol or header extension). */
