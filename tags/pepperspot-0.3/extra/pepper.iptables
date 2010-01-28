@@ -1,0 +1,81 @@
+#!/bin/sh
+#
+# IPv4 Firewall script for PepperSpot
+# A Wireless LAN Access Point Controller
+#
+# Uses $EXTIF (eth0) as the external interface (Internet or intranet) and
+# $INTIF (ath0) as the internal interface (access points).
+#
+#
+# SUMMARY
+# * All connections originating from pepper are allowed.
+# * Only ssh is allowed in on external interface.
+# * Nothing is allowed in on internal interface.
+# * Forwarding is allowed to and from the external interface, but disallowed
+#   to and from the internal interface.
+# * NAT is enabled on the external interface.
+
+IPTABLES="/sbin/iptables"
+EBTABLES="/sbin/ebtables"
+EXTIF4="eth0"
+INTIF="wlan0"
+
+#Flush all rules
+$IPTABLES -F 
+$IPTABLES -F -t nat
+$IPTABLES -F -t mangle
+
+
+#Set default behaviour
+$IPTABLES -P INPUT DROP
+$IPTABLES -P FORWARD ACCEPT
+$IPTABLES -P OUTPUT ACCEPT
+
+#Allow ping
+$IPTABLES -A INPUT -p icmp --icmp-type echo-request -i $INTIF -j ACCEPT
+$IPTABLES -A INPUT -p icmp --icmp-type echo-reply -i $INTIF -j ACCEPT
+$IPTABLES -A INPUT -p icmp --icmp-type echo-request -i $EXTIF4 -j ACCEPT
+$IPTABLES -A INPUT -p icmp --icmp-type echo-reply -i $EXTIF4 -j ACCEPT
+
+
+#Allow DNS query
+$IPTABLES -A INPUT -p udp -m udp --sport 53 -j ACCEPT
+$IPTABLES -A INPUT -p udp -m udp --dport 53 -j ACCEPT
+$IPTABLES -A FORWARD -p udp -m udp --dport 53 -j ACCEPT
+$IPTABLES -A FORWARD -p udp -m udp --sport 53 -j ACCEPT
+
+#Allow related and established on all interfaces (input)
+$IPTABLES -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+#Allow related, established and ssh on $-i $EXTIF4. Reject everything else.
+$IPTABLES -A INPUT -i $EXTIF4 -p tcp -m tcp --dport 22 --syn -j ACCEPT
+$IPTABLES -A INPUT -i $EXTIF4 -j REJECT
+
+#Allow http and https on other interfaces (input).
+#This is only needed if authentication server is on same server as pepper
+$IPTABLES -A INPUT -p tcp -m tcp --dport 80 --syn -j ACCEPT
+$IPTABLES -A INPUT -p tcp -m tcp --dport 443 --syn -j ACCEPT
+#Allow https on a local CAS sever
+#$IPTABLES -A INPUT -p tcp -m tcp --dport 8443 --syn -j ACCEPT
+#Allow https on an external CAS sever
+#$IPTABLES -A FORWARD -p tcp -m tcp --dport 8443 --syn -j ACCEPT
+
+#Allow related and established from $INTIF. Drop everything else.
+$IPTABLES -A INPUT -i $INTIF -j DROP
+
+#Allow 3990 on other interfaces (input).
+$IPTABLES -A INPUT -p tcp -m tcp --dport 3990 --syn -j ACCEPT
+
+#Allow ICMP echo on other interfaces (input).
+#$IPTABLES -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+#Allow everything on loopback interface.
+$IPTABLES -A INPUT -i lo -j ACCEPT
+
+# Drop everything to and from $INTIF (forward)
+# This means that access points can only be managed from ChilliSpot
+$IPTABLES -A FORWARD -i $INTIF -j DROP
+$IPTABLES -A FORWARD -o $INTIF -j DROP
+
+#Enable NAT on output device
+$IPTABLES -t nat -A POSTROUTING -o $EXTIF4 -j MASQUERADE
