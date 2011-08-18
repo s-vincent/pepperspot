@@ -2135,7 +2135,7 @@ int redir_accept(struct redir_t *redir, int ipv6)
       if(optionsdebug) printf("redir_accept: Challenge expired: %d : %d\n",
                                  conn.uamtime, time(NULL));
       redir_memcopy(REDIR_CHALLENGE, challenge, hexchal, &msg, address, addressv6, addrstorage);
-      if(msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t), 0) < 0)
+      if(msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t) - sizeof(msg.type), 0) < 0)
       {
         sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
         exit(0);
@@ -2183,7 +2183,7 @@ int redir_accept(struct redir_t *redir, int ipv6)
       msg.filteridlen = conn.filteridlen;
       strncpy(msg.filteridbuf, conn.filteridbuf, sizeof(msg.filteridbuf));
 
-      if(msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t), 0) < 0)
+      if(msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t) - sizeof(msg.type), 0) < 0)
       {
         sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
         exit(0);
@@ -2193,7 +2193,7 @@ int redir_accept(struct redir_t *redir, int ipv6)
     {
       redir_memcopy(REDIR_CHALLENGE, challenge, hexchal, &msg, address, addressv6, addrstorage);
       if(msgsnd(redir->msgid, &msg,
-                 sizeof(struct redir_msg_t), 0) < 0)
+                 sizeof(struct redir_msg_t) - sizeof(msg.type), 0) < 0)
       {
         sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
         exit(0);
@@ -2213,7 +2213,7 @@ int redir_accept(struct redir_t *redir, int ipv6)
   {
     redir_memcopy(REDIR_LOGOUT, challenge, hexchal, &msg, address, addressv6, addrstorage);
     if(msgsnd(redir->msgid, &msg,
-               sizeof(struct redir_msg_t), 0) < 0)
+               sizeof(struct redir_msg_t) - sizeof(msg.type), 0) < 0)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
       exit(0);
@@ -2228,7 +2228,7 @@ int redir_accept(struct redir_t *redir, int ipv6)
   else if(conn.type == REDIR_PRELOGIN)
   {
     redir_memcopy(REDIR_CHALLENGE, challenge, hexchal, &msg, address, addressv6, addrstorage);
-    if(msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t), 0) < 0)
+    if(msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t) - sizeof(msg.type), 0) < 0)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
       exit(0);
@@ -2260,7 +2260,7 @@ int redir_accept(struct redir_t *redir, int ipv6)
     else
     {
       redir_memcopy(REDIR_ABORT, challenge, hexchal, &msg, address, addressv6, addrstorage);
-      if(msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t), 0) < 0)
+      if(msgsnd(redir->msgid, &msg, sizeof(struct redir_msg_t) - sizeof(msg.type), 0) < 0)
       {
         sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
         exit(0);
@@ -2320,7 +2320,7 @@ int redir_accept(struct redir_t *redir, int ipv6)
     strncpy(msg.userurl, conn.userurl, sizeof(msg.userurl));
     msg.userurl[sizeof(msg.userurl) - 1] = 0;
     if(msgsnd(redir->msgid, &msg,
-               sizeof(struct redir_msg_t), 0) < 0)
+               sizeof(struct redir_msg_t) - sizeof(msg.type), 0) < 0)
     {
       sys_err(LOG_ERR, __FILE__, __LINE__, errno, "msgsnd() failed!");
       exit(0);
