@@ -488,7 +488,9 @@ int radius_resp(struct radius_t *this,
  * \param this radius_t instance
  * \param pack radius packet to send
  * \param peer destination peer
- * \param req_auth authenticator*/
+ * \param req_auth authenticator
+ * \return 0 if success, -1 otherwise
+ */
 int radius_coaresp(struct radius_t *this,
                    struct radius_packet_t *pack,
                    struct sockaddr_storage *peer, uint8_t *req_auth);

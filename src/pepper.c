@@ -2107,6 +2107,7 @@ static void free_options(void)
  * \brief Initialize "high level" connection (i.e. client).
  *
  * In fact it initialize and zeroed list of connections.
+ * \return 0 if success, -1 otherwise
  */
 static int initconn(void)
 {

@@ -790,6 +790,7 @@ int dhcp_validate(struct dhcp_t *this);
  * \param hisip connection IPv6 address
  * \param ourip portal captive IPv6 address
  * \param domain domain name
+ * \return 0 if success, -1 otherwise
  */
 int dhcp_set_addrsv6(struct dhcp_conn_t *conn,
                      struct in6_addr *hisip,
@@ -1026,6 +1027,7 @@ int dhcp_eapol_ind(struct dhcp_t *this);
  * \brief Call this function when a new IPv6 packet has arrived.
  * This function should be part of a select() loop in the application.
  * \param this the dhcp_t instance
+ * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
 int dhcp_ipv6_ind(struct dhcp_t* this);
