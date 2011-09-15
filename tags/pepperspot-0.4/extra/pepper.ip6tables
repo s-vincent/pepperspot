@@ -1,0 +1,89 @@
+#!/bin/sh
+#
+# IPv6 Firewall script for PepperSpot
+# A Wireless LAN Access Point Controller
+#
+# Uses $EXTIF (eth0) as the external interface (Internet or intranet) and
+# $INTIF (ath0) as the internal interface (access points).
+#
+#
+# SUMMARY
+# * All connections originating from pepper are allowed.
+# * Only ssh is allowed in on external interface.
+# * Nothing is allowed in on internal interface.
+# * Forwarding is allowed to and from the external interface, but disallowed
+#   to and from the internal interface.
+# * NAT is enabled on the external interface.
+
+
+IP6TABLES="/sbin/ip6tables"
+EXTIF6="eth0"
+INTIF="wlan0"
+
+
+##
+# note : all the IPv6 traffic is bridged but
+# with bridge-nf, the bridged packet is passed to
+# ip6tables's FORWARD table.
+
+#Flush all rules
+$IP6TABLES -F
+$IP6TABLES -F -t mangle
+
+#Set default behaviour
+$IP6TABLES -P INPUT DROP
+$IP6TABLES -P OUTPUT ACCEPT
+$IP6TABLES -P FORWARD ACCEPT
+
+#Accept ND protocol
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type neighbor-advertisement -j ACCEPT
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type neighbor-solicitation -j ACCEPT
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type router-solicitation -j ACCEPT
+
+#Allow ping6
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-request -i $INTIF -j ACCEPT
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-reply -i $INTIF -j ACCEPT
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-request -i $EXTIF6 -j ACCEPT
+$IP6TABLES -A INPUT -p icmpv6 --icmpv6-type echo-reply -i $EXTIF6 -j ACCEPT
+
+#Allow RIPNg if the server is also a router
+$IP6TABLES -A INPUT -p udp --sport 521 --dport 521 -j ACCEPT
+
+#Allow DNS query
+$IP6TABLES -A FORWARD -p udp -m udp --sport 53 -j ACCEPT
+$IP6TABLES -A FORWARD -p udp -m udp --dport 53 -j ACCEPT
+
+
+#Allow related and established on all interfaces (input)
+$IP6TABLES -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+#Allow releated, established and ssh on $EXTIF. Reject everything else.
+$IP6TABLES -A INPUT -i $EXTIF6 -p tcp -m tcp --dport 22 --syn -j ACCEPT
+$IP6TABLES -A INPUT -i $EXTIF6 -j REJECT
+
+
+#Allow http and https on other interfaces (input).
+#This is only needed if authentication server is on same server as pepper
+$IP6TABLES -A INPUT -p tcp -m tcp --dport 80 --syn -j ACCEPT
+$IP6TABLES -A INPUT -p tcp -m tcp --dport 443 --syn -j ACCEPT
+#Allow https on a local CAS sever
+#$IP6TABLES -A INPUT -p tcp -m tcp --dport 8443 --syn -j ACCEPT
+#Allow https on an external CAS sever
+#$IP6TABLES -A FORWARD -p tcp -m tcp --dport 8443 --syn -j ACCEPT
+
+#Allow related and established from $INTIF. Drop everything else.
+$IP6TABLES -A INPUT -i $INTIF -j DROP
+
+#Allow 3990 on other interfaces (input).
+$IP6TABLES -A INPUT -p tcp -m tcp --dport 3990 --syn -j ACCEPT
+
+
+#Allow everything on loopback interface.
+$IP6TABLES -A INPUT -i lo -j ACCEPT
+
+# Drop everything to and from $INTIF (forward)
+# This means that access points can only be managed from ChilliSpot
+$IP6TABLES -A FORWARD -i $INTIF -j DROP
+$IP6TABLES -A FORWARD -o $INTIF -j DROP
+

@@ -1,0 +1,6 @@
+extra/pepper.conf
+extra/pepper.iptables
+extra/pepper.ip6tables
+extra/hotspotlogin.cgi
+doc/dictionary.pepperspot
+
