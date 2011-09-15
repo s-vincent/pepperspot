@@ -1694,6 +1694,7 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
  * \param redir redir_t instance
  * \param addr peer address
  * \param conn redir connection
+ * \return 0 if success, -1 otherwise
  */
 static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
                         struct redir_conn_t *conn)
