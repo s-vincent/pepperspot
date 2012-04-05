@@ -1083,10 +1083,10 @@ int tun6_setaddr(struct tun6_t *this, struct in6_addr *addr, uint8_t prefixlen)
 int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *gateway, uint8_t prefixlen)
 {
   /* TODO : use _iface_route */
-  this = NULL;
-  dst = NULL;
-  gateway = NULL;
-  prefixlen = 0;
+  (void)this;
+  (void)dst;
+  (void)gateway;
+  (void)prefixlen;
   return -1;
 }
 
@@ -1099,8 +1099,8 @@ int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void
 int tun6_runscript(struct tun6_t *tun, char* script)
 {
   /* TODO */
-  tun = NULL;
-  script = NULL;
+  (void)tun;
+  (void)script;
   return 0;
 }
 

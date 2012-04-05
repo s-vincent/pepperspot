@@ -232,6 +232,8 @@ int tun_addaddr(struct tun_t *this,
   struct iovec iov;
   struct msghdr msg;
 
+  (void)status;
+
   if(!this->addrs) /* Use ioctl for first addr to make ping work */
     return tun_setaddr(this, addr, dstaddr, netmask);
 
@@ -514,7 +516,7 @@ static int tun_route(struct tun_t *this,
                      int delete)
 {
   /* To avoid unused parameter warning */
-  this = NULL;
+  (void)this;
 
   /* TODO: Learn how to set routing table on sun  */
 

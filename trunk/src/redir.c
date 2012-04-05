@@ -983,7 +983,7 @@ static int redir_getpath(struct redir_t *redir, char *src, char *dst, int dstsiz
   int dstlen = 0;
 
   /* To avoid unused parameter warning */
-  redir = NULL;
+  (void)redir;
 
   if(!(peol = strstr(src, "\n"))) /* End of the first line */
     return -1;
@@ -1056,7 +1056,7 @@ static int redir_geturl(struct redir_t *redir, char *src, char *dst, int dstsize
   int hostlen = 0;
 
   /* To avoid unused parameter warning */
-  redir = NULL;
+  (void)redir;
 
   dst[0] = 0; /* Null terminate in case of error return */
 
@@ -1140,7 +1140,7 @@ static int redir_getparam(struct redir_t *redir, char *src,
   int len = 0;
 
   /* To avoid unused parameter warning */
-  redir = NULL;
+  (void)redir;
 
   printf("Looking for: %s\n", param); /*TODO*/
 
@@ -1379,8 +1379,8 @@ static int redir_cb_radius_auth_conf(struct radius_t *radius,
   struct redir_conn_t *conn = (struct redir_conn_t*) cbp;
 
   /* To avoid unused parameter warning */
-  radius = NULL;
-  pack_req = NULL;
+  (void)radius;
+  (void)pack_req;
 
   if(optionsdebug)
     printf("Received access request confirmation from radius server\n");
@@ -1719,7 +1719,7 @@ static int redir_radius(struct redir_t *redir, struct sockaddr_storage *addr,
   int n = 0;
 
   /* To avoid unused parameter warning */
-  addr = NULL;
+  (void)addr;
 
   if(radius_new(&radius,
                  &redir->radiuslisten, 0, 0,

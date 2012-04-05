@@ -220,7 +220,7 @@ static int radius_authresp_authenticator(struct radius_t *this,
      shared secret */
 
   /* To avoid unused parameter warning */
-  this = NULL;
+  (void)this;
 
   MD5_CTX context;
 
@@ -810,7 +810,7 @@ int radius_addattrv6(struct radius_t *this, struct radius_packet_t *pack,
   uint8_t vlen = 0;
 
   /* To avoid unused parameter warning */
-  this = NULL;
+  (void)this;
 
   a = (struct radius_attrv6_t*) ((char *) pack + length); /* cast with (char *) to avoid use of void* in arithmetic warning */
 
@@ -1135,7 +1135,7 @@ int radius_keydecode(struct radius_t *this, uint8_t *dst, int dstsize,
   int blocks = 0;
 
   /* To avoid unused parameter warning */
-  this = NULL;
+  (void)this;
 
   blocks = (srclen - 2) / RADIUS_MD5LEN;
 
@@ -1356,7 +1356,7 @@ int radius_pwencode(struct radius_t *this, uint8_t *dst, int dstsize,
   unsigned char output[RADIUS_MD5LEN];
 
   /* To avoid unused parameter warning */
-  this = NULL;
+  (void)this;
 
   memset(dst, 0, dstsize);
 
