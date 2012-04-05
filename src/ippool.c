@@ -279,7 +279,7 @@ int ippool_aton(struct in_addr *addr, struct in_addr *mask,
   int masklog = 0;
 
   /* To avoid unused parameter warning */
-  number = 0;
+  (void)number;
 
   c = sscanf(pool, "%u.%u.%u.%u/%u.%u.%u.%u",
              &a1, &a2, &a3, &a4,

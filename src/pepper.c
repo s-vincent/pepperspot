@@ -3314,7 +3314,7 @@ static int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
   char buf[INET6_ADDRSTRLEN];
 
   /* To avoid unused parameter warning */
-  tun_obj = NULL;
+  (void)tun_obj;
 
   memcpy(&dst, ip6h->dst_addr, sizeof(ip6h->dst_addr));
 
@@ -3386,7 +3386,7 @@ int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len)
   char buf[INET_ADDRSTRLEN];
 
   /* To avoid unused parameter warning */
-  tun_obj = NULL;
+  (void)tun_obj;
 
   if(options.debug)
     printf("cb_tun_ind. Packet received: Forwarding to link layer\n");
@@ -3467,7 +3467,7 @@ static int cb_redir_getstate(struct redir_t *redir_obj, struct in_addr *addr,
   struct dhcp_conn_t *dhcpconn = NULL;
 
   /* To avoid unused parameter warning */
-  redir_obj = NULL;
+  (void)redir_obj;
 
   if(options.debug) printf("cb_redir_getstate\n");
 
@@ -3531,7 +3531,7 @@ static int cb_redir_getstatev6(struct redir_t* redir_obj, struct in6_addr* addr,
   struct dhcp_conn_t *dhcpconn = NULL;
 
   /* To avoid unused parameter warning */
-  redir_obj = NULL;
+  (void)redir_obj;
 
   if(ippool_getip6(ippool, &ipm, addr))
   {
@@ -4361,8 +4361,8 @@ int radius_conf(struct radius_t *radius_obj,
   struct radius_attr_t *attr = NULL;
 
   /* To avoid unused parameter warning */
-  radius_obj = NULL;
-  pack_req = NULL;
+  (void)radius_obj;
+  (void)pack_req;
 
   if(options.debug)
     printf("Received configuration management message from radius server\n");

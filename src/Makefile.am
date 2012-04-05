@@ -1,7 +1,7 @@
 sbin_PROGRAMS = pepper
 
 # add -pg to enable gprof
-AM_CFLAGS = -D_GNU_SOURCE -fno-builtin -DSBINDIR='"$(sbindir)"' -std=gnu99 -Wall -Wextra -pedantic -Wstrict-prototypes -Wredundant-decls -fno-strict-aliasing  
+AM_CFLAGS = -D_GNU_SOURCE -fno-builtin -DSBINDIR='"$(sbindir)"' -std=gnu99 -Wall -Wextra -Werror -pedantic -Wstrict-prototypes -Wredundant-decls -fno-strict-aliasing  
 
 # Uncomment to compile under Mac OS X, it says daemon() is deprecated, so keep -Werror and get rid of
 # deprecation warnings

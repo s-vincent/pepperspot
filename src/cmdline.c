@@ -1339,16 +1339,14 @@ cmdline_parser_internal (int argc, char * const *argv, struct gengetopt_args_inf
 {
   int c;  /* Character of the parsed option.  */
   char *multi_token, *multi_next; /* for multiple options */
-
   int i;        /* Counter */
-
   struct uamallowed_list * uamallowed_list = NULL,* uamallowed_new = NULL;
   struct macallowed_list * macallowed_list = NULL,* macallowed_new = NULL;
   int error = 0;
   struct gengetopt_args_info local_args_info;
 
   /* To avoid unused parameter warning */
-  check_required = 0;
+  (void)check_required;
  
   if (initialize)
     cmdline_parser_init (args_info);

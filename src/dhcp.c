@@ -2114,7 +2114,7 @@ int dhcp_timeout(struct dhcp_t *this)
 struct timeval* dhcp_timeleft(struct dhcp_t *this, struct timeval *tvp)
 {
   /* To avoid unused parameter warning */
-  this = NULL;
+  (void)this;
   return tvp;
 }
 
@@ -2649,7 +2649,7 @@ static int dhcp_sendOFFER(struct dhcp_conn_t *conn,
   int pos = 0;
 
   /* To avoid unused parameter warning */
-  len = 0;
+  (void)len;
 
   /* Get packet default values */
   dhcp_getdefault(&packet);
@@ -2771,7 +2771,7 @@ static int dhcp_sendACK(struct dhcp_conn_t *conn,
   int pos = 0;
 
   /* To avoid unused parameter warning */
-  len = 0;
+  (void)len;
 
   /* Get packet default values */
   dhcp_getdefault(&packet);
@@ -2904,7 +2904,7 @@ static int dhcp_sendNAK(struct dhcp_conn_t *conn,
   int pos = 0;
 
   /* To avoid unused parameter warning */
-  len = 0;
+  (void)len;
 
   /* Get packet default values */
   dhcp_getdefault(&packet);
@@ -2974,7 +2974,7 @@ static int dhcp_getreq(struct dhcp_t *this,
   struct in_addr addr;
 
   /* To avoid unused parameter warning */
-  len = 0;
+  (void)len;
 
   if(pack->udph.dst != htons(DHCP_BOOTPS))
     return 0; /* Not a DHCP packet */
@@ -3504,7 +3504,7 @@ static int dhcp_sendARP(struct dhcp_conn_t *conn,
   struct in_addr reqaddr;
 
   /* To avoid unused parameter warning */
-  len = 0;
+  (void)len;
 
   /* Get local copy */
   memcpy(&reqaddr.s_addr, pack->arp.tpa, DHCP_IP_ALEN);
