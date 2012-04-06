@@ -3174,7 +3174,7 @@ static int dhcp_receive_ipv6(struct dhcp_t* this, struct dhcp_ipv6packet_t* pack
     return 0;
   }
 
-  if((conn->authstate == DHCP_AUTH_NONE))
+  if(conn->authstate == DHCP_AUTH_NONE)
   {
     /* [SV]: inform application about the IPv6 address */
     if(this->cb_requestv6(conn, &conn->hisipv6))

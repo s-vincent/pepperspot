@@ -701,7 +701,7 @@ int ippool_newip(struct ippool_t *this, struct ippoolm_t **member,
     hash = ippool_hash4(addr) & this->hashmask;
     for(p = this->hash[hash]; p; p = p->nexthash)
     {
-      if((p->addr.s_addr == addr->s_addr))
+      if(p->addr.s_addr == addr->s_addr)
       {
         p2 = p;
         break;
@@ -781,7 +781,7 @@ int ippool_newip(struct ippool_t *this, struct ippoolm_t **member,
     p2->next = NULL;
     p2->prev = NULL;
     p2->inuse = 2; /* Static address in use */
-    memcpy(&p2->addr, addr, sizeof(addr));
+    memcpy(&p2->addr, addr, sizeof(struct in_addr));
     *member = p2;
     (void)ippool_hashadd(this, *member);
     if(0) (void)ippool_printaddr(this);
