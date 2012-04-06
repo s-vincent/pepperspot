@@ -1445,12 +1445,12 @@ int radius_new(struct radius_t **this,
     (*this)->proxyport = proxyport;
 
     if(proxyaddr)
-      memcpy(&(*this)->proxyaddr, proxyaddr, sizeof(proxyaddr));
+      memcpy(&(*this)->proxyaddr, proxyaddr, sizeof(struct sockaddr_storage));
     else
       *((struct sockaddr_in6 *)&(*this)->proxyaddr)->sin6_addr.s6_addr = ~0;
 
     if(proxymask)
-      memcpy(&(*this)->proxymask, proxymask, sizeof(proxymask));
+      memcpy(&(*this)->proxymask, proxymask, sizeof(struct sockaddr_storage));
     else
       *((struct sockaddr_in6 *)&(*this)->proxymask)->sin6_addr.s6_addr = ~0;
 
