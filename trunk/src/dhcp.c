@@ -2303,6 +2303,7 @@ static int dhcp_undoDNATv6(struct dhcp_conn_t *conn, struct dhcp_ipv6packet_t *p
   struct dhcp_t* this = conn->parent;
   struct dhcp_tcphdr_t* tcph = (struct dhcp_tcphdr_t*)pack->payload;
   struct dhcp_udphdr_t* udph = (struct dhcp_udphdr_t*) pack->payload;
+  int i = 0;
 
   if(this->anydns ||
       ((pack->ip6h.next_header == DHCP_IP_UDP) &&
@@ -2342,9 +2343,13 @@ static int dhcp_undoDNATv6(struct dhcp_conn_t *conn, struct dhcp_ipv6packet_t *p
 
   /* Was it a normal http or https reply from authentication server? */
   /* Was it a normal reply from authentication server? */
-  if(IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.src_addr, &this->ouripv6))
+  for(i = 0; i < this->authiplen6; i++)
   {
-    return 0; /* Destination was authentication server */
+    if((IN6_ARE_ADDR_EQUAL((struct in6_addr*)&pack->ip6h.src_addr, this->authip6[i].s6_addr)) &&
+        (pack->ip6h.next_header == DHCP_IPV6_TCP) &&
+        ((tcph->src == htons(DHCP_HTTP)) ||
+         (tcph->src == htons(DHCP_HTTPS))))
+      return 0; /* Destination was authentication server */
   }
 
   return -1;
