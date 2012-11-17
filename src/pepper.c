@@ -3359,6 +3359,7 @@ static int cb_tun6_ind(struct tun6_t* tun_obj, void* pack, unsigned len)
   {
     case DNPROT_UAM:
     case DNPROT_WPA:
+    case DNPROT_EAPOL:
     case DNPROT_MAC:
       dhcp_ipv6_req(appconn->dnlink, pack, len);
       break;
@@ -3433,6 +3434,7 @@ int cb_tun_ind(struct tun_t *tun_obj, void *pack, unsigned len)
   {
     case DNPROT_UAM:
     case DNPROT_WPA:
+    case DNPROT_EAPOL:
     case DNPROT_MAC:
       (void) dhcp_data_req((struct dhcp_conn_t *) appconn->dnlink, pack, len);
       break;
@@ -4061,7 +4063,7 @@ int access_request(struct radius_packet_t *pack,
   if((!pwdattr) && (!resplen))
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, 0,
-            "Password or EAP meaasge is missing from radius request");
+            "Password or EAP message is missing from radius request");
     return radius_resp(radius, &radius_pack, peer, pack->authenticator);
   }
 
