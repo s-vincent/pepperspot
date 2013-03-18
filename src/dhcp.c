@@ -3649,7 +3649,7 @@ static int dhcp_senddot1x(struct dhcp_conn_t *conn,
 {
   struct dhcp_t *this = conn->parent;
 
-  return dhcp_send(this, this->ipv6_fd, DHCP_ETH_EAPOL, conn->hismac, this->ifindex,
+  return dhcp_send(this, this->eapol_fd, DHCP_ETH_EAPOL, conn->hismac, this->ifindex,
                    pack, len);
 }
 
@@ -3670,7 +3670,7 @@ int dhcp_sendEAP(struct dhcp_conn_t *conn, void *pack, int len)
 
   memcpy(&packet.eap, pack, len);
 
-  return dhcp_send(this, this->ipv6_fd, DHCP_ETH_EAPOL, conn->hismac, this->ifindex,
+  return dhcp_send(this, this->eapol_fd, DHCP_ETH_EAPOL, conn->hismac, this->ifindex,
                    &packet, (DHCP_ETH_HLEN + 4 + len));
 }
 
