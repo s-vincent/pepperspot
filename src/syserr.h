@@ -76,18 +76,18 @@
 /**
  * \brief Log message in syslog.
  * \param pri Syslog priority
- * \param filename function name
+ * \param fn file name
+ * \param ln line number
  * \param en error number
- * \param line line number
  * \param fmt format
  * \param ... arguments
  */
-void sys_err(int pri, char *filename, int en, int line, char *fmt, ...);
+void sys_err(int pri, char *fn, int ln, int en, char *fmt, ...);
 
 /**
  * \brief Log packet message.
  * \param pri Syslog priority
- * \param fn function name
+ * \param fn file name
  * \param ln line number
  * \param en error number
  * \param peer peer's address

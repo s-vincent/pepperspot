@@ -73,15 +73,16 @@
 
 #include <sys/types.h>
 #include <net/if.h>
+
 #ifndef IFNAMSIZ
-#define IFNAMSIZ IF_NAMESIZE /**< Interface name size */
+#define IFNAMSIZ      IF_NAMESIZE /**< Interface name size */
 #endif
 
-#define PACKET_MAX      8196 /**< Maximum packet size we receive */
-#define TUN_ADDRSIZE     128 /**< Maximum ascii address size */
+#define PACKET_MAX    8196        /**< Maximum packet size we receive */
+#define TUN_ADDRSIZE  128         /**< Maximum ascii address size */
 
 #ifdef __linux__
-#define TUN_NLBUFSIZE   1024 /**< maximum netlink message size */
+#define TUN_NLBUFSIZE 1024        /**< maximum netlink message size */
 #endif
 
 /**
@@ -90,19 +91,19 @@
  */
 struct tun_packet_t
 {
-  unsigned int ver:4; /**< IPv4 version */
-  unsigned int ihl:4; /**< Internet header length */
-  unsigned int dscp:6; /**< DSCP field */
-  unsigned int ecn:2; /**< ECN field */
-  unsigned int length:16; /**< Total length */
-  unsigned int id:16; /**< ID number */
-  unsigned int flags:3; /**< IP flags */
-  unsigned int fragment:13; /**< Fragmentation offset */
-  unsigned int ttl:8; /**< Time to live */
-  unsigned int protocol:8; /**< Up layer protocol number */
-  unsigned int check:16; /**< Checksum */
-  unsigned int src:32; /**< IPv4 source address */
-  unsigned int dst:32; /**< IPv4 destination address */
+  unsigned int ver:4;             /**< IPv4 version */
+  unsigned int ihl:4;             /**< Internet header length */
+  unsigned int dscp:6;            /**< DSCP field */
+  unsigned int ecn:2;             /**< ECN field */
+  unsigned int length:16;         /**< Total length */
+  unsigned int id:16;             /**< ID number */
+  unsigned int flags:3;           /**< IP flags */
+  unsigned int fragment:13;       /**< Fragmentation offset */
+  unsigned int ttl:8;             /**< Time to live */
+  unsigned int protocol:8;        /**< Up layer protocol number */
+  unsigned int check:16;          /**< Checksum */
+  unsigned int src:32;            /**< IPv4 source address */
+  unsigned int dst:32;            /**< IPv4 destination address */
 };
 
 /* ***********************************************************
@@ -115,14 +116,14 @@ struct tun_packet_t
  */
 struct tun_t
 {
-  int fd;                /**< File descriptor to tun interface */
-  struct in_addr addr;   /**< Main IPv4 address */
-  struct in_addr dstaddr; /**< Destination address */
-  struct in_addr netmask; /**< IPv4 Netmask */
-  int addrs;             /**< Number of allocated IP addresses */
-  int routes;            /**< One if we allocated an automatic route */
-  char devname[IFNAMSIZ];/**< Name of the tun device */
-  int (*cb_ind) (struct tun_t *tun, void *pack, unsigned len); /**< Callback when receiving packet */
+  int fd;                         /**< File descriptor to tun interface */
+  struct in_addr addr;            /**< Main IPv4 address */
+  struct in_addr dstaddr;         /**< Destination address */
+  struct in_addr netmask;         /**< IPv4 Netmask */
+  int addrs;                      /**< Number of allocated IP addresses */
+  int routes;                     /**< One if we allocated an automatic route */
+  char devname[IFNAMSIZ];         /**< Name of the tun device */
+  int (*cb_ind)(struct tun_t *tun, void *pack, unsigned len); /**< Callback when receiving packet */
 };
 
 /**
@@ -203,7 +204,7 @@ int tun_set_cb_ind(struct tun_t *this,
  * \param script script pathname
  * \return 0
  */
-int tun_runscript(struct tun_t *tun, char* script);
+int tun_runscript(struct tun_t *tun, char *script);
 
 #endif  /* !_TUN_H */
 

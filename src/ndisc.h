@@ -45,17 +45,17 @@ static inline short nd_get_l2addr_len(unsigned short iface_type)
 {
   switch(iface_type)
   {
-      /* supported physical devices */
+    /* supported physical devices */
     case ARPHRD_ETHER:
     case ARPHRD_IEEE802:
-      /*  case ARPHRD_IEEE802_TR: */
+    /* case ARPHRD_IEEE802_TR: */
     case ARPHRD_IEEE80211:
-      /*  case ARPHRD_FDDI: */
+    /* case ARPHRD_FDDI: */
       return 6;
 #if 0
     case ARPHRD_ARCNET:
       return 1;
-      /* supported virtual devices */
+    /* supported virtual devices */
     case ARPHRD_SIT:
     case ARPHRD_TUNNEL6:
     case ARPHRD_PPP:
