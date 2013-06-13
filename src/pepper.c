@@ -68,6 +68,10 @@
  * \brief PepperSpot: next generation captive portal.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <syslog.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -89,7 +93,7 @@
 #endif
 
 #if defined (__OpenBSD__)
-#include <netinet/in.h>
+// #include <netinet/in.h>
 #include <net/if_tun.h>
 #ifndef EIDRM
 #define EIDRM EINVAL
@@ -100,12 +104,12 @@
 #endif
 
 #if defined (__NetBSD__)
-#include <netinet/in.h>
+// #include <netinet/in.h>
 #include <net/if_tun.h>
 #endif
 
 #if defined (__FreeBSD__)
-#include <netinet/in.h>
+// #include <netinet/in.h>
 #endif
 
 #include <time.h>
@@ -122,17 +126,11 @@
 #include <resolv.h> /* _res */
 #endif
 
-#include "../config.h"
 #include "tun.h"
 #include "tun6.h"
 #include "icmp6.h"
 #include "ippool.h"
-#include "radius.h"
-#include "radius_wispr.h"
-#include "radius_pepperspot.h"
-#include "redir.h"
 #include "syserr.h"
-#include "dhcp.h"
 #include "cmdline.h"
 #include "pepper.h"
 #include "util.h"

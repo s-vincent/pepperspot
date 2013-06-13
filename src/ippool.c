@@ -69,14 +69,12 @@
  */
 
 #include <sys/types.h>
-#include <netinet/in.h> /* in_addr */
 #include <stdlib.h>     /* calloc */
 #include <stdio.h>      /* sscanf */
 #include <syslog.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include "syserr.h"
 #include "ippool.h"
 #include "lookup.h"

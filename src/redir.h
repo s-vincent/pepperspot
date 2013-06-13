@@ -39,6 +39,9 @@
 #ifndef _REDIR_H
 #define _REDIR_H
 
+#include <time.h>                         /* time_t */
+#include "radius.h"
+
 #define REDIR_MAXLISTEN                 3 /**< Backlog argument of listen() */
 
 #define REDIR_MAXTIME                 100 /**< Maximum lifetime for a child process in seconds */
