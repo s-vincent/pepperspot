@@ -41,7 +41,7 @@
 #endif
 
 #ifndef IPV6_RECVPKTINFO
-#define IPV6_RECVPKTINFO IPV6_PKTINFO /**< IPv6 socket option to receive packet information */
+#define IPV6_RECVPKTINFO  IPV6_PKTINFO  /**< IPv6 socket option to receive packet information */
 #endif
 
 /**

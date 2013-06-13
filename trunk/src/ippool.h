@@ -85,11 +85,11 @@
    in RFC2373.
  */
 
-#define IPPOOL_NONETWORK   0x01 /**< Flags for ippool_new() */
-#define IPPOOL_NOBROADCAST 0x02 /**< Flags for ippool_new() */
-#define IPPOOL_NOGATEWAY   0x04 /**< Flags for ippool_new() */
+#define IPPOOL_NONETWORK    0x01 /**< Flags for ippool_new() */
+#define IPPOOL_NOBROADCAST  0x02 /**< Flags for ippool_new() */
+#define IPPOOL_NOGATEWAY    0x04 /**< Flags for ippool_new() */
 
-#define IPPOOL_STATSIZE 0x10000 /**< default pool's static addresses size */
+#define IPPOOL_STATSIZE  0x10000 /**< default pool's static addresses size */
 
 struct ippoolm_t;                /* Forward declaration */
 
@@ -153,7 +153,7 @@ unsigned long int ippool_hash4(struct in_addr *addr);
  * \param flags flags (IPPOOL_NONETWORK, IPPOOL_NOGATEWAY or IPPOOL_NOBROADCAST)
  * \return 0 if success, -1 otherwise
  */
-int ippool_new(struct ippool_t **this, char *dyn,  char *stat,
+int ippool_new(struct ippool_t **this, char *dyn, char *stat,
                int allowdyn, int allowstat, int flags);
 
 /**

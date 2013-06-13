@@ -48,8 +48,8 @@ typedef unsigned long uint32_t;
  */
 struct MD5Context
 {
-  uint32_t buf[4]; /**< state (ABCD) */
-  uint32_t bits[2]; /**< number of bits, modulo 2^64 (lsb first) */
+  uint32_t buf[4];      /**< state (ABCD) */
+  uint32_t bits[2];     /**< number of bits, modulo 2^64 (lsb first) */
   unsigned char in[64]; /**< Input buffer */
 };
 

@@ -52,14 +52,17 @@
 #include <stddef.h> /* NULL */
 #include <sys/types.h>
 #include <sys/select.h>
-
 #include <netinet/in.h>
+
+
+
 #include <net/if.h>
+
 #ifndef IFNAMSIZ
-#define IFNAMSIZ IF_NAMESIZE /**< Maximum interface name size */
+#define IFNAMSIZ             IF_NAMESIZE /**< Maximum interface name size */
 #endif
 
-#define LIBTUN6_ERRBUF_SIZE 4096 /**< Buffer for tun6 error message */
+#define LIBTUN6_ERRBUF_SIZE  4096        /**< Buffer for tun6 error message */
 
 #if __STDC_VERSION__ < 199901L
 #ifndef inline
@@ -88,14 +91,14 @@ struct in6_addr;
  */
 struct tun6_packet_t
 {
-  uint32_t version:4; /**< Version of IPv6 (always 6). */
-  uint32_t traffic_class:8; /**< Priority field. */
-  uint32_t flow_label:20; /**< Flow label for QoS. */
-  uint16_t payload_length; /**< Payload length. */
-  uint8_t next_header; /**< Next header (protocol or header extension). */
-  uint8_t hop_limit; /**< Hop limit (i.e. TTL). */
-  uint8_t src_addr[16]; /**< IPv6 source address. */
-  uint8_t dst_addr[16]; /**< IPv6 destination source address. */
+  uint32_t version:4;            /**< Version of IPv6 (always 6). */
+  uint32_t traffic_class:8;      /**< Priority field. */
+  uint32_t flow_label:20;        /**< Flow label for QoS. */
+  uint16_t payload_length;       /**< Payload length. */
+  uint8_t  next_header;          /**< Next header (protocol or header extension). */
+  uint8_t  hop_limit;            /**< Hop limit (i.e. TTL). */
+  uint8_t  src_addr[16];         /**< IPv6 source address. */
+  uint8_t  dst_addr[16];         /**< IPv6 destination source address. */
 };
 
 /**
@@ -105,15 +108,15 @@ struct tun6_packet_t
  */
 typedef struct tun6_t
 {
-  int fdv6; /**< File descriptor to IPv6 tun interface */
-  int ifindex; /**< Interface index */
-  struct in6_addr addrv6; /**< Our IPv6 address */
-  uint8_t prefixlen; /**< Prefix length of the IPv6 address (64 by default) */
-  int addrsv6; /**< Number of allocated IP addresses */
-  int routesv6; /**< One if we allocated an automatic route */
-  char devnamev6[IFNAMSIZ]; /**< Name of the IPv6 tun device */
+  int fdv6;                      /**< File descriptor to IPv6 tun interface */
+  int ifindex;                   /**< Interface index */
+  struct in6_addr addrv6;        /**< Our IPv6 address */
+  uint8_t prefixlen;             /**< Prefix length of the IPv6 address (64 by default) */
+  int addrsv6;                   /**< Number of allocated IP addresses */
+  int routesv6;                  /**< One if we allocated an automatic route */
+  char devnamev6[IFNAMSIZ];      /**< Name of the IPv6 tun device */
   int (*cb_indv6)(struct tun6_t* tun, void* pack, unsigned len); /**< Callback when receiving IPv6 packet */
-  struct tun6* device; /**< The tun6 device */
+  struct tun6* device;           /**< The tun6 device */
 } tun6_t;
 
 /**
@@ -169,7 +172,8 @@ int tun6_setaddr(struct tun6_t *this, struct in6_addr *addr, uint8_t prefixlen);
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *gateway, uint8_t prefixlen);
+int tun6_addroute(struct tun6_t *this, struct in6_addr *dst,
+                  struct in6_addr *gateway, uint8_t prefixlen);
 
 /**
  * \brief Set an IPv6 address on the interface.
@@ -178,7 +182,8 @@ int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *ga
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void *pack, unsigned len));
+int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind)(struct tun6_t *tun,
+                                                       void *pack, unsigned len));
 
 /**
  * \brief Set an IPv6 address on the interface.
@@ -187,7 +192,7 @@ int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int tun6_runscript(struct tun6_t *tun, char* script);
+int tun6_runscript(struct tun6_t *tun, char *script);
 
 /**
  * \brief Set interface flags.
@@ -202,7 +207,7 @@ int tun6_sifflags(struct tun6_t *this, int flags);
 extern "C"
 { /* } */
 #endif
-  int tun6_driver_diagnose (char *errbuf) LIBTUN6_NONNULL;
+  int tun6_driver_diagnose(char *errbuf) LIBTUN6_NONNULL;
 
   /*
    * All functions are thread-safe.
@@ -211,33 +216,33 @@ extern "C"
    * openlog() before you create a tunnel.
    */
 
-  tun6 *tun6_create (const char *req_name) LIBTUN6_WARN_UNUSED;
-  void tun6_destroy (tun6 *t) LIBTUN6_NONNULL;
+  tun6 *tun6_create(const char *req_name) LIBTUN6_WARN_UNUSED;
+  void tun6_destroy(tun6 *t) LIBTUN6_NONNULL;
 
-  int tun6_getId (const tun6 *t) LIBTUN6_NONNULL;
+  int tun6_getId(const tun6 *t) LIBTUN6_NONNULL;
 
-  int tun6_setState (tun6 *t, int up) LIBTUN6_NONNULL;
+  int tun6_setState(tun6 *t, int up) LIBTUN6_NONNULL;
 
-  int tun6_addAddress (tun6 *restrict t, const struct in6_addr *restrict addr,
-                       unsigned prefix_len) LIBTUN6_NONNULL;
-  int tun6_delAddress (tun6 *restrict t, const struct in6_addr *restrict addr,
-                       unsigned prefix_len) LIBTUN6_NONNULL;
+  int tun6_addAddress(tun6 *restrict t, const struct in6_addr *restrict addr,
+                      unsigned prefix_len) LIBTUN6_NONNULL;
+  int tun6_delAddress(tun6 *restrict t, const struct in6_addr *restrict addr,
+                      unsigned prefix_len) LIBTUN6_NONNULL;
 
-  int tun6_setMTU (tun6 *t, unsigned mtu) LIBTUN6_NONNULL;
+  int tun6_setMTU(tun6 *t, unsigned mtu) LIBTUN6_NONNULL;
 
-  int tun6_addRoute (tun6 *restrict t, const struct in6_addr *restrict addr,
-                     unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
-  int tun6_delRoute (tun6 *restrict t, const struct in6_addr *restrict addr,
-                     unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
+  int tun6_addRoute(tun6 *restrict t, const struct in6_addr *restrict addr,
+                    unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
+  int tun6_delRoute(tun6 *restrict t, const struct in6_addr *restrict addr,
+                    unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
 
-  int tun6_registerReadSet (const tun6 *restrict t, fd_set *restrict readset)
-  LIBTUN6_NONNULL LIBTUN6_PURE;
+  int tun6_registerReadSet(const tun6 *restrict t, fd_set *restrict readset)
+                           LIBTUN6_NONNULL LIBTUN6_PURE;
 
-  int tun6_recv (tun6 *restrict t, const fd_set *restrict readset,
-                 void *buf, size_t len) LIBTUN6_NONNULL;
-  int tun6_wait_recv (tun6 *restrict t, void *buf, size_t len) LIBTUN6_NONNULL;
-  int tun6_send (tun6 *restrict t, const void *packet, size_t len)
-  LIBTUN6_NONNULL;
+  int tun6_recv(tun6 *restrict t, const fd_set *restrict readset,
+                void *buf, size_t len) LIBTUN6_NONNULL;
+  int tun6_wait_recv(tun6 *restrict t, void *buf, size_t len) LIBTUN6_NONNULL;
+
+  int tun6_send(tun6 *restrict t, const void *packet, size_t len) LIBTUN6_NONNULL;
 
 #ifdef __cplusplus
 }
