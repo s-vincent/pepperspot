@@ -71,6 +71,15 @@
 #ifndef _RADIUS_H
 #define _RADIUS_H
 
+#include <stdio.h>                                     /* FILE */
+#include <stdint.h>                                    /* ISO C99 types: uint8_t, uint16_t, ... */
+#include <netinet/in.h>                                /* in_addr */
+#include <sys/socket.h>                                /* sockaddr_storage */
+#include <sys/time.h>                                  /* timeval */
+
+#include "radius_wispr.h"
+#include "radius_pepperspot.h"
+
 #define RADIUS_SECRETSIZE                          128 /**< Size of radius size, there are no secrets that long */
 #define RADIUS_MD5LEN                               16 /**< Length of MD5 hash */
 #define RADIUS_AUTHLEN                              16 /**< RFC 2865: Length of authenticator */

@@ -74,6 +74,13 @@
 #ifndef _PEPPER_H
 #define _PEPPER_H
 
+#include <stdint.h>                              /* ISO C99 types: uint8_t, uint16_t, ... */
+#include <netinet/in.h>                          /* in_addr */
+
+#include "dhcp.h"
+#include "radius.h"
+#include "redir.h"
+
 /* If the constants below are defined packets which have been dropped
    by the traffic shaper will be counted towards accounting and
    volume limitation */

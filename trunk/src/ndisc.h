@@ -30,6 +30,8 @@
 #ifndef __NDISC_H__
 #define __NDISC_H__
 
+#include <stdint.h>          /* uint32_t */
+#include <netinet/in.h>      /* in_addr */
 #include <net/if_arp.h>
 
 #ifndef ARPHRD_IEEE80211

@@ -71,6 +71,8 @@
 #ifndef _IPPOOL_H
 #define _IPPOOL_H
 
+#include <netinet/in.h>          /* in_addr */
+
 /* Assuming that the address space is fragmented we need a hash table
    in order to return the addresses.
 

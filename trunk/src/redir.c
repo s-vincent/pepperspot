@@ -68,6 +68,10 @@
  * \brief HTTP redirection module.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -86,19 +90,15 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
-#include <time.h>
 #include <sys/time.h>
 
 #include <signal.h>
 
 #include "syserr.h"
 #include "radius.h"
-#include "radius_wispr.h"
-#include "radius_pepperspot.h"
 #include "redir.h"
 #include "md5.h"
 #include "ippool.h"
-#include "../config.h"
 
 static int optionsdebug = 1; /**< Print debug information while running */
 

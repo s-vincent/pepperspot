@@ -74,7 +74,9 @@
 #ifndef _DHCP_H
 #define _DHCP_H
 
-#include <net/if.h>
+#include <stdint.h>                          /* ISO C99 types: uint8_t, uint16_t, ... */
+#include <netinet/in.h>                      /* in_addr */
+#include <net/if.h>                          /* IFNAMSIZ */
 
 /* DHCP Ethernet frame types */
 #define DHCP_ETH_IP                   0x0800 /**< IPv4 protocol number */
@@ -331,8 +333,8 @@ struct dhcp_fullpacket_t
   struct dhcp_packet_t dhcp;                 /**< DHCP packet */
 } __attribute__((packed));
 
-#define DHCP_ARP_REQUEST                  1 /**< ARP request code */
-#define DHCP_ARP_REPLY                    2 /**< ARP reply code */
+#define DHCP_ARP_REQUEST                   1 /**< ARP request code */
+#define DHCP_ARP_REPLY                     2 /**< ARP reply code */
 
 /**
  * \struct dhcp_arp_packet_t
@@ -819,7 +821,7 @@ int dhcp_data_req(struct dhcp_conn_t *conn, void *pack, unsigned len);
  * \param cb_ind the callback
  * \return 0
  */
-int dhcp_set_cb_ipv6_ind(struct dhcp_t *this, int (*cb_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
+int dhcp_set_cb_ipv6_ind(struct dhcp_t *this, int (*cb_ind)(struct dhcp_conn_t *conn, void *pack, unsigned len));
 
 /**
  * \brief Set the callback which is called when a machine requests an IPv6 address.
@@ -827,7 +829,7 @@ int dhcp_set_cb_ipv6_ind(struct dhcp_t *this, int (*cb_ind) (struct dhcp_conn_t 
  * \param cb_request the callback
  * \return 0
  */
-int dhcp_set_cb_requestv6(struct dhcp_t *this,  int (*cb_request) (struct dhcp_conn_t *conn, struct in6_addr *addr));
+int dhcp_set_cb_requestv6(struct dhcp_t *this, int (*cb_request)(struct dhcp_conn_t *conn, struct in6_addr *addr));
 
 /**
  * \brief Set the callback which is called when an IPv6 connection is created.
@@ -835,7 +837,7 @@ int dhcp_set_cb_requestv6(struct dhcp_t *this,  int (*cb_request) (struct dhcp_c
  * \param cb_connect the callback
  * \return 0
  */
-int dhcp_set_cb_connectv6(struct dhcp_t *this,  int (*cb_connect) (struct dhcp_conn_t *conn));
+int dhcp_set_cb_connectv6(struct dhcp_t *this, int (*cb_connect)(struct dhcp_conn_t *conn));
 
 /**
  * \brief Set the callback which is called when a IPv6 connection is deleted.
@@ -843,7 +845,7 @@ int dhcp_set_cb_connectv6(struct dhcp_t *this,  int (*cb_connect) (struct dhcp_c
  * \param cb_disconnect the callback
  * \return 0
  */
-int dhcp_set_cb_disconnectv6(struct dhcp_t *this,  int (*cb_disconnect) (struct dhcp_conn_t *conn));
+int dhcp_set_cb_disconnectv6(struct dhcp_t *this, int (*cb_disconnect)(struct dhcp_conn_t *conn));
 
 /* [SG] */
 /**
@@ -854,7 +856,7 @@ int dhcp_set_cb_disconnectv6(struct dhcp_t *this,  int (*cb_disconnect) (struct 
  * \return 0
  */
 int dhcp_set_cb_unauth_dnat(struct dhcp_t *this,
-                            int (*cb_unauth_dnat) (struct dhcp_conn_t *conn));
+                            int (*cb_unauth_dnat)(struct dhcp_conn_t *conn));
 
 /**
  * \brief Set callback function which is called when packet has arrived
@@ -863,7 +865,7 @@ int dhcp_set_cb_unauth_dnat(struct dhcp_t *this,
  * \return 0
  */
 int dhcp_set_cb_data_ind(struct dhcp_t *this,
-                         int (*cb_data_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
+                         int (*cb_data_ind)(struct dhcp_conn_t *conn, void *pack, unsigned len));
 
 /**
  * \brief Set callback function which is called when a dhcp request is received
@@ -872,7 +874,7 @@ int dhcp_set_cb_data_ind(struct dhcp_t *this,
  * \return 0
  */
 int dhcp_set_cb_request(struct dhcp_t *this,
-                        int (*cb_request) (struct dhcp_conn_t *conn, struct in_addr *addr));
+                        int (*cb_request)(struct dhcp_conn_t *conn, struct in_addr *addr));
 
 /**
  * \brief Set callback function which is called when a connection is deleted.
@@ -881,7 +883,7 @@ int dhcp_set_cb_request(struct dhcp_t *this,
  * \return 0
  */
 int dhcp_set_cb_disconnect(struct dhcp_t *this,
-                           int (*cb_disconnect) (struct dhcp_conn_t *conn));
+                           int (*cb_disconnect)(struct dhcp_conn_t *conn));
 
 /**
  * \brief Set callback function which is called when a connection is created
@@ -890,7 +892,7 @@ int dhcp_set_cb_disconnect(struct dhcp_t *this,
  * \return 0
  */
 int dhcp_set_cb_connect(struct dhcp_t *this,
-                        int (*cb_connect) (struct dhcp_conn_t *conn));
+                        int (*cb_connect)(struct dhcp_conn_t *conn));
 
 /**
  * \brief Set callback function which is called when packet has arrived
@@ -900,7 +902,7 @@ int dhcp_set_cb_connect(struct dhcp_t *this,
  * \return 0
  */
 int dhcp_set_cb_eap_ind(struct dhcp_t *this,
-                        int (*cb_eap_ind) (struct dhcp_conn_t *conn, void *pack, unsigned len));
+                        int (*cb_eap_ind)(struct dhcp_conn_t *conn, void *pack, unsigned len));
 
 /**
  * \brief Use the hash tables to find IPv4 connection based on the mac address.
@@ -909,8 +911,7 @@ int dhcp_set_cb_eap_ind(struct dhcp_t *this,
  * \param hwaddr MAC address to find
  * \return 0 if success, -1 if not found.
  */
-int dhcp_hashget(struct dhcp_t *this, struct dhcp_conn_t **conn,
-                 uint8_t *hwaddr);
+int dhcp_hashget(struct dhcp_t *this, struct dhcp_conn_t **conn, uint8_t *hwaddr);
 
 /**
  * \brief Use the hash tables to find IPv6 connection based on the mac address.
@@ -920,8 +921,7 @@ int dhcp_hashget(struct dhcp_t *this, struct dhcp_conn_t **conn,
  * \return 0 if success, -1 if not found.
  * \author Sebastien Vincent
  */
-int dhcp_hashgetv6(struct dhcp_t *this, struct dhcp_conn_t **conn,
-                   uint8_t *hwaddr);
+int dhcp_hashgetv6(struct dhcp_t *this, struct dhcp_conn_t **conn, uint8_t *hwaddr);
 
 /**
  * \brief Get the MAC address of the interface.
@@ -938,8 +938,7 @@ int dhcp_getmac(const char *ifname, unsigned char *macaddr);
  * \param hwaddr hardware address
  * \return 0 if success, -1 otherwise
  */
-int dhcp_newconn(struct dhcp_t *this, struct dhcp_conn_t **conn,
-                 uint8_t *hwaddr);
+int dhcp_newconn(struct dhcp_t *this, struct dhcp_conn_t **conn, uint8_t *hwaddr);
 
 /**
  * \brief Allocate a new IPv6 connection.
@@ -949,7 +948,7 @@ int dhcp_newconn(struct dhcp_t *this, struct dhcp_conn_t **conn,
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int dhcp_newconn6(struct dhcp_t* this, struct dhcp_conn_t** conn, uint8_t* hwaddr);
+int dhcp_newconn6(struct dhcp_t* this, struct dhcp_conn_t **conn, uint8_t *hwaddr);
 
 /**
  * \brief Remove an IPv4 client connection.

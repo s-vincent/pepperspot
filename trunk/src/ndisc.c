@@ -66,8 +66,6 @@
 #include <sys/select.h>
 
 #include <net/if.h>
-#include <net/if_arp.h>
-#include <netinet/in.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
 

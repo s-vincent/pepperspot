@@ -88,6 +88,9 @@
  * - Wait until code is bug free.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <stdlib.h>
 #include <syslog.h>
 #include <stdio.h>
@@ -95,12 +98,9 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <stdint.h> /* ISO C99 types */
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <net/if.h>
 
 #include "util.h"
 #include "ndisc.h"
@@ -130,7 +130,6 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 
-#include "../config.h"
 #include "syserr.h"
 #include "ippool.h"
 #include "iphash.h"

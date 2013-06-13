@@ -71,7 +71,6 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <stdio.h>
 #include <syslog.h>
 #include <string.h>
@@ -79,7 +78,6 @@
 #include <arpa/inet.h>
 
 #include "syserr.h"
-
 
 void sys_err(int pri, char *fn, int ln, int en, char *fmt, ...)
 {
@@ -99,7 +97,6 @@ void sys_err(int pri, char *fn, int ln, int en, char *fmt, ...)
 void sys_errpack(int pri, char *fn, int ln, int en, struct sockaddr_in *peer,
                  void *pack, unsigned len, char *fmt, ...)
 {
-
   va_list args;
   char buf[SYSERR_MSGSIZE];
   char buf2[SYSERR_MSGSIZE];
