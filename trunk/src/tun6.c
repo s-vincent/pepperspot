@@ -126,9 +126,13 @@ const char os_driver[] = "BSD";
 #define TUNSIFHEAD _IOW('t', 96, int)
 #endif
 
+
+
+
 #ifdef HAVE_NET_IF_VAR_H
 #include <net/if_var.h>
 #endif
+
 
 #include <net/if_dl.h> /* struct sockaddr_dl */
 #include <net/route.h> /* AF_ROUTE things */
@@ -430,7 +434,7 @@ static int tun6_setState(struct tun6 *t, int up)
  * tun6_destroy and/or were terminated.
  * \param t tun6 descriptor to destroy
  */
-static void tun6_destroy(struct tun6* t)
+static void tun6_destroy(struct tun6 *t)
 {
   assert(t != NULL);
   assert(t->fd != -1);
@@ -535,7 +539,7 @@ static void plen_to_sin6(unsigned plen, struct sockaddr_in6 *sin6)
  * \return 0 if success, -1 otherwise
  */
 static int _iface_addr(int reqfd, int id, int add,
-                        const struct in6_addr *addr, unsigned prefix_len)
+                       const struct in6_addr *addr, unsigned prefix_len)
 {
   void *req = NULL;
   long cmd = 0;
@@ -803,8 +807,7 @@ static int tun6_delAddress(struct tun6 *t, const struct in6_addr *addr, unsigned
  *
  * @return 0 on success, -1 in case error.
  */
-static int tun6_addRoute(struct tun6 *t, const struct in6_addr *addr, unsigned prefix_len,
-                          int rel_metric)
+static int tun6_addRoute(struct tun6 *t, const struct in6_addr *addr, unsigned prefix_len, int rel_metric)
 {
   assert(t != NULL);
 
@@ -821,8 +824,7 @@ static int tun6_addRoute(struct tun6 *t, const struct in6_addr *addr, unsigned p
  * @param rel_metric metric
  * @return 0 on success, -1 in case error.
  */
-static int tun6_delRoute(struct tun6 *t, const struct in6_addr *addr, unsigned prefix_len,
-                          int rel_metric)
+static int tun6_delRoute(struct tun6 *t, const struct in6_addr *addr, unsigned prefix_len, int rel_metric)
 {
   assert(t != NULL);
 
@@ -831,14 +833,14 @@ static int tun6_delRoute(struct tun6 *t, const struct in6_addr *addr, unsigned p
 
 /**
  * \brief Add an IPv6 route.
- * \param this the tun_t structure
+ * \param t tun6 instance
  * \param dst the destination address
  * \param gateway the gateway to route the packet for the "dst"
  * \param prefixlen length of the prefix
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-static int tun6_addroutegw(struct tun6* this, struct in6_addr* dst, struct in6_addr* gateway, uint8_t prefixlen)
+static int tun6_addroutegw(struct tun6 *t, struct in6_addr *dst, struct in6_addr *gateway, uint8_t prefixlen)
 {
   int code = -1;
   char buf[1024];
@@ -850,13 +852,13 @@ static int tun6_addroutegw(struct tun6* this, struct in6_addr* dst, struct in6_a
   rtm->rtmsg_metric = 1024;
   rtm->rtmsg_dst_len = prefixlen;
   rtm->rtmsg_src_len = 0;
-  rtm->rtmsg_ifindex = this->id;
+  rtm->rtmsg_ifindex = t->id;
   rtm->rtmsg_flags = RTF_UP | RTF_GATEWAY;
 
   memcpy(&rtm->rtmsg_dst, dst, sizeof(struct in6_addr));
   memcpy(&rtm->rtmsg_gateway, gateway, sizeof(struct in6_addr));
 
-  code = ioctl(this->reqfd, SIOCADDRT, rtm);
+  code = ioctl(t->reqfd, SIOCADDRT, rtm);
 
   return code!=-1 ? 0 : -1;
 }
@@ -1012,40 +1014,40 @@ static int tun6_send(struct tun6 *t, const void *packet, size_t len)
   return val;
 }
 
-int tun6_new(struct tun6_t** tun)
+int tun6_new(struct tun6_t **this)
 {
-  *tun = malloc(sizeof(struct tun6_t));
+  *this = malloc(sizeof(struct tun6_t));
 
-  if(!(*tun))
+  if(!(*this))
   {
     return -1;
   }
 
-  memset(*tun, 0x00, sizeof(struct tun6_t));
-  (*tun)->cb_indv6 = NULL;
-  (*tun)->addrsv6 = 0;
-  (*tun)->routesv6 = 0;
+  memset(*this, 0x00, sizeof(struct tun6_t));
+  (*this)->cb_indv6 = NULL;
+  (*this)->addrsv6 = 0;
+  (*this)->routesv6 = 0;
 
-  if(!((*tun)->device = tun6_create(NULL)))
+  if(!((*this)->device = tun6_create(NULL)))
   {
-    free(*tun);
+    free(*this);
     return -1;
   }
 
-  (*tun)->fdv6 = (*tun)->device->fd;
-  (*tun)->ifindex = (*tun)->device->id;
+  (*this)->fdv6 = (*this)->device->fd;
+  (*this)->ifindex = (*this)->device->id;
 
   return 0;
 }
 
-int tun6_free(struct tun6_t* tun)
+int tun6_free(struct tun6_t *this)
 {
-  tun6_destroy(tun->device);
-  free(tun);
+  tun6_destroy(this->device);
+  free(this);
   return 0;
 }
 
-int tun6_decaps(struct tun6_t* this)
+int tun6_decaps(struct tun6_t *this)
 {
 #if defined(__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
 
@@ -1067,7 +1069,7 @@ int tun6_decaps(struct tun6_t* this)
   return -1;
 }
 
-int tun6_encaps(struct tun6_t* this, void* pack, unsigned int len)
+int tun6_encaps(struct tun6_t *this, void *pack, unsigned int len)
 {
   return tun6_send(this->device, pack, len);
 }
@@ -1090,16 +1092,16 @@ int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *ga
   return -1;
 }
 
-int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind) (struct tun6_t *tun, void *pack, unsigned len))
+int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind)(struct tun6_t *this, void *pack, unsigned len))
 {
   this->cb_indv6 = cb_ind;
   return 0;
 }
 
-int tun6_runscript(struct tun6_t *tun, char* script)
+int tun6_runscript(struct tun6_t *this, char *script)
 {
   /* TODO */
-  (void)tun;
+  (void)this;
   (void)script;
   return 0;
 }
