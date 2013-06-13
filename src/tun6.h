@@ -115,25 +115,25 @@ typedef struct tun6_t
   int addrsv6;                   /**< Number of allocated IP addresses */
   int routesv6;                  /**< One if we allocated an automatic route */
   char devnamev6[IFNAMSIZ];      /**< Name of the IPv6 tun device */
-  int (*cb_indv6)(struct tun6_t* tun, void* pack, unsigned len); /**< Callback when receiving IPv6 packet */
+  int (*cb_indv6)(struct tun6_t *this, void *pack, unsigned len); /**< Callback when receiving IPv6 packet */
   struct tun6* device;           /**< The tun6 device */
 } tun6_t;
 
 /**
  * \brief Create a tun6_t instance
- * \param tun a pointer on a pointer of tun6_t
+ * \param this a pointer on a pointer of tun6_t
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int tun6_new(struct tun6_t** tun);
+int tun6_new(struct tun6_t **this);
 
 /**
  * \brief Free the ressource associated with the tun6_t instance
- * \param tun the tun6_t instance
+ * \param this the tun6_t instance
  * \return 0 if success, -1 otherwis
  * \author Sebastien Vincent
  */
-int tun6_free(struct tun6_t *tun);
+int tun6_free(struct tun6_t *this);
 
 /**
  * \brief Decapsulate a packet.
@@ -145,13 +145,13 @@ int tun6_decaps(struct tun6_t *this);
 
 /**
  * \brief Encapsulate a packet.
- * \param tun the tun6_t instance
+ * \param this the tun6_t instance
  * \param pack the packet to encapsulate
  * \param len length of the packet
  * \return number of bytes written or -1 if error
  * \author Sebastien Vincent
  */
-int tun6_encaps(struct tun6_t *tun, void *pack, unsigned int len);
+int tun6_encaps(struct tun6_t *this, void *pack, unsigned int len);
 
 /**
  * \brief Set an IPv6 address on the interface.
@@ -182,17 +182,17 @@ int tun6_addroute(struct tun6_t *this, struct in6_addr *dst,
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind)(struct tun6_t *tun,
+int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind)(struct tun6_t *this,
                                                        void *pack, unsigned len));
 
 /**
  * \brief Set an IPv6 address on the interface.
- * \param tun the tun6_t instance
+ * \param this the tun6_t instance
  * \param script path of the script
  * \return 0 if success, -1 otherwise
  * \author Sebastien Vincent
  */
-int tun6_runscript(struct tun6_t *tun, char *script);
+int tun6_runscript(struct tun6_t *this, char *script);
 
 /**
  * \brief Set interface flags.

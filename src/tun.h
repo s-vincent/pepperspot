@@ -123,22 +123,22 @@ struct tun_t
   int addrs;                      /**< Number of allocated IP addresses */
   int routes;                     /**< One if we allocated an automatic route */
   char devname[IFNAMSIZ];         /**< Name of the tun device */
-  int (*cb_ind)(struct tun_t *tun, void *pack, unsigned len); /**< Callback when receiving packet */
+  int (*cb_ind)(struct tun_t *this, void *pack, unsigned len); /**< Callback when receiving packet */
 };
 
 /**
  * \brief Create an instance of tun.
- * \param tun resulting pointer will be filled in
+ * \param this resulting pointer will be filled in
  * \return 0 if success, -1 otherwise
  */
-int tun_new(struct tun_t **tun);
+int tun_new(struct tun_t **this);
 
 /**
  * \brief Release a tun interface.
- * \param tun tun_t instance
+ * \param this tun_t instance
  * \return 0 if success, -1 otherwise
  */
-int tun_free(struct tun_t *tun);
+int tun_free(struct tun_t *this);
 
 /**
  * \brief Decapsulate packet coming from tun interface.
@@ -149,12 +149,12 @@ int tun_decaps(struct tun_t *this);
 
 /**
  * \brief Encapsulate packet coming from tun interface.
- * \param tun tun_t instance
+ * \param this tun_t instance
  * \param pack packet
  * \param len packet length
  * \return 0 if success, -1 otherwise
  */
-int tun_encaps(struct tun_t *tun, void *pack, unsigned len);
+int tun_encaps(struct tun_t *this, void *pack, unsigned len);
 
 /**
  * \brief Add an address on tun interface.
@@ -196,15 +196,15 @@ int tun_addroute(struct tun_t *this, struct in_addr *dst,
  * \return 0
  */
 int tun_set_cb_ind(struct tun_t *this,
-                   int (*cb_ind) (struct tun_t *tun, void *pack, unsigned len));
+                   int (*cb_ind)(struct tun_t *this, void *pack, unsigned len));
 
 /**
  * \brief Run script.
- * \param tun tun_t instance
+ * \param this tun_t instance
  * \param script script pathname
  * \return 0
  */
-int tun_runscript(struct tun_t *tun, char *script);
+int tun_runscript(struct tun_t *this, char *script);
 
 #endif  /* !_TUN_H */
 

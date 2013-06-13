@@ -660,7 +660,7 @@ static int tun_delroute(struct tun_t *this,
   return tun_route(this, dst, gateway, mask, 1);
 }
 
-int tun_new(struct tun_t **tun)
+int tun_new(struct tun_t **this)
 {
 #if defined(__linux__)
   struct ifreq ifr;
@@ -682,22 +682,22 @@ int tun_new(struct tun_t **tun)
 #error  "Unknown platform!"
 #endif
 
-  if(!(*tun = calloc(1, sizeof(struct tun_t))))
+  if(!(*this = calloc(1, sizeof(struct tun_t))))
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "calloc() failed");
     return EOF;
   }
 
-  (*tun)->cb_ind = NULL;
-  (*tun)->addrs = 0;
-  (*tun)->routes = 0;
+  (*this)->cb_ind = NULL;
+  (*this)->addrs = 0;
+  (*this)->routes = 0;
 
 #if defined(__linux__)
   /* Open the actual tun device */
-  if(((*tun)->fd  = open("/dev/net/tun", O_RDWR)) < 0)
+  if(((*this)->fd  = open("/dev/net/tun", O_RDWR)) < 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "open() failed");
-    free(*tun);
+    free(*this);
     return -1;
   }
 
@@ -710,19 +710,19 @@ int tun_new(struct tun_t **tun)
   ifr.ifr_flags |= IFF_ONE_QUEUE;
 #endif
 
-  /* if(ioctl((*tun)->fd, TUNSETIFF, (void *) &ifr) < 0) */
-  if(ioctl((*tun)->fd, TUNSETIFF, (void *) &ifr) < 0)
+  /* if(ioctl((*this)->fd, TUNSETIFF, (void *) &ifr) < 0) */
+  if(ioctl((*this)->fd, TUNSETIFF, (void *) &ifr) < 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "ioctl() failed");
-    free(*tun);
-    close((*tun)->fd);
+    free(*this);
+    close((*this)->fd);
     return -1;
   }
 
-  strncpy((*tun)->devname, ifr.ifr_name, IFNAMSIZ - 1);
-  (*tun)->devname[IFNAMSIZ - 1] = 0; /* make sure to terminate */
+  strncpy((*this)->devname, ifr.ifr_name, IFNAMSIZ - 1);
+  (*this)->devname[IFNAMSIZ - 1] = 0; /* make sure to terminate */
 
-  ioctl((*tun)->fd, TUNSETNOCSUM, &on); /* Disable checksums */
+  ioctl((*this)->fd, TUNSETNOCSUM, &on); /* Disable checksums */
   return 0;
 
 #elif defined(__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
@@ -732,17 +732,17 @@ int tun_new(struct tun_t **tun)
   {
     snprintf(devname, sizeof(devname), "/dev/tun%d", devnum);
     devname[sizeof(devname)] = 0;
-    if(((*tun)->fd = open(devname, O_RDWR)) >= 0) break;
+    if(((*this)->fd = open(devname, O_RDWR)) >= 0) break;
     if(errno != EBUSY) break;
   }
-  if((*tun)->fd < 0)
+  if((*this)->fd < 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "Can't find tunnel device");
     return -1;
   }
 
-  snprintf((*tun)->devname, sizeof((*tun)->devname), "tun%d", devnum);
-  (*tun)->devname[sizeof((*tun)->devname)] = 0;
+  snprintf((*this)->devname, sizeof((*this)->devname), "tun%d", devnum);
+  (*this)->devname[sizeof((*this)->devname)] = 0;
 
   /* The tun device we found might have "old" IP addresses allocated */
   /* We need to delete those. This problem is not present on Linux */
@@ -750,7 +750,7 @@ int tun_new(struct tun_t **tun)
   memset(&areq, 0, sizeof(areq));
 
   /* Set up interface name */
-  strncpy(areq.ifra_name, (*tun)->devname, IFNAMSIZ - 1);
+  strncpy(areq.ifra_name, (*this)->devname, IFNAMSIZ - 1);
   areq.ifra_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
 
   /* Create a channel to the NET kernel. */
@@ -775,14 +775,14 @@ int tun_new(struct tun_t **tun)
     return -1;
   }
 
-  if( ((*tun)->fd = open("/dev/tun", O_RDWR, 0)) < 0)
+  if( ((*this)->fd = open("/dev/tun", O_RDWR, 0)) < 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "Can't open /dev/tun");
     return -1;
   }
 
   /* Assign a new PPA and get its unit number. */
-  if( (ppa = ioctl((*tun)->fd, TUNNEWPPA, -1)) < 0)
+  if( (ppa = ioctl((*this)->fd, TUNNEWPPA, -1)) < 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "Can't assign new interface");
     return -1;
@@ -815,11 +815,11 @@ int tun_new(struct tun_t **tun)
 
   close(if_fd);
 
-  snprintf((*tun)->devname, sizeof((*tun)->devname), "tun%d", ppa);
-  (*tun)->devname[sizeof((*tun)->devname)] = 0;
+  snprintf((*this)->devname, sizeof((*this)->devname), "tun%d", ppa);
+  (*this)->devname[sizeof((*this)->devname)] = 0;
 
   memset(&ifr, 0, sizeof(ifr));
-  strcpy(ifr.ifr_name, (*tun)->devname);
+  strcpy(ifr.ifr_name, (*this)->devname);
   ifr.ifr_ip_muxid = muxid;
 
   if(ioctl(ip_fd, SIOCSIFMUXID, &ifr) < 0)
@@ -839,26 +839,26 @@ int tun_new(struct tun_t **tun)
 #endif
 }
 
-int tun_free(struct tun_t *tun)
+int tun_free(struct tun_t *this)
 {
-  if(tun->routes)
+  if(this->routes)
   {
-    tun_delroute(tun, &tun->dstaddr, &tun->addr, &tun->netmask);
+    tun_delroute(this, &this->dstaddr, &this->addr, &this->netmask);
   }
 
-  if(close(tun->fd))
+  if(close(this->fd))
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno, "close() failed");
   }
 
   /* TODO: For solaris we need to unlink streams */
 
-  free(tun);
+  free(this);
   return 0;
 }
 
 int tun_set_cb_ind(struct tun_t *this,
-                   int (*cb_ind) (struct tun_t *tun, void *pack, unsigned len))
+                   int (*cb_ind)(struct tun_t *this, void *pack, unsigned len))
 {
   this->cb_ind = cb_ind;
   return 0;
@@ -909,7 +909,7 @@ int tun_decaps(struct tun_t *this)
 #endif
 }
 
-int tun_encaps(struct tun_t *tun, void *pack, unsigned len)
+int tun_encaps(struct tun_t *this, void *pack, unsigned len)
 {
 #if defined (__OpenBSD__)
 
@@ -919,23 +919,23 @@ int tun_encaps(struct tun_t *tun, void *pack, unsigned len)
   *((long*)(&buffer)) = htonl(AF_INET);
   memcpy(&buffer[4], pack, PACKET_MAX);
 
-  return write(tun->fd, buffer, len + 4);
+  return write(this->fd, buffer, len + 4);
 
 #elif defined(__linux__) || defined (__FreeBSD__)  || defined (__NetBSD__) || defined (__APPLE__)
 
-  return write(tun->fd, pack, len);
+  return write(this->fd, pack, len);
 
 #elif defined (__sun__)
 
   struct strbuf sbuf;
   sbuf.len = len;
   sbuf.buf = pack;
-  return putmsg(tun->fd, NULL, &sbuf, 0);
+  return putmsg(this->fd, NULL, &sbuf, 0);
 
 #endif
 }
 
-int tun_runscript(struct tun_t *tun, char* script)
+int tun_runscript(struct tun_t *this, char* script)
 {
   char saddr[TUN_ADDRSIZE];
   char snet[TUN_ADDRSIZE];
@@ -944,13 +944,13 @@ int tun_runscript(struct tun_t *tun, char* script)
   int status = 0;
   struct in_addr net;
 
-  net.s_addr = tun->addr.s_addr & tun->netmask.s_addr;
+  net.s_addr = this->addr.s_addr & this->netmask.s_addr;
 
-  strncpy(saddr, inet_ntop(AF_INET, &tun->addr, buf, sizeof(buf)), sizeof(saddr));
+  strncpy(saddr, inet_ntop(AF_INET, &this->addr, buf, sizeof(buf)), sizeof(saddr));
   saddr[sizeof(saddr)-1] = 0;
   strncpy(snet, inet_ntop(AF_INET, &net, buf, sizeof(buf)), sizeof(snet));
   snet[sizeof(snet)-1] = 0;
-  strncpy(smask, inet_ntop(AF_INET, &tun->netmask, buf, sizeof(buf)), sizeof(smask));
+  strncpy(smask, inet_ntop(AF_INET, &this->netmask, buf, sizeof(buf)), sizeof(smask));
   smask[sizeof(smask)-1] = 0;
 
   if((status = fork()) < 0)
@@ -972,7 +972,7 @@ int tun_runscript(struct tun_t *tun, char* script)
     exit(0);
   }
 
-  if(setenv("DEV", tun->devname, 1) != 0)
+  if(setenv("DEV", this->devname, 1) != 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
             "setenv() did not return 0!");
@@ -997,7 +997,7 @@ int tun_runscript(struct tun_t *tun, char* script)
     exit(0);
   }
 
-  if(execl(script, script, tun->devname, saddr, smask, (char *) 0) != 0)
+  if(execl(script, script, this->devname, saddr, smask, (char *) 0) != 0)
   {
     sys_err(LOG_ERR, __FILE__, __LINE__, errno,
             "execl() did not return 0!");
