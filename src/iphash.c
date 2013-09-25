@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -95,7 +95,7 @@ int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize)
        (*this)->hashlog++);
 
   /* Determine hashsize */
-  (*this)->hashsize = 1 << (*this)->hashlog; /* Fails if mask=0: All Internet*/
+  (*this)->hashsize = 1 << (*this)->hashlog; /* Fails if mask=0: All Internet */
   (*this)->hashmask = (*this)->hashsize -1;
 
   /* Allocate hash table */
@@ -108,7 +108,7 @@ int iphash_new(struct ippool_t **this, struct ippoolm_t *list, int listsize)
   for(i = 0; i < listsize; i++)
   {
     (*this)->member[i].inuse = 1; /* TODO */
-    ippool_hashadd(*this, &(*this)->member[i]);
+    ippool_hash_add(*this, &(*this)->member[i]);
   }
 
   return 0;
@@ -134,7 +134,7 @@ int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize)
        (*this)->hashlog++);
 
   /* Determine hashsize */
-  (*this)->hashsize = 1 << (*this)->hashlog; /* Fails if mask=0: All Internet*/
+  (*this)->hashsize = 1 << (*this)->hashlog; /* Fails if mask=0: All Internet */
   (*this)->hashmask = (*this)->hashsize -1;
 
   /* Allocate hash table */
@@ -147,7 +147,7 @@ int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize)
   for(i = 0; i < listsize; i++)
   {
     (*this)->member[i].inuse = 1; /* TODO */
-    ippool_hashadd6(*this, &(*this)->member[i]);
+    ippool_hash_add6(*this, &(*this)->member[i]);
   }
 
   return 0;

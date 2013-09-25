@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,16 +25,16 @@
  * \brief MD5 algorithm.
  */
 
-#ifndef MD5_H
-#define MD5_H
+#ifndef _MD5_H
+#define _MD5_H
 
-#include <stdint.h>
+#include <stdint.h>     /* ISO C99 types: uint8_t, uint16_t, ... */
 
 /*
-#ifdef __alpha
-typedef unsigned int uint32_t;
+#if defined(__alpha)
+  typedef unsigned int uint32_t;
 #else
-typedef unsigned long uint32_t;
+  typedef unsigned long uint32_t;
 #endif
 */
 
@@ -97,5 +97,5 @@ void MD5Transform(uint32_t buf[4], uint32_t const in[16]);
  */
 typedef struct MD5Context MD5_CTX;
 
-#endif /* !MD5_H */
+#endif /* !_MD5_H */
 

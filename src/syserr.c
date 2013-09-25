@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -119,7 +119,7 @@ void sys_errpack(int pri, char *fn, int ln, int en, struct sockaddr_in *peer,
   {
     if((pos + 4) < SYSERR_MSGSIZE)
     {
-      sprintf((buf2 + pos), " %02hhx", ((unsigned char*)pack)[n]);
+      sprintf((buf2 + pos), " %02hhx", ((unsigned char *)pack)[n]);
       pos += 3;
     }
   }

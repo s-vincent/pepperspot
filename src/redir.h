@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -53,7 +53,7 @@
 #define REDIR_RADIUS_SELECT_TIME   500000 /**< RADIUS select() timeout in microseconds = 0.5 seconds */
 
 #define REDIR_TERM_INIT                 0 /**< Nothing done yet */
-#define REDIR_TERM_GETREQ               1 /**< Before calling redir_getreq */
+#define REDIR_TERM_GETREQ               1 /**< Before calling redir_get_req */
 #define REDIR_TERM_GETSTATE             2 /**< Before calling cb_getstate */
 #define REDIR_TERM_PROCESS              3 /**< Started to process request */
 #define REDIR_TERM_RADIUS               4 /**< Calling radius */
@@ -160,11 +160,11 @@ struct redir_conn_t
 struct redir_t
 {
   int fd;                                 /**< File descriptor */
-  int fdv6;                               /**< File descriptor for IPv6 */
+  int fd6;                                /**< File descriptor for IPv6 */
   int debug;                              /**< Print debug information or not */
   int msgid;                              /**< Message Queue ID */
   struct in_addr addr;                    /**< Listen IPv4 address */
-  struct in6_addr addrv6;                 /**< IPv6 address */
+  struct in6_addr addr6;                  /**< IPv6 address */
   struct in6_addr prefix;                 /**< IPv6 prefix */
   int prefixlen;                          /**< IPv6 prefix length */
   int port;                               /**< Listen port */
@@ -189,15 +189,13 @@ struct redir_t
   /**
    * \brief Callback to retrieve state of an IPv4 connection.
    */
-  int (*cb_getstate)(struct redir_t *redir, struct in_addr *addr,
-                     struct redir_conn_t *conn);
+  int (*cb_getstate)(struct redir_t *redir, struct in_addr *addr, struct redir_conn_t *conn);
 
   /* [SV] */
   /**
    * \brief Callback to retrieve state of an IPv6 connection.
    */
-  int (*cb_getstatev6)(struct redir_t *redir, struct in6_addr *addr,
-                       struct redir_conn_t *conn);
+  int (*cb_getstate6)(struct redir_t *redir, struct in6_addr *addr, struct redir_conn_t *conn);
 };
 
 /**
@@ -211,7 +209,7 @@ struct redir_msg_t
   long int sessiontimeout;                /**< Session timeout */
   long int idletimeout;                   /**< Idle timeout */
   struct in_addr addr;                    /**< Client IPv4 address */
-  struct in6_addr addrv6;                 /**< Client IPv6 address */
+  struct in6_addr addr6;                  /**< Client IPv6 address */
   char username[REDIR_USERNAMESIZE];      /**< User name */
   char userurl[REDIR_USERURLSIZE];        /**< Requested user URL */
   uint8_t uamchal[REDIR_MD5LEN];          /**< UAM challenge */
@@ -234,19 +232,12 @@ struct redir_msg_t
  * \brief Create a new redirection manager.
  * \param redir pointer will be filled with newly redirection manager if success
  * \param addr our IPv4 address
- * \param addrv6 our IPv6 address
+ * \param addr6 our IPv6 address
  * \param port port
  * \return 0 if success, -1 otherwise
  */
 int redir_new(struct redir_t **redir,
-              struct in_addr *addr, struct in6_addr* addrv6, int port);
-
-/**
- * \brief Release redirection manager.
- * \param redir redirection manager to release
- * \return 0
- */
-int redir_free(struct redir_t *redir);
+              struct in_addr *addr, struct in6_addr *addr6, int port);
 
 /**
  * \brief Set various parameters.
@@ -310,16 +301,12 @@ void redir_set(struct redir_t *redir, int debug, struct in6_addr *prefix, int pr
  */
 int redir_accept(struct redir_t *redir, int ipv6);
 
-/* [SV] */
 /**
- * \brief Set callback to determine state information for the IPv6 connection.
- * \param redir redir_t instance
- * \param cb_getstatev6 callback
+ * \brief Release redirection manager.
+ * \param redir redirection manager to release
  * \return 0
  */
-int redir_set_cb_getstatev6(struct redir_t* redir,
-                            int (*cb_getstatev6)(struct redir_t* redir, struct in6_addr* addr,
-                                                 struct redir_conn_t* conn));
+int redir_free(struct redir_t *redir);
 
 /**
  * \brief Set callback to determine state information for the IPv4 connection.
@@ -329,7 +316,18 @@ int redir_set_cb_getstatev6(struct redir_t* redir,
  */
 int redir_set_cb_getstate(struct redir_t *redir,
                           int (*cb_getstate)(struct redir_t *redir, struct in_addr *addr,
-                                              struct redir_conn_t *conn));
+                                             struct redir_conn_t *conn));
 
-#endif  /* !_REDIR_H */
+/* [SV] */
+/**
+ * \brief Set callback to determine state information for the IPv6 connection.
+ * \param redir redir_t instance
+ * \param cb_getstate6 callback
+ * \return 0
+ */
+int redir_set_cb_getstate6(struct redir_t *redir,
+                           int (*cb_getstate6)(struct redir_t *redir, struct in6_addr *addr,
+                                               struct redir_conn_t *conn));
+
+#endif /* !_REDIR_H */
 

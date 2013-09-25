@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,7 +31,7 @@
  */
 
 /***********************************************************************
- *  Copyright © 2004-2006 Rémi Denis-Courmont.                         *
+ *  Copyright (c) 2004-2006 Remi DENIS-COURMONT.                       *
  *  This program is free software; you can redistribute and/or modify  *
  *  it under the terms of the GNU General Public License as published  *
  *  by the Free Software Foundation; version 2 of the license.         *
@@ -46,38 +46,30 @@
  *  http://www.gnu.org/copyleft/gpl.html                               *
  ***********************************************************************/
 
-#ifndef LIBTUN6_TUN6_H
-#define LIBTUN6_TUN6_H
+#ifndef _TUN6_H
+#define _TUN6_H
 
-#include <stddef.h> /* NULL */
-#include <sys/types.h>
-#include <sys/select.h>
-#include <netinet/in.h>
-
-
-
-#include <net/if.h>
+// #include <stddef.h>                      /* NULL */
+// #include <sys/types.h>
+// #include <sys/select.h>
+#include <net/if.h>                      /* IF_NAMESIZE */
+#include <netinet/in.h>                  /* in_addr */
 
 #ifndef IFNAMSIZ
 #define IFNAMSIZ             IF_NAMESIZE /**< Maximum interface name size */
 #endif
 
-#define LIBTUN6_ERRBUF_SIZE  4096        /**< Buffer for tun6 error message */
+#define TUN6_PACKET_MAX_SIZE        8196 /**< Maximum packet size */
 
 #if __STDC_VERSION__ < 199901L
 #ifndef inline
-#define inline
+#define inline                           /**< Fake definition of inline for old C version */
 #endif
 
-#ifndef restrict
-#define restrict
+#ifndef restrict 
+#define restrict                         /**< Fake definition of restrict for old C version */
 #endif
 #endif
-
-struct ip6_hdr;
-struct in6_addr;
-
-/* typedef struct tun6 tun6; */
 
 /* [SV] : do similar struct as tun.h
  * in two word : makes wrapper for the libtun6
@@ -87,59 +79,53 @@ struct in6_addr;
 /**
  * \struct tun6_packet_t
  * \brief Describe an IPv6 packet.
- * \author Sebastien Vincent
+ * \author Sebastien VINCENT
  */
 struct tun6_packet_t
 {
-  uint32_t version:4;            /**< Version of IPv6 (always 6). */
-  uint32_t traffic_class:8;      /**< Priority field. */
-  uint32_t flow_label:20;        /**< Flow label for QoS. */
-  uint16_t payload_length;       /**< Payload length. */
-  uint8_t  next_header;          /**< Next header (protocol or header extension). */
-  uint8_t  hop_limit;            /**< Hop limit (i.e. TTL). */
-  uint8_t  src_addr[16];         /**< IPv6 source address. */
-  uint8_t  dst_addr[16];         /**< IPv6 destination source address. */
+  uint32_t version:4;            /**< Version of IPv6 (always 6) */
+  uint32_t traffic_class:8;      /**< Priority field */
+  uint32_t flow_label:20;        /**< Flow label for QoS */
+  uint16_t payload_length;       /**< Payload length */
+  uint8_t  next_header;          /**< Next header (protocol or header extension) */
+  uint8_t  hop_limit;            /**< Hop limit (ie TTL) */
+  uint8_t  src_addr[16];         /**< IPv6 source address */
+  uint8_t  dst_addr[16];         /**< IPv6 destination source address */
 };
 
 /**
+ * \typedef tun6_t
+ * \brief IPv6 tunnel interface information.
  * \struct tun6_t
  * \brief IPv6 tunnel interface information.
- * \author Sebastien Vincent
+ * \author Sebastien VINCENT
  */
 typedef struct tun6_t
 {
-  int fdv6;                      /**< File descriptor to IPv6 tun interface */
+  int fd6;                       /**< File descriptor to IPv6 tun interface */
   int ifindex;                   /**< Interface index */
-  struct in6_addr addrv6;        /**< Our IPv6 address */
+  struct in6_addr addr6;         /**< Our IPv6 address */
   uint8_t prefixlen;             /**< Prefix length of the IPv6 address (64 by default) */
-  int addrsv6;                   /**< Number of allocated IP addresses */
-  int routesv6;                  /**< One if we allocated an automatic route */
-  char devnamev6[IFNAMSIZ];      /**< Name of the IPv6 tun device */
-  int (*cb_indv6)(struct tun6_t *this, void *pack, unsigned len); /**< Callback when receiving IPv6 packet */
-  struct tun6* device;           /**< The tun6 device */
+  int nb_addr6;                  /**< Number of allocated IP addresses */
+  int routes6;                   /**< One if we allocated an automatic route */
+  char devname6[IFNAMSIZ];       /**< Name of the IPv6 tun device */
+  struct tun6 *device;           /**< The tun6 device */
+  int (*cb_ind6)(struct tun6_t *this, void *pack, unsigned len); /**< Callback when receiving IPv6 packet */
 } tun6_t;
 
 /**
  * \brief Create a tun6_t instance
  * \param this a pointer on a pointer of tun6_t
  * \return 0 if success, -1 otherwise
- * \author Sebastien Vincent
+ * \author Sebastien VINCENT
  */
 int tun6_new(struct tun6_t **this);
-
-/**
- * \brief Free the ressource associated with the tun6_t instance
- * \param this the tun6_t instance
- * \return 0 if success, -1 otherwis
- * \author Sebastien Vincent
- */
-int tun6_free(struct tun6_t *this);
 
 /**
  * \brief Decapsulate a packet.
  * \param this the tun6_t instance
  * \return number of bytes readen or -1 if error
- * \author Sebastien Vincent
+ * \author Sebastien VINCENT
  */
 int tun6_decaps(struct tun6_t *this);
 
@@ -149,7 +135,7 @@ int tun6_decaps(struct tun6_t *this);
  * \param pack the packet to encapsulate
  * \param len length of the packet
  * \return number of bytes written or -1 if error
- * \author Sebastien Vincent
+ * \author Sebastien VINCENT
  */
 int tun6_encaps(struct tun6_t *this, void *pack, unsigned int len);
 
@@ -159,7 +145,7 @@ int tun6_encaps(struct tun6_t *this, void *pack, unsigned int len);
  * \param addr IPv6 address to set
  * \param prefixlen prefix length of the address
  * \return 0 if success, -1 otherwise
- * \author Sebastien Vincent
+ * \author Sebastien VINCENT
  */
 int tun6_setaddr(struct tun6_t *this, struct in6_addr *addr, uint8_t prefixlen);
 
@@ -170,83 +156,37 @@ int tun6_setaddr(struct tun6_t *this, struct in6_addr *addr, uint8_t prefixlen);
  * \param gateway gateway for IPv6 destination
  * \param prefixlen prefix length of the address
  * \return 0 if success, -1 otherwise
- * \author Sebastien Vincent
+ * \author Sebastien VINCENT
  */
 int tun6_addroute(struct tun6_t *this, struct in6_addr *dst,
                   struct in6_addr *gateway, uint8_t prefixlen);
+
+/**
+ * \brief Run script.
+ * \param this the tun6_t instance
+ * \param script path of the script
+ * \return 0 if success, -1 otherwise
+ * \author Sebastien VINCENT
+ */
+int tun6_runscript(struct tun6_t *this, char *script);
+
+/**
+ * \brief Free the ressource associated with the tun6_t instance
+ * \param this the tun6_t instance
+ * \return 0 if success, -1 otherwis
+ * \author Sebastien VINCENT
+ */
+int tun6_free(struct tun6_t *this);
 
 /**
  * \brief Set an IPv6 address on the interface.
  * \param this the tun6_t instance
  * \param cb_ind callbacl when receiving packet
  * \return 0 if success, -1 otherwise
- * \author Sebastien Vincent
+ * \author Sebastien VINCENT
  */
-int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind)(struct tun6_t *this,
-                                                       void *pack, unsigned len));
+int tun6_set_cb_ind(struct tun6_t *this,
+                    int (*cb_ind)(struct tun6_t *this, void *pack, unsigned len));
 
-/**
- * \brief Set an IPv6 address on the interface.
- * \param this the tun6_t instance
- * \param script path of the script
- * \return 0 if success, -1 otherwise
- * \author Sebastien Vincent
- */
-int tun6_runscript(struct tun6_t *this, char *script);
-
-/**
- * \brief Set interface flags.
- * \param this tun6_t instance
- * \param flags flags to set
- * \return 0 if success, -1 otherwise
- */
-int tun6_sifflags(struct tun6_t *this, int flags);
-
-#if 0
-#ifdef __cplusplus
-extern "C"
-{ /* } */
-#endif
-  int tun6_driver_diagnose(char *errbuf) LIBTUN6_NONNULL;
-
-  /*
-   * All functions are thread-safe.
-   *
-   * All functions reports error messages via syslog(). You should hence call
-   * openlog() before you create a tunnel.
-   */
-
-  tun6 *tun6_create(const char *req_name) LIBTUN6_WARN_UNUSED;
-  void tun6_destroy(tun6 *t) LIBTUN6_NONNULL;
-
-  int tun6_getId(const tun6 *t) LIBTUN6_NONNULL;
-
-  int tun6_setState(tun6 *t, int up) LIBTUN6_NONNULL;
-
-  int tun6_addAddress(tun6 *restrict t, const struct in6_addr *restrict addr,
-                      unsigned prefix_len) LIBTUN6_NONNULL;
-  int tun6_delAddress(tun6 *restrict t, const struct in6_addr *restrict addr,
-                      unsigned prefix_len) LIBTUN6_NONNULL;
-
-  int tun6_setMTU(tun6 *t, unsigned mtu) LIBTUN6_NONNULL;
-
-  int tun6_addRoute(tun6 *restrict t, const struct in6_addr *restrict addr,
-                    unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
-  int tun6_delRoute(tun6 *restrict t, const struct in6_addr *restrict addr,
-                    unsigned prefix_len, int relative_metric) LIBTUN6_NONNULL;
-
-  int tun6_registerReadSet(const tun6 *restrict t, fd_set *restrict readset)
-                           LIBTUN6_NONNULL LIBTUN6_PURE;
-
-  int tun6_recv(tun6 *restrict t, const fd_set *restrict readset,
-                void *buf, size_t len) LIBTUN6_NONNULL;
-  int tun6_wait_recv(tun6 *restrict t, void *buf, size_t len) LIBTUN6_NONNULL;
-
-  int tun6_send(tun6 *restrict t, const void *packet, size_t len) LIBTUN6_NONNULL;
-
-#ifdef __cplusplus
-}
-# endif /* C++ */
-#endif
-#endif /* ifndef LIBTUN6_TUN6_H */
+#endif /* !_TUN6_H */
 

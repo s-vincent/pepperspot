@@ -13,7 +13,7 @@
  * \brief Parser.
  */
 
-/* If we use autoconf.  */
+/* If we use autoconf. */
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -1255,9 +1255,9 @@ gengetopt_strdup (const char *s)
   if (!s)
     return result;
 
-  result = (char*)malloc(strlen(s) + 1);
-  if (result == (char*)0)
-    return (char*)0;
+  result = (char *)malloc(strlen(s) + 1);
+  if (result == (char *)0)
+    return (char *)0;
   strcpy(result, s);
   return result;
 }
@@ -2602,7 +2602,7 @@ char my_argv[CONFIG_FILE_LINE_BUFFER_SIZE+1];
 int
 cmdline_parser_configfile (char * const filename, struct gengetopt_args_info *args_info, int override, int initialize, int check_required)
 {
-  FILE* file;
+  FILE *file;
   char linebuf[CONFIG_FILE_LINE_SIZE];
   int line_num = 0;
   int i, result, equal;

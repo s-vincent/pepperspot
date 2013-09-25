@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -183,9 +183,9 @@ void MD5Final(unsigned char digest[16], struct MD5Context *ctx)
 
 /* #define F1(x, y, z) (x & y | ~x & z) */
 #define F1(x, y, z) (z ^ (x & (y ^ z))) /**< Transformation for first round */
-#define F2(x, y, z) F1(z, x, y) /**< Transformation for second round */
-#define F3(x, y, z) (x ^ y ^ z) /**< Transformation for third round */
-#define F4(x, y, z) (y ^ (x | ~z)) /**< Transformation for last round */
+#define F2(x, y, z) F1(z, x, y)         /**< Transformation for second round */
+#define F3(x, y, z) (x ^ y ^ z)         /**< Transformation for third round */
+#define F4(x, y, z) (y ^ (x | ~z))      /**< Transformation for last round */
 
 /**
  * \brief This is the central step in the MD5 algorithm.

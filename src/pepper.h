@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -148,8 +148,8 @@ struct app_conn_t
   int inuse;                                     /**< If the connection is in use */
   int unit;                                      /**< Used for NAS port */
   int ipv6;                                      /**< If IPv6 is used */
-  struct app_conn_t *next;                       /**< Next in linked list. 0: Last */
-  struct app_conn_t *prev;                       /**< Previous in linked list. 0: First */
+  struct app_conn_t *next;                       /**< Next in linked list, 0: Last */
+  struct app_conn_t *prev;                       /**< Previous in linked list, 0: First */
 
   /* Pointers to protocol handlers */
   void *uplink;                                  /**< Uplink network interface (Internet) */
@@ -193,7 +193,7 @@ struct app_conn_t
   struct sockaddr_storage radiuspeer;            /**< Where to send reply */
   uint8_t radiusid;                              /**< ID to reply with */
   uint8_t authenticator[RADIUS_AUTHLEN];         /**< Radius authenticator */
-  int authtype;                                  /**< Authentication method used (CHAP-MD5, MS-CHAPv2, ... */
+  int authtype;                                  /**< Authentication method used (CHAP-MD5, MS-CHAPv2, etc) */
   char proxyuser[USERNAMESIZE];                  /**< Unauthenticated user: */
   uint8_t proxyuserlen;                          /**< Length of unauthenticated user */
   uint32_t proxynasip;                           /**< Set by access request */
@@ -220,7 +220,7 @@ struct app_conn_t
   /* Accounting */
   struct timeval start_time;                     /**< Start time of connection */
   struct timeval interim_time;                   /**< interim accounting time */
-  long int interim_interval;                     /**< Seconds. 0 = No interim accounting */
+  long int interim_interval;                     /**< Seconds, 0 => No interim accounting */
   uint32_t input_packets;                        /**< Packets received */
   uint32_t output_packets;                       /**< Packets sent */
   uint64_t input_octets;                         /**< Bytes received */
@@ -364,5 +364,5 @@ struct options_t
   char *macpasswd;                               /**< Password to use for MAC authentication */
 };
 
-#endif /*_PEPPER_H */
+#endif /* !_PEPPER_H */
 

@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,13 +27,13 @@
  * \brief "Util" functions.
  */
 
-#ifndef __UTIL_H__
-#define __UTIL_H__
+#ifndef _UTIL_H
+#define _UTIL_H
 
-#include <stdlib.h>
-#include <string.h>
-#include <netinet/in.h>
-#include <sys/uio.h>
+#include <stdlib.h>                     /* free */
+// #include <string.h>
+#include <netinet/in.h>                 /* in_addr */
+// #include <sys/uio.h>
 
 /* For emission and reception distinction */
 #ifndef IPV6_RECVHOPLIMIT
@@ -72,10 +72,10 @@ static inline void ipv6_addr_set(struct in6_addr *addr,
                                  uint32_t w1, uint32_t w2,
                                  uint32_t w3, uint32_t w4)
 {
-  ((uint32_t*)addr->s6_addr)[0] = w1;
-  ((uint32_t*)addr->s6_addr)[1] = w2;
-  ((uint32_t*)addr->s6_addr)[2] = w3;
-  ((uint32_t*)addr->s6_addr)[3] = w4;
+  ((uint32_t *)addr->s6_addr)[0] = w1;
+  ((uint32_t *)addr->s6_addr)[1] = w2;
+  ((uint32_t *)addr->s6_addr)[2] = w3;
+  ((uint32_t *)addr->s6_addr)[3] = w4;
 }
 
 /**
@@ -84,10 +84,10 @@ static inline void ipv6_addr_set(struct in6_addr *addr,
  * \param solicited Resulting solicited address built from addr
  */
 static inline void ipv6_addr_solict_mult(const struct in6_addr *addr,
-    struct in6_addr *solicited)
+                                         struct in6_addr *solicited)
 {
   ipv6_addr_set(solicited, htonl(0xFF020000), 0, htonl(0x1),
-                htonl(0xFF000000) | ((uint32_t*)addr->s6_addr)[3]);
+                htonl(0xFF000000) | ((uint32_t *)addr->s6_addr)[3]);
 }
 
 /**
@@ -99,7 +99,7 @@ static inline void ipv6_addr_llocal(const struct in6_addr *addr,
                                     struct in6_addr *llocal)
 {
   ipv6_addr_set(llocal, htonl(0xFE800000), 0,
-                ((uint32_t*)addr->s6_addr)[2], ((uint32_t*)addr->s6_addr)[3]);
+                ((uint32_t *)addr->s6_addr)[2], ((uint32_t *)addr->s6_addr)[3]);
 }
 
 /**
@@ -122,5 +122,5 @@ static inline void free_iov_data(struct iovec *iov, int count)
   }
 }
 
-#endif /* __UTIL_H__ */
+#endif /* !_UTIL_H */
 

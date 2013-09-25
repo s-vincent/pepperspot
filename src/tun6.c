@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,7 +30,7 @@
  */
 
 /***********************************************************************
- *  Copyright © 2004-2006 Rémi Denis-Courmont.                         *
+ *  Copyright (c) 2004-2006 Remi DENIS-COURMONT.                       *
  *  This program is free software; you can redistribute and/or modify  *
  *  it under the terms of the GNU General Public License as published  *
  *  by the Free Software Foundation; version 2 of the license.         *
@@ -49,37 +49,34 @@
 #include <config.h>
 #endif
 
-/* #include <gettext.h> */
-
 #include <assert.h>
-#include <stdio.h> /* snprintf() for BSD drivers */
+#include <stdio.h>      /* snprintf() for BSD drivers */
 #include <string.h>
-#include <stdlib.h> /* free() */
+#include <stdlib.h>     /* free() */
 #include <inttypes.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <sys/uio.h> /* readv() & writev() */
+#include <sys/uio.h>    /* readv() & writev() */
 #include <poll.h>
 #include <syslog.h>
 #include <errno.h>
 #include <netinet/in.h> /* htons(), struct in6_addr */
-
 #include <sys/socket.h> /* socket(AF_INET6, SOCK_DGRAM, 0) */
+#include <net/if.h>     /* struct ifreq, if_nametoindex(), if_indextoname() */
 
-#include <net/if.h> /* struct ifreq, if_nametoindex(), if_indextoname() */
-
-#if defined (__linux__)
+#if defined(__linux__)
 /**
  * \brief Linux tunneling driver
  */
 const char os_driver[] = "Linux";
 #define USE_LINUX 1
-/* #include <linux/if.h> */
-#include <linux/if_tun.h> /* TUNSETIFF - Linux tunnel driver */
+
+#include <linux/if_tun.h>     /* TUNSETIFF - Linux tunnel driver */
+#include <net/route.h>        /* struct in6_rtmsg */
+#include <netinet/if_ether.h> /* ETH_P_IPV6 */
 
 /**
  * \struct in6_ifreq
@@ -88,13 +85,10 @@ const char os_driver[] = "Linux";
  */
 struct in6_ifreq
 {
-  struct in6_addr ifr6_addr; /**< IPv6 address */
-  uint32_t ifr6_prefixlen; /**< Prefix length */
-  int ifr6_ifindex; /**< Interface index */
+  struct in6_addr ifr6_addr;  /**< IPv6 address */
+  uint32_t ifr6_prefixlen;    /**< Prefix length */
+  int ifr6_ifindex;           /**< Interface index */
 };
-
-#include <net/route.h> /* struct in6_rtmsg */
-#include <netinet/if_ether.h> /* ETH_P_IPV6 */
 
 typedef struct
 {
@@ -105,11 +99,11 @@ typedef struct
 #define TUN_HEAD_IPV6_INITIALIZER { 0, htons(ETH_P_IPV6) }
 #define tun_head_is_ipv6(h) (h.proto == htons(ETH_P_IPV6))
 
-#elif defined (__FreeBSD__) || defined (__FreeBSD_kernel__) || \
-  defined (__NetBSD__)  || defined (__NetBSD_kernel__)  || \
-defined (__OpenBSD__) || defined (__OpenBSD_kernel__) || \
-defined (__DragonFly__) || \
-defined (__APPLE__) /* Darwin */
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+      defined(__NetBSD__) || defined(__NetBSD_kernel__) || \
+      defined(__OpenBSD__) || defined(__OpenBSD_kernel__) || \
+      defined(__DragonFly__) || \
+      defined(__APPLE__) /* Darwin */
 /**
  * \brief BSD tunneling driver
  * NOTE: the driver is NOT tested on Darwin (Mac OS X).
@@ -118,27 +112,22 @@ const char os_driver[] = "BSD";
 #define USE_BSD 1
 
 /* TUNSIFHEAD or TUNSLMODE */
-#if defined (HAVE_NET_IF_TUN_H)
-#include <net/if_tun.h>
-#elif defined (HAVE_NET_TUN_IF_TUN_H)
-#include <net/tun/if_tun.h>
-#elif defined (__APPLE__)
-#define TUNSIFHEAD _IOW('t', 96, int)
+#if defined(HAVE_NET_IF_TUN_H)
+  #include <net/if_tun.h>
+#elif defined(HAVE_NET_TUN_IF_TUN_H)
+  #include <net/tun/if_tun.h>
+#elif defined(__APPLE__)
+  #define TUNSIFHEAD _IOW('t', 96, int)
 #endif
 
-
-
-
-#ifdef HAVE_NET_IF_VAR_H
-#include <net/if_var.h>
+#if defined(HAVE_NET_IF_VAR_H)
+  #include <net/if_var.h>
 #endif
-
 
 #include <net/if_dl.h> /* struct sockaddr_dl */
 #include <net/route.h> /* AF_ROUTE things */
 #include <netinet6/in6_var.h> /* struct in6_aliasreq */
 #include <netinet6/nd6.h> /* ND6_INFINITE_LIFETIME */
-
 #include <pthread.h>
 
 typedef uint32_t tun_head_t;
@@ -158,8 +147,6 @@ const char os_driver[] = "Generic";
 #include "tun6.h"
 #include "syserr.h"
 
-#define PACKET_MAX 8196 /**< Maximum packet size */
-
 /**
  * Originally there was strlcpy but it lacks in Linux libc... replace this latter!
  * for the moment cross the finger... this function is not safe...
@@ -173,22 +160,119 @@ const char os_driver[] = "Generic";
  */
 struct tun6
 {
-  int id; /**< Interface index */
-  int fd; /**< File descriptor to tun interface */
-  int reqfd; /**< File descriptor for ioctl() */
-#if defined (USE_BSD)
-  char orig_name[IFNAMSIZ]; /**< Name of interface */
+  int id;                     /**< Interface index */
+  int fd;                     /**< File descriptor to tun interface */
+  int reqfd;                  /**< File descriptor for ioctl() */
+#if defined(USE_BSD)
+  char orig_name[IFNAMSIZ];   /**< Name of interface */
 #endif
 };
 
+/*
+ * Unless otherwise stated, all the methods thereafter should return -1 on
+ * error, and 0 on success. Similarly, they should require root privileges.
+ */
+
+#if defined(USE_LINUX)
+static int proc_write_zero(const char *path)
+{
+  int fd = open(path, O_WRONLY);
+  if(fd == -1)
+    return -1;
+
+  int retval = 0;
+
+  if(write(fd, "0", 1) != 1)
+    retval = -1;
+  if(close(fd))
+    retval = -1;
+
+  return retval;
+}
+#endif
+
+#if defined(USE_BSD)
+/**
+ * Converts a prefix length to a netmask (used for the BSD routing)
+ */
+static void plen_to_mask(unsigned plen, struct in6_addr *mask)
+{
+  assert(plen <= 128);
+
+  div_t d = div(plen, 8);
+  int i = 0;
+
+  while(i < d.quot)
+    mask->s6_addr[i++] = 0xff;
+
+  if(d.rem)
+    mask->s6_addr[i++] = 0xff << (8 - d.rem);
+
+  while(i < 16)
+    mask->s6_addr[i++] = 0;
+}
+
+/**
+ * Converts a prefix length to a struct sockaddr_in6 (used for the BSD routing)
+ */
+static void plen_to_sin6(unsigned plen, struct sockaddr_in6 *sin6)
+{
+  memset(sin6, 0, sizeof(struct sockaddr_in6));
+
+  /* NetBSD kernel strangeness:
+     sin6->sin6_family = AF_INET6;*/
+#ifdef HAVE_SA_LEN
+  sin6->sin6_len = sizeof(struct sockaddr_in6);
+#endif
+  plen_to_mask(plen, &sin6->sin6_addr);
+}
+#endif /* ifdef SOCAIFADDR_IN6 */
+
+/**
+ * Set the flags on the interface.
+ *
+ * \param this tun6_t instance
+ * \param flags flags to set
+ * \return 0 on success, -1 on error (see errno).
+ */
+static int tun6_set_interface_flags(struct tun6_t *this, int flags)
+{
+  struct ifreq ifr;
+  int fd = -1;
+
+  memset(&ifr, 0, sizeof(ifr));
+  ifr.ifr_flags = flags;
+
+  if(if_indextoname(this->ifindex, ifr.ifr_name)==NULL)
+  {
+    return -1;
+  }
+
+  ifr.ifr_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
+
+  if((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
+  {
+    sys_err(LOG_ERR, __FILE__, __LINE__, errno,
+            "socket() failed");
+  }
+  if(ioctl(fd, SIOCSIFFLAGS, &ifr))
+  {
+    sys_err(LOG_ERR, __FILE__, __LINE__, errno,
+            "ioctl(SIOCSIFFLAGS) failed");
+    close(fd);
+    return -1;
+  }
+  close(fd);
+  return 0;
+}
 /**
  * Tries to allocate a tunnel interface from the kernel.
  *
- * @param req_name may be an interface name for the virtual network device
+ * \param req_name may be an interface name for the virtual network device
  * (it might be ignored on some OSes).
  * If NULL, an internal default will be used.
  *
- * @return NULL on error.
+ * \return NULL on error.
  */
 static struct tun6 *tun6_create(const char *req_name)
 {
@@ -207,7 +291,7 @@ static struct tun6 *tun6_create(const char *req_name)
 
   fcntl(reqfd, F_SETFD, FD_CLOEXEC);
 
-#if defined (USE_LINUX)
+#if defined(USE_LINUX)
   /*
    * TUNTAP (Linux) tunnel driver initialization
    */
@@ -242,7 +326,7 @@ static struct tun6 *tun6_create(const char *req_name)
   int id = if_nametoindex(req.ifr_name);
   if(id == 0)
     goto error;
-#elif defined (USE_BSD)
+#elif defined(USE_BSD)
   /*
    * BSD tunnel driver initialization
    * (see BSD src/sys/net/if_tun.{c,h})
@@ -281,7 +365,7 @@ static struct tun6 *tun6_create(const char *req_name)
   {
     struct stat st;
     fstat(fd, &st);
-#ifdef HAVE_DEVNAME_R
+#if defined(HAVE_DEVNAME_R)
     devname_r(st.st_rdev, S_IFCHR, t->orig_name, sizeof(t->orig_name));
 #else
   const char *name = devname(st.st_rdev, S_IFCHR);
@@ -306,7 +390,7 @@ static struct tun6 *tun6_create(const char *req_name)
   });
 #endif
 
-#if defined (TUNSIFHEAD)
+#if defined(TUNSIFHEAD)
   /* Enables TUNSIFHEAD */
   if(ioctl(fd, TUNSIFHEAD, &(int)
 {
@@ -315,7 +399,7 @@ static struct tun6 *tun6_create(const char *req_name)
   {
     syslog(LOG_ERR, "Tunneling driver error (%s): %s",
             "TUNSIFHEAD", strerror(errno));
-#if defined (__APPLE__)
+#if defined(__APPLE__)
     if(errno == EINVAL)
       syslog(LOG_NOTICE,
               "*** Ignoring tun-tap-osx spurious error ***");
@@ -323,7 +407,7 @@ static struct tun6 *tun6_create(const char *req_name)
 #endif
       goto error;
   }
-#elif defined (TUNSLMODE)
+#elif defined(TUNSLMODE)
   /* Disables TUNSLMODE (deprecated opposite of TUNSIFHEAD) */
   if(ioctl(fd, TUNSLMODE, &(int)
 {
@@ -350,7 +434,7 @@ static struct tun6 *tun6_create(const char *req_name)
     }
     else if(strcmp(req.ifr_name, req_name))
     {
-#ifdef SIOCSIFNAME
+#if defined(SIOCSIFNAME)
       char ifname[IFNAMSIZ];
       req.ifr_data = ifname;
 
@@ -397,9 +481,9 @@ error:
  *
  * \param t tun6 descriptor
  * \param up if 1 bring this interface UP, DOWN otherwise
- * @return 0 on success, -1 on error (see errno).
+ * \return 0 on success, -1 on error (see errno).
  */
-static int tun6_setState(struct tun6 *t, int up)
+static int tun6_set_state(struct tun6 *t, int up)
 {
   assert(t != NULL);
   assert(t-> id != 0);
@@ -441,10 +525,10 @@ static void tun6_destroy(struct tun6 *t)
   assert(t->reqfd != -1);
   assert(t->id != 0);
 
-  (void)tun6_setState(t, 0);
+  (void)tun6_set_state(t, 0);
 
-#ifdef USE_BSD
-#ifdef SIOCSIFNAME
+#if defined(USE_BSD)
+#if defined(SIOCSIFNAME)
   /*
    * SIOCSIFDESTROY doesn't work for tunnels (see FreeBSD PR/73673).
    * We rename the tunnel to its canonical name to ease the life of other
@@ -472,63 +556,6 @@ static void tun6_destroy(struct tun6 *t)
   free(t);
 }
 
-/*
- * Unless otherwise stated, all the methods thereafter should return -1 on
- * error, and 0 on success. Similarly, they should require root privileges.
- */
-
-#if defined (USE_LINUX)
-static int proc_write_zero(const char *path)
-{
-  int fd = open(path, O_WRONLY);
-  if(fd == -1)
-    return -1;
-
-  int retval = 0;
-
-  if(write(fd, "0", 1) != 1)
-    retval = -1;
-  if(close(fd))
-    retval = -1;
-
-  return retval;
-}
-#endif
-
-#if defined (USE_BSD)
-/**
- * Converts a prefix length to a netmask (used for the BSD routing)
- */
-static void plen_to_mask(unsigned plen, struct in6_addr *mask)
-{
-  assert(plen <= 128);
-
-  div_t d = div(plen, 8);
-  int i = 0;
-
-  while(i < d.quot)
-    mask->s6_addr[i++] = 0xff;
-
-  if(d.rem)
-    mask->s6_addr[i++] = 0xff << (8 - d.rem);
-
-  while(i < 16)
-    mask->s6_addr[i++] = 0;
-}
-
-static void plen_to_sin6(unsigned plen, struct sockaddr_in6 *sin6)
-{
-  memset(sin6, 0, sizeof(struct sockaddr_in6));
-
-  /* NetBSD kernel strangeness:
-     sin6->sin6_family = AF_INET6;*/
-#ifdef HAVE_SA_LEN
-  sin6->sin6_len = sizeof(struct sockaddr_in6);
-#endif
-  plen_to_mask(plen, &sin6->sin6_addr);
-}
-#endif /* ifdef SOCAIFADDR_IN6 */
-
 /**
  * \brief Add/remove an address on interface.
  * \param reqfd socket descriptor to handle ioctl request(s).
@@ -538,8 +565,8 @@ static void plen_to_sin6(unsigned plen, struct sockaddr_in6 *sin6)
  * \param prefix_len IPv6 prefix length
  * \return 0 if success, -1 otherwise
  */
-static int _iface_addr(int reqfd, int id, int add,
-                       const struct in6_addr *addr, unsigned prefix_len)
+static int tun6_iface_addr(int reqfd, int id, int add,
+                           const struct in6_addr *addr, unsigned prefix_len)
 {
   void *req = NULL;
   long cmd = 0;
@@ -550,7 +577,7 @@ static int _iface_addr(int reqfd, int id, int add,
   if((prefix_len > 128) || (addr == NULL))
     return -1;
 
-#if defined (USE_LINUX)
+#if defined(USE_LINUX)
   /*
    * Linux ioctl interface
    */
@@ -567,7 +594,7 @@ static int _iface_addr(int reqfd, int id, int add,
 
   cmd = add ? SIOCSIFADDR : SIOCDIFADDR;
   req = &r;
-#elif defined (USE_BSD)
+#elif defined(USE_BSD)
   /*
    * BSD ioctl interface
    */
@@ -618,18 +645,18 @@ static int _iface_addr(int reqfd, int id, int add,
 /**
  * Adds an address with a netmask to a tunnel.
  * Requires CAP_NET_ADMIN or root privileges.
- * @param t tun6 instance
- * @param addr address to add
- * @param prefixlen length of IPv6 prefix
- * @return 0 on success, -1 in case error.
+ * \param t tun6 instance
+ * \param addr address to add
+ * \param prefixlen length of IPv6 prefix
+ * \return 0 on success, -1 in case error.
  */
-static int tun6_addAddress(struct tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
+static int tun6_add_address(struct tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
 {
   assert(t != NULL);
 
-  int res = _iface_addr(t->reqfd, t->id, 1, addr, prefixlen);
+  int res = tun6_iface_addr(t->reqfd, t->id, 1, addr, prefixlen);
 
-#if defined (USE_LINUX)
+#if defined(USE_LINUX)
   char ifname[IFNAMSIZ];
   if((res == 0)
       && (if_indextoname(t->id, ifname) != NULL))
@@ -656,311 +683,15 @@ static int tun6_addAddress(struct tun6 *t, const struct in6_addr *addr, unsigned
   return res;
 }
 
-#if 0
-
-static int _iface_route(int reqfd, int id, int add, const struct in6_addr *addr,
-                         unsigned prefix_len, int rel_metric)
-{
-  assert(reqfd != -1);
-  assert(id != 0);
-
-  if((prefix_len > 128) || (addr == NULL))
-    return -1;
-
-  int retval = -1;
-
-#if defined (USE_LINUX)
-  /*
-   * Linux ioctl interface
-   */
-  struct in6_rtmsg req6 =
-  {
-    .rtmsg_flags = RTF_UP,
-    .rtmsg_ifindex = id,
-    .rtmsg_dst_len = (unsigned short)prefix_len,
-    /* By default, the Linux kernel's metric is 256 for subnets,
-     * and 1024 for gatewayed route. */
-    .rtmsg_metric = 1024 + rel_metric
-  };
-
-  /* Adds/deletes route */
-  memcpy(&req6.rtmsg_dst, addr, sizeof(req6.rtmsg_dst));
-  if(prefix_len == 128)
-    req6.rtmsg_flags |= RTF_HOST;
-  /* no gateway */
-
-  if(ioctl(reqfd, add ? SIOCADDRT : SIOCDELRT, &req6) == 0)
-    retval = 0;
-#elif defined (USE_BSD)
-  /*
-   * BSD routing socket interface
-   * FIXME: metric unimplemented
-   */
-  (void)rel_metric;
-
-  int s = socket(AF_ROUTE, SOCK_RAW, AF_INET6);
-  if(s == -1)
-  {
-    syslog(LOG_ERR, "Error (%s): %s\n", "socket(AF_ROUTE)",
-            strerror(errno));
-    return -1;
-  }
-
-  static int rtm_seq = 0;
-  static pthread_mutex_t rtm_seq_mutex = PTHREAD_MUTEX_INITIALIZER;
-  struct
-  {
-    struct rt_msghdr hdr;
-    struct sockaddr_in6 dst;
-    struct sockaddr_dl gw;
-    struct sockaddr_in6 mask;
-  } msg;
-
-  shutdown(s, 0);
-
-  memset(&msg, 0, sizeof(msg));
-  msg.hdr.rtm_msglen = sizeof(msg);
-  msg.hdr.rtm_version = RTM_VERSION;
-  msg.hdr.rtm_type = add ? RTM_ADD : RTM_DELETE;
-  msg.hdr.rtm_index = id;
-  msg.hdr.rtm_flags = RTF_UP | RTF_STATIC;
-  msg.hdr.rtm_addrs = RTA_DST | RTA_GATEWAY | RTA_NETMASK;
-  if(prefix_len == 128)
-    msg.hdr.rtm_flags |= RTF_HOST;
-  msg.hdr.rtm_pid = getpid();
-
-  pthread_mutex_lock(&rtm_seq_mutex);
-  msg.hdr.rtm_seq = ++rtm_seq;
-  pthread_mutex_unlock(&rtm_seq_mutex);
-
-  msg.dst.sin6_family = AF_INET6;
-  msg.dst.sin6_len = sizeof(msg.dst);
-  memcpy(&msg.dst.sin6_addr, addr, sizeof(msg.dst.sin6_addr));
-
-  msg.gw.sdl_family = AF_LINK;
-  msg.gw.sdl_len = sizeof(msg.gw);
-  msg.gw.sdl_index = id;
-
-  plen_to_sin6(prefix_len, &msg.mask);
-
-  errno = 0;
-
-  if((write(s, &msg, sizeof(msg)) == sizeof(msg))
-      && (errno == 0))
-    retval = 0;
-  else if(errno == EEXIST)
-    syslog(LOG_NOTICE,
-            "Miredo could not configure its network tunnel device properly.\n"
-            "There is probably another tunnel with a conflicting route present,\n"
-            "most likely left from a previous instance of Miredo (see also FreeBSD\n"
-            "Problem Report kern/100080); that is a common bug on BSD kernels.\n"
-            "Please cleanup your closed tunnel devices manually or reboot to fix\n"
-            "this issue. You might also want to check if this issue has been dealt\n"
-            "with in newer version of your BSD of choice.\n");
-
-  (void)close(s);
-#else
-#error FIXME route setup not implemented
-#endif
-
-  return retval;
-}
-/**
- * Get the scope ID of tun interface.
- * @param t tun6 instance
- * @return the scope id of the tunnel device
- */
-static int tun6_getId(const struct tun6 *t)
-{
-  assert(t != NULL);
-  assert(t-> id != 0);
-
-  return t->id;
-}
-
-/**
- * Deletes an address from a tunnel.
- * Requires CAP_NET_ADMIN or root privileges.
- *
- * @param t tun6 instance
- * @param addr address to remove
- * @param prefixlen length of prefix
- * @return 0 on success, -1 in case error.
- */
-static int tun6_delAddress(struct tun6 *t, const struct in6_addr *addr, unsigned prefixlen)
-{
-  assert(t != NULL);
-
-  return _iface_addr(t->reqfd, t->id, 0, addr, prefixlen);
-}
-
-/**
- * Inserts a route through a tunnel into the IPv6 routing table.
- * Requires CAP_NET_ADMIN or root privileges.
- *
- * @param t tun6 instance
- * @param addr destination address for the route
- * @param prefix_len prefix length
- * @param rel_metric difference between the system's default metric
- * for route with the speficied prefix length (positive = higher priority,
- * negative = lower priority).
- *
- * @return 0 on success, -1 in case error.
- */
-static int tun6_addRoute(struct tun6 *t, const struct in6_addr *addr, unsigned prefix_len, int rel_metric)
-{
-  assert(t != NULL);
-
-  return _iface_route(t->reqfd, t->id, 1, addr, prefix_len, rel_metric);
-}
-
-/**
- * Removes a route through a tunnel from the IPv6 routing table.
- * Requires CAP_NET_ADMIN or root privileges.
- *
- * @param t tun6 instance
- * @param addr route destination to remove
- * @param prefix_len length of IPv6 prefix
- * @param rel_metric metric
- * @return 0 on success, -1 in case error.
- */
-static int tun6_delRoute(struct tun6 *t, const struct in6_addr *addr, unsigned prefix_len, int rel_metric)
-{
-  assert(t != NULL);
-
-  return _iface_route(t->reqfd, t->id, 0, addr, prefix_len, rel_metric);
-}
-
-/**
- * \brief Add an IPv6 route.
- * \param t tun6 instance
- * \param dst the destination address
- * \param gateway the gateway to route the packet for the "dst"
- * \param prefixlen length of the prefix
- * \return 0 if success, -1 otherwise
- * \author Sebastien Vincent
- */
-static int tun6_addroutegw(struct tun6 *t, struct in6_addr *dst, struct in6_addr *gateway, uint8_t prefixlen)
-{
-  int code = -1;
-  char buf[1024];
-  struct in6_rtmsg* rtm = NULL;
-
-  rtm = (struct in6_rtmsg*)buf;
-  memset(buf, 0x00, sizeof(buf));
-  rtm->rtmsg_type = 0;
-  rtm->rtmsg_metric = 1024;
-  rtm->rtmsg_dst_len = prefixlen;
-  rtm->rtmsg_src_len = 0;
-  rtm->rtmsg_ifindex = t->id;
-  rtm->rtmsg_flags = RTF_UP | RTF_GATEWAY;
-
-  memcpy(&rtm->rtmsg_dst, dst, sizeof(struct in6_addr));
-  memcpy(&rtm->rtmsg_gateway, gateway, sizeof(struct in6_addr));
-
-  code = ioctl(t->reqfd, SIOCADDRT, rtm);
-
-  return code!=-1 ? 0 : -1;
-}
-
-/**
- * Defines the tunnel interface Max Transmission Unit (bytes).
- * @param t tun6 instance
- * @param mtu MTU to set
- * @return 0 on success, -1 in case of error.
- */
-static int tun6_setMTU(struct tun6 *t, unsigned mtu)
-{
-  assert(t != NULL);
-
-  if((mtu < 1280) || (mtu > 65535))
-    return -1;
-
-  struct ifreq req =
-  {
-    .ifr_mtu = mtu
-  };
-  
-  if(if_indextoname(t->id, req.ifr_name) == NULL)
-    return -1;
-
-  return ioctl(t->reqfd, SIOCSIFMTU, &req) ? -1 : 0;
-}
-
-/**
- * Registers file descriptors in an fd_set for use with select().
- * If any of the file descriptors is out of range (>= FD_SETSIZE), it
- * will not be registered.
- *
- * @param t tun6 instance
- * @param readset a fd_set (with FD_SETSIZE no smaller than the default
- * libc value libtun6 was compiled with).
- *
- * @return the "biggest" file descriptor registered (useful as the
- * first parameter to select()). -1 if any of the file descriptors was
- * bigger than FD_SETSIZE - 1.
- */
-static int tun6_registerReadSet(const struct tun6 *t, fd_set *readset)
-{
-  assert(t != NULL);
-
-  if(t->fd >= (int)FD_SETSIZE)
-    return -1;
-
-  FD_SET(t->fd, readset);
-  return t->fd;
-}
-
-/**
- * Checks an fd_set, and receives a packet if available.
- * @param t tun6 instance
- * @param readset select()'s fd_set
- * @param buffer address to store packet
- * @param maxlen buffer length in bytes (should be 65535)
- *
- * This function will not block if there is no input.
- * Use tun6_wait_recv() if you want to wait until a packet arrives.
- *
- * @return the packet length on success, -1 if no packet were to be received.
- */
-static int tun6_recv(struct tun6 *t, const fd_set *readset, void *buffer, size_t maxlen)
-{
-  assert(t != NULL);
-
-  int fd = t->fd;
-  if((fd < (int)FD_SETSIZE) && !FD_ISSET(fd, readset))
-  {
-    errno = EAGAIN;
-    return -1;
-  }
-  return tun6_recv_inner(fd, buffer, maxlen);
-}
-
-/**
- * Waits for a packet, and receives it.
- *
- * This function will block until a packet arrives or an error occurs.
- * @param t tun6 instance
- * @param buffer address to store packet
- * @param maxlen buffer length in bytes (should be 65535)
- * @return the packet length on success, -1 if no packet were to be received.
- */
-static int tun6_wait_recv(struct tun6 *t, void *buffer, size_t maxlen)
-{
-  return tun6_recv_inner(t->fd, buffer, maxlen);
-}
-
-#endif
-
 /**
  * Receives a packet from a tunnel device.
- * @param fd socket descriptor
- * @param buffer address to store packet
- * @param maxlen buffer length in bytes (should be 65535)
+ * \param fd socket descriptor
+ * \param buffer address to store packet
+ * \param maxlen buffer length in bytes (should be 65535)
  *
  * This function will block if there is no input.
  *
- * @return the packet length on success, -1 if no packet were to be received.
+ * \return the packet length on success, -1 if no packet were to be received.
  */
 static inline int tun6_recv_inner(int fd, void *buffer, size_t maxlen)
 {
@@ -982,11 +713,11 @@ static inline int tun6_recv_inner(int fd, void *buffer, size_t maxlen)
 
 /**
  * Sends an IPv6 packet.
- * @param t tun6 instance
- * @param packet pointer to packet
- * @param len packet length (bytes)
+ * \param t tun6 instance
+ * \param packet pointer to packet
+ * \param len packet length (bytes)
  *
- * @return the number of bytes succesfully transmitted on success,
+ * \return the number of bytes succesfully transmitted on success,
  * -1 on error.
  */
 static int tun6_send(struct tun6 *t, const void *packet, size_t len)
@@ -1014,6 +745,7 @@ static int tun6_send(struct tun6 *t, const void *packet, size_t len)
   return val;
 }
 
+/* Create a tun6_t instance */
 int tun6_new(struct tun6_t **this)
 {
   *this = malloc(sizeof(struct tun6_t));
@@ -1024,9 +756,9 @@ int tun6_new(struct tun6_t **this)
   }
 
   memset(*this, 0x00, sizeof(struct tun6_t));
-  (*this)->cb_indv6 = NULL;
-  (*this)->addrsv6 = 0;
-  (*this)->routesv6 = 0;
+  (*this)->cb_ind6 = NULL;
+  (*this)->nb_addr6 = 0;
+  (*this)->routes6 = 0;
 
   if(!((*this)->device = tun6_create(NULL)))
   {
@@ -1034,24 +766,18 @@ int tun6_new(struct tun6_t **this)
     return -1;
   }
 
-  (*this)->fdv6 = (*this)->device->fd;
+  (*this)->fd6 = (*this)->device->fd;
   (*this)->ifindex = (*this)->device->id;
 
   return 0;
 }
 
-int tun6_free(struct tun6_t *this)
-{
-  tun6_destroy(this->device);
-  free(this);
-  return 0;
-}
-
+/* Decapsulate a packet */
 int tun6_decaps(struct tun6_t *this)
 {
-#if defined(__linux__) || defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) || defined (__APPLE__)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 
-  unsigned char buffer[PACKET_MAX];
+  unsigned char buffer[TUN6_PACKET_MAX_SIZE];
   int status;
 
   if((status = tun6_recv_inner(this->device->fd, buffer, sizeof(buffer)))==-1)
@@ -1059,9 +785,9 @@ int tun6_decaps(struct tun6_t *this)
     return 0;
   }
 
-  if(this->cb_indv6)
+  if(this->cb_ind6)
   {
-    return this->cb_indv6(this, buffer, status);
+    return this->cb_ind6(this, buffer, status);
   }
   return 0;
 
@@ -1069,20 +795,24 @@ int tun6_decaps(struct tun6_t *this)
   return -1;
 }
 
+/* Encapsulate a packet */
 int tun6_encaps(struct tun6_t *this, void *pack, unsigned int len)
 {
   return tun6_send(this->device, pack, len);
 }
 
+/* Set an IPv6 address on the interface */
 int tun6_setaddr(struct tun6_t *this, struct in6_addr *addr, uint8_t prefixlen)
 {
-  int code = tun6_addAddress(this->device, addr, prefixlen);
+  int code = tun6_add_address(this->device, addr, prefixlen);
   /* turn the interface on */
-  tun6_sifflags(this, IFF_UP | IFF_RUNNING);
+  tun6_set_interface_flags(this, IFF_UP | IFF_RUNNING);
   return code;
 }
 
-int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *gateway, uint8_t prefixlen)
+/* Set an IPv6 route on the interface */
+int tun6_addroute(struct tun6_t *this, struct in6_addr *dst,
+                  struct in6_addr *gateway, uint8_t prefixlen)
 {
   /* TODO : use _iface_route */
   (void)this;
@@ -1092,12 +822,7 @@ int tun6_addroute(struct tun6_t *this, struct in6_addr *dst, struct in6_addr *ga
   return -1;
 }
 
-int tun6_set_cb_ind(struct tun6_t *this, int (*cb_ind)(struct tun6_t *this, void *pack, unsigned len))
-{
-  this->cb_indv6 = cb_ind;
-  return 0;
-}
-
+/* Run script */
 int tun6_runscript(struct tun6_t *this, char *script)
 {
   /* TODO */
@@ -1106,40 +831,18 @@ int tun6_runscript(struct tun6_t *this, char *script)
   return 0;
 }
 
-/**
- * \brief Set the flags on the interface.
- * \param this the tun6_t instance
- * \param flags the flags to set
- * \return 0 if success, -1 otherwise
- */
-int tun6_sifflags(struct tun6_t *this, int flags)
+/* Free the ressource associated with the tun6_t instance */
+int tun6_free(struct tun6_t *this)
 {
-  struct ifreq ifr;
-  int fd = -1;
-
-  memset(&ifr, '\0', sizeof(ifr));
-  ifr.ifr_flags = flags;
-
-  if(if_indextoname(this->ifindex, ifr.ifr_name)==NULL)
-  {
-    return -1;
-  }
-
-  ifr.ifr_name[IFNAMSIZ - 1] = 0; /* Make sure to terminate */
-
-  if((fd = socket(AF_INET6, SOCK_DGRAM, 0)) < 0)
-  {
-    sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-            "socket() failed");
-  }
-  if(ioctl(fd, SIOCSIFFLAGS, &ifr))
-  {
-    sys_err(LOG_ERR, __FILE__, __LINE__, errno,
-            "ioctl(SIOCSIFFLAGS) failed");
-    close(fd);
-    return -1;
-  }
-  close(fd);
+  tun6_destroy(this->device);
+  free(this);
+  return 0;
+}
+/* Set an IPv6 address on the interface */
+int tun6_set_cb_ind(struct tun6_t *this,
+                    int (*cb_ind)(struct tun6_t *this, void *pack, unsigned len))
+{
+  this->cb_ind6 = cb_ind;
   return 0;
 }
 
