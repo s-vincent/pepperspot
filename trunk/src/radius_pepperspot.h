@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -85,5 +85,5 @@
 
 #define RADIUS_SERVICE_TYPE_PEPPERSPOT_AUTHORIZE_ONLY 0x38df0001 /**< integer */
 
-#endif  /* !_RADIUS_PEPPERSPOT_H */
+#endif /* !_RADIUS_PEPPERSPOT_H */
 

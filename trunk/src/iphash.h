@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -75,7 +75,7 @@
 
 /* IP hash functions are used to generate a hash table of IP addresses.
    The functions build on ippool.c.
-   ippool_getip() is used to check if an address is in the hash table. */
+   ippool_get_ip() is used to check if an address is in the hash table. */
 
 /**
  * \brief Create new IPv4 address pool.
@@ -102,5 +102,5 @@ int iphash_new6(struct ippool_t **this, struct ippoolm_t *list, int listsize);
  */
 int iphash_free(struct ippool_t *this);
 
-#endif  /* !_IPHASH_H */
+#endif /* !_IPHASH_H */
 

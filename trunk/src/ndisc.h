@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,48 +27,16 @@
  * \brief IPv6 neighbor discovery.
  */
 
-#ifndef __NDISC_H__
-#define __NDISC_H__
+#ifndef _NDISC_H
+#define _NDISC_H
 
-#include <stdint.h>          /* uint32_t */
+#include <stdint.h>          /* ISO C99 types: uint8_t, uint16_t, ... */
 #include <netinet/in.h>      /* in_addr */
-#include <net/if_arp.h>
+#include <net/if_arp.h>      /* ARPHRD_ETHER, ARPHRD_IEEE802, ... */
 
 #ifndef ARPHRD_IEEE80211
 #define ARPHRD_IEEE80211 801 /**< 802.11 type */
 #endif
-
-/**
- * \brief Get L2 address (MAC address) length of an address type.
- * \param iface_type type of an address
- * \return length of L2 address
- */
-static inline short nd_get_l2addr_len(unsigned short iface_type)
-{
-  switch(iface_type)
-  {
-    /* supported physical devices */
-    case ARPHRD_ETHER:
-    case ARPHRD_IEEE802:
-    /* case ARPHRD_IEEE802_TR: */
-    case ARPHRD_IEEE80211:
-    /* case ARPHRD_FDDI: */
-      return 6;
-#if 0
-    case ARPHRD_ARCNET:
-      return 1;
-    /* supported virtual devices */
-    case ARPHRD_SIT:
-    case ARPHRD_TUNNEL6:
-    case ARPHRD_PPP:
-    case ARPHRD_IPGRE:
-      return 0;
-#endif
-    default:
-      /* unsupported */
-      return -1;
-  }
-}
 
 /**
  * \brief Send Neighbor Advertisement.
@@ -83,5 +51,5 @@ int ndisc_send_na(int ifindex, const struct in6_addr *src,
                   const struct in6_addr *dst,
                   const struct in6_addr *target, uint32_t flags);
 
-#endif /* __NDISC_H__ */
+#endif /* !_NDISC_H */
 

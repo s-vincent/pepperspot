@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,34 +31,15 @@
 
 #include <stdlib.h>
 #include <unistd.h>
-
 #include <sys/stat.h>
 #include <fcntl.h>
 
 #include "compat.h"
 
-#if !defined(HAVE_CLEARENV) || (!defined(_XOPEN_SOURCE))
+#if !defined(HAVE_CLEARENV) || !defined(_XOPEN_SOURCE)
 
-/* code from miredo */
-#ifdef __APPLE__
-#include <crt_externs.h>
-/**
- * \def environ
- * \brief Extern variable environ replacement
- * for Mac OS X.
- */
-#define environ (*_NSGetEnviron())
-#else
-/**
- * \brief environ variable which contains
- * environment variable.
- *
- * This variable is "extern" of this software.
- */
-extern char** environ;
-#endif
-
-int clearenv (void)
+/* clearenv replacement function (non POSIX) */
+int clearenv(void)
 {
   environ = NULL;
   return 0;
@@ -68,10 +49,10 @@ int clearenv (void)
 
 #if !defined(HAVE_DAEMON) || defined(_POSIX_C_SOURCE)
 
+/* daemon replacement function (non POSIX) */
 int daemon(int nochdir, int noclose)
 {
   pid_t pid = -1;
-
   pid = fork();
 
   if(pid == -1) /* error */

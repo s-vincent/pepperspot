@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -52,10 +52,6 @@
  * \brief ICMPv6 related function (send/receive).
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-#include <sys/socket.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,21 +59,15 @@
 #include <unistd.h>
 #include <syslog.h>
 #include <assert.h>
+#include <sys/socket.h>
+#include <netinet/icmp6.h>                       /* icmp6_filter */
 
 #include "icmp6.h"
-
 #include "util.h"
-/*
-#include "debug.h"
-#include "conf.h"
-*/
 
-/**
- * \var icmp6_sock
- * \brief ICMPv6 socket descriptor.
- */
-struct icmpv6_socket icmp6_sock;
+static struct icmpv6_socket g_icmp6_sock;        /**< ICMPv6 socket descriptor */
 
+/* Join/leave multicast group on interface */
 int if_mc_group(int sock, int ifindex, const struct in6_addr *mc_addr, int cmd)
 {
   unsigned int val = 0;
@@ -85,7 +75,7 @@ int if_mc_group(int sock, int ifindex, const struct in6_addr *mc_addr, int cmd)
   int ret = 0;
 
   if(sock == -1)
-    sock = icmp6_sock.fd;
+    sock = g_icmp6_sock.fd;
 
   memset(&mreq, 0, sizeof(mreq));
   mreq.ipv6mr_interface = ifindex;
@@ -99,40 +89,42 @@ int if_mc_group(int sock, int ifindex, const struct in6_addr *mc_addr, int cmd)
   return setsockopt(sock, IPPROTO_IPV6, cmd, &mreq, sizeof(mreq));
 }
 
+/* Initialize ICMPv6 socket */
 int icmp6_init(void)
 {
   struct icmp6_filter filter;
   int val = 0;
 
-  icmp6_sock.fd = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6);
-  if(icmp6_sock.fd < 0)
+  g_icmp6_sock.fd = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6);
+  if(g_icmp6_sock.fd < 0)
   {
     syslog(LOG_ERR,
            "Unable to open ICMPv6 socket! "
            "Do you have root permissions?");
-    return icmp6_sock.fd;
+    return g_icmp6_sock.fd;
   }
   val = 1;
-  if(setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_RECVPKTINFO,
+  if(setsockopt(g_icmp6_sock.fd, IPPROTO_IPV6, IPV6_RECVPKTINFO,
                  &val, sizeof(val)) < 0)
     return -1;
-  if(setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_RECVHOPLIMIT,
+  if(setsockopt(g_icmp6_sock.fd, IPPROTO_IPV6, IPV6_RECVHOPLIMIT,
                  &val, sizeof(val)) < 0)
     return -1;
   ICMP6_FILTER_SETBLOCKALL(&filter);
   ICMP6_FILTER_SETPASS(ICMP6_DST_UNREACH, &filter);
 
-  if(setsockopt(icmp6_sock.fd, IPPROTO_ICMPV6, ICMP6_FILTER,
+  if(setsockopt(g_icmp6_sock.fd, IPPROTO_ICMPV6, ICMP6_FILTER,
                  &filter, sizeof(struct icmp6_filter)) < 0)
     return -1;
   val = 2;
-  if(setsockopt(icmp6_sock.fd, IPPROTO_RAW, IPV6_CHECKSUM,
+  if(setsockopt(g_icmp6_sock.fd, IPPROTO_RAW, IPV6_CHECKSUM,
                  &val, sizeof(val)) < 0)
     return -1;
 
   return 0;
 }
 
+/* Create an ICMPv6 header */
 void *icmp6_create(struct iovec *iov, uint8_t type, uint8_t code)
 {
   struct icmp6_hdr *hdr = NULL;
@@ -177,6 +169,7 @@ void *icmp6_create(struct iovec *iov, uint8_t type, uint8_t code)
   return hdr;
 }
 
+/* Send an ICMPv6 packet */
 int icmp6_send(int oif, uint8_t hoplimit,
                const struct in6_addr *src, const struct in6_addr *dst,
                struct iovec *datav, size_t iovlen)
@@ -218,14 +211,14 @@ int icmp6_send(int oif, uint8_t hoplimit,
   msg.msg_name = (void *)&daddr;
   msg.msg_namelen = CMSG_SPACE(sizeof(struct in6_pktinfo));
 
-  setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_PKTINFO,
+  setsockopt(g_icmp6_sock.fd, IPPROTO_IPV6, IPV6_PKTINFO,
              &on, sizeof(int));
-  setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_UNICAST_HOPS,
+  setsockopt(g_icmp6_sock.fd, IPPROTO_IPV6, IPV6_UNICAST_HOPS,
              &hops, sizeof(hops));
-  setsockopt(icmp6_sock.fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
+  setsockopt(g_icmp6_sock.fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,
              &hops, sizeof(hops));
 
-  ret = sendmsg(icmp6_sock.fd, &msg, 0);
+  ret = sendmsg(g_icmp6_sock.fd, &msg, 0);
   if(ret < 0)
     printf("sendmsg: %s\n", strerror(errno));
 
@@ -234,8 +227,9 @@ int icmp6_send(int oif, uint8_t hoplimit,
   return ret;
 }
 
+/* Cleanup ICMPv6 socket */
 void icmp6_cleanup(void)
 {
-  close(icmp6_sock.fd);
+  close(g_icmp6_sock.fd);
 }
 

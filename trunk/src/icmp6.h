@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,28 +27,25 @@
  * \brief ICMPv6 related function (send/receive).
  */
 
-#ifndef __ICMP6_H__
-#define __ICMP6_H__
+#ifndef _ICMP6_H
+#define _ICMP6_H
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+// #include <sys/types.h>
+// #include <sys/socket.h>
+// #include <netinet/in.h>
+#include <netinet/ip6.h>     /* in6_addr */
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <sys/socketvar.h>
 #include <netinet/in_pcb.h>
 #endif
 
-#include <netinet/icmp6.h>
-#include <netinet/ip6.h>
-
 /**
- * \struct icmpv6_socket
  * \brief ICMPv6 socket.
  */
 struct icmpv6_socket
 {
-  int fd; /**< Socket descriptor */
+  int fd;                    /**< Socket descriptor */
 };
 
 /**
@@ -72,9 +69,13 @@ int if_mc_group(int sock, int ifindex, const struct in6_addr *mc_addr, int cmd);
 int icmp6_init(void);
 
 /**
- * \brief Cleanup ICMPv6 socket.
+ * \brief Create an ICMPv6 header.
+ * \param iov vector to put header in
+ * \param type ICMPv6 type
+ * \param code ICMPv6 code
+ * \return header or NULL if failure
  */
-void icmp6_cleanup(void);
+void *icmp6_create(struct iovec *iov, uint8_t type, uint8_t code);
 
 /**
  * \brief Send an ICMPv6 packet.
@@ -90,15 +91,9 @@ int icmp6_send(int oif, uint8_t hoplimit, const struct in6_addr *src,
                const struct in6_addr *dst, struct iovec *datav, size_t iovlen);
 
 /**
- * \brief Create an ICMPv6 header.
- * \param iov vector to put header in
- * \param type ICMPv6 type
- * \param code ICMPv6 code
- * \return header or NULL if failure
+ * \brief Cleanup ICMPv6 socket.
  */
-void *icmp6_create(struct iovec *iov, uint8_t type, uint8_t code);
+void icmp6_cleanup(void);
 
-struct ip6_hdr;
-
-#endif
+#endif /* !_ICMP6_H */
 

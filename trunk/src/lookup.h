@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -71,6 +71,7 @@
 #ifndef _LOOKUP_H
 #define _LOOKUP_H
 
+#include <stdint.h> /* ISO C99 types: uint8_t, uint16_t, ... */
 /**
  * \brief Generates a 32 bit hash.
  *
@@ -83,7 +84,7 @@
  * \param level last hash value
  * \return resulting hash
  */
-unsigned long int lookup(register unsigned char *k, register unsigned long int length, register unsigned long int level);
+uint32_t lookup(register uint8_t *k, register uint32_t length, register uint32_t level);
 
-#endif  /* !_LOOKUP_H */
+#endif /* !_LOOKUP_H */
 

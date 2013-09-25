@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -71,19 +71,18 @@
 #ifndef _TUN_H
 #define _TUN_H
 
-#include <sys/types.h>
-#include <net/if.h>
+#include <net/if.h>               /* IF_NAMESIZE */
 #include <netinet/in.h>           /* in_addr */
 
 #ifndef IFNAMSIZ
 #define IFNAMSIZ      IF_NAMESIZE /**< Interface name size */
 #endif
 
-#define PACKET_MAX    8196        /**< Maximum packet size we receive */
-#define TUN_ADDRSIZE  128         /**< Maximum ascii address size */
+#define TUN_PACKET_MAX_SIZE  8196 /**< Maximum packet size we receive */
+#define TUN_ADDR_MAX_SIZE     128 /**< Maximum ascii address size */
 
-#ifdef __linux__
-#define TUN_NLBUFSIZE 1024        /**< maximum netlink message size */
+#if defined(__linux__)
+#define TUN_NETLINK_MAX_SIZE 1024 /**< maximum netlink message size */
 #endif
 
 /**
@@ -135,13 +134,6 @@ struct tun_t
 int tun_new(struct tun_t **this);
 
 /**
- * \brief Release a tun interface.
- * \param this tun_t instance
- * \return 0 if success, -1 otherwise
- */
-int tun_free(struct tun_t *this);
-
-/**
  * \brief Decapsulate packet coming from tun interface.
  * \param this tun_t instance
  * \return 0 if success, -1 otherwise
@@ -169,7 +161,7 @@ int tun_addaddr(struct tun_t *this, struct in_addr *addr,
                 struct in_addr *dstaddr, struct in_addr *netmask);
 
 /**
- * \brief Set address on tun interface
+ * \brief Set address on tun interface.
  * \param this tun_t instance
  * \param our_adr our IPv4 address
  * \param his_adr IPv4 address
@@ -180,7 +172,7 @@ int tun_setaddr(struct tun_t *this, struct in_addr *our_adr,
                 struct in_addr *his_adr, struct in_addr *net_mask);
 
 /**
- * \brief Add a route for tun interface
+ * \brief Add a route for tun interface.
  * \param this tun_t instance
  * \param dst IPv4 destination address
  * \param gateway IPv4 gateway
@@ -191,15 +183,6 @@ int tun_addroute(struct tun_t *this, struct in_addr *dst,
                  struct in_addr *gateway, struct in_addr *mask);
 
 /**
- * \brief Set callback for receiving a packet from tun interface
- * \param this tun_t instance
- * \param cb_ind callback
- * \return 0
- */
-int tun_set_cb_ind(struct tun_t *this,
-                   int (*cb_ind)(struct tun_t *this, void *pack, unsigned len));
-
-/**
  * \brief Run script.
  * \param this tun_t instance
  * \param script script pathname
@@ -207,5 +190,24 @@ int tun_set_cb_ind(struct tun_t *this,
  */
 int tun_runscript(struct tun_t *this, char *script);
 
-#endif  /* !_TUN_H */
+/**
+ * \brief Release a tun interface.
+ * \param this tun_t instance
+ * \return 0 if success, -1 otherwise
+ */
+int tun_free(struct tun_t *this);
+
+/**
+ * \brief Set callback for receiving a packet from tun interface.
+ * \param this tun_t instance
+ * \param cb_ind callback
+ * \return 0
+ */
+
+int tun_set_cb_ind(struct tun_t *this,
+                   int (*cb_ind)(struct tun_t *this, void *pack, unsigned len));
+
+
+
+#endif /* !_TUN_H */
 

@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -85,5 +85,5 @@
 #define RADIUS_ATTR_WISPR_SESSION_TERMINATE_END_OF_DAY    10 /**< string */
 #define RADIUS_ATTR_WISPR_BILLING_CLASS_OF_SERVICE        11 /**< string */
 
-#endif  /* !_RADIUS_WISPR_H */
+#endif /* !_RADIUS_WISPR_H */
 

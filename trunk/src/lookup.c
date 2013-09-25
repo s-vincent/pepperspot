@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -82,19 +82,20 @@
     a -= b; a -= c; a ^= (c >> 13); \
     b -= c; b -= a; b ^= (a << 8); \
     c -= a; c -= b; c ^= (b >> 13); \
-    a -= b; a -= c; a ^= (c >> 12);  \
+    a -= b; a -= c; a ^= (c >> 12); \
     b -= c; b -= a; b ^= (a << 16); \
     c -= a; c -= b; c ^= (b >> 5); \
-    a -= b; a -= c; a ^= (c >> 3);  \
+    a -= b; a -= c; a ^= (c >> 3); \
     b -= c; b -= a; b ^= (a << 10); \
     c -= a; c -= b; c ^= (b >> 15); \
   }
 
-unsigned long int lookup(register unsigned char* k, register unsigned long int length, register unsigned long int level)
+/* Generates a 32 bit hash */
+uint32_t lookup(register uint8_t *k, register uint32_t length, register uint32_t level)
 {
-  typedef  unsigned long  int  ub4;   /* unsigned 4-byte quantities */
-  typedef  unsigned       char ub1;   /* unsigned 1-byte quantities */
-  register unsigned long int a, b, c, len;
+  typedef uint32_t ub4;   /* unsigned 4-byte quantities */
+  typedef uint8_t ub1;    /* unsigned 1-byte quantities */
+  register uint32_t a, b, c, len;
 
   /* Set up the internal state */
   len = length;

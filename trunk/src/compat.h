@@ -1,6 +1,6 @@
 /*
  * PepperSpot -- The Next Generation Captive Portal
- * Copyright (C) 2008,  Thibault Vançon and Sebastien Vincent
+ * Copyright (C) 2008, Thibault VANCON and Sebastien VINCENT
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,8 +25,8 @@
  * \brief Compatibility functions.
  */
 
-#ifndef COMPAT_H
-#define COMPAT_H
+#ifndef _COMPAT_H
+#define _COMPAT_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -34,17 +34,25 @@
 
 #ifdef __cplusplus
 extern "C"
-{ /* } */
+{
 #endif
 
-#if defined (__FreeBSD__)  || defined (__APPLE__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__) || defined(__APPLE__) || defined(__NetBSD__) || defined(__OpenBSD__)
   typedef unsigned long u_long;
   typedef unsigned short u_short;
   typedef unsigned int u_int;
   typedef unsigned char u_char;
 #endif
 
-#if (!defined(HAVE_CLEARENV) && !defined(_XOPEN_SOURCE)) || defined(__APPLE__) 
+#if (!defined(HAVE_CLEARENV) && !defined(_XOPEN_SOURCE)) || defined(__APPLE__)
+
+  /* code from miredo */
+  #if defined(__APPLE__)
+  #include <crt_externs.h>
+  #define environ (*_NSGetEnviron())   /**< Extern variable environ replacement for Mac OS X */
+  #else
+  extern char ** environ;              /**< environ variable which contains environment variable */
+  #endif
 
   /**
    * \brief clearenv replacement function (non POSIX).
@@ -72,5 +80,5 @@ extern "C"
 }
 #endif
 
-#endif /* COMPAT_H */
+#endif /* !_COMPAT_H */
 
