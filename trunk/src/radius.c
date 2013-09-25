@@ -715,6 +715,7 @@ int radius_new(struct radius_t **this,
   /* Initialise proxy socket */
   if(proxysecret)
   {
+    ipv6 = proxylisten->ss_family == AF_INET6;
     if(ipv6)
     {
       memset(&addr, 0, sizeof(addr));
