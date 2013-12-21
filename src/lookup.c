@@ -94,7 +94,7 @@
 uint32_t lookup(register uint8_t *k, register uint32_t length, register uint32_t level)
 {
   typedef uint32_t ub4;   /* unsigned 4-byte quantities */
-  typedef uint8_t ub1;    /* unsigned 1-byte quantities */
+  /* typedef uint8_t ub1; */   /* unsigned 1-byte quantities */
   register uint32_t a, b, c, len;
 
   /* Set up the internal state */
